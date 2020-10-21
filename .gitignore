@@ -1,0 +1,6 @@
+*.fasta
+*.fa
+*.fasta.gz
+*.fa.gz
+*.bam
+*.sam
