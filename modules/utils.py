@@ -16,6 +16,49 @@ import subprocess
 from modules import params as p
 
 
+def vcf_2_bed(vcf):
+
+  bed = vcf.replace(".vcf", ".bed")
+  o.open(bed, 'w')
+  with open (vcf, "r") as f:
+    for line in f:
+      line = line.rstrip("\n")
+      if line.startswith("#"):
+        continue
+      else:
+        tmp = line.split("\t")
+        #chr6	128129334	MantaBND:84:0:1:0:0:0:0	G	[chr6:117660945[G
+        info = tmp[7]
+        chr_A = tmp[0]
+        pos_A = tmp[1]
+        end_A = int(pos_A)+1
+
+        chr_B = "."
+        pos_B = "."
+
+        info_list = info.split(";")
+        for field in info_list:
+          if field.startswith("END="):
+            chr_B = chr_A
+            pos_B = field.replace("END=", "")
+        if pos_B == ".":
+          m = re.search('chr(\d+)+:(\d+)', tmp[4])
+          if m:
+            tmp_posB = m.split(":")
+            chr_B = tmp_posB[0]
+            pos_B = tmp_posB[1]
+        out_list = []
+        out_list.append(str(chr_A))
+        out_list.append(str(pos_A))
+        out_list.append(str(end_A))
+        out_list.append(str(chr_B))
+        out_list.append(str(pos_B))
+        out_list.append(str(end_B))
+        out_list.append(str(info))
+        o.write("\t".join(out_list))
+  o.close()
+
+
 def create_vep_dict(info):
 
     vep_dict = dict()

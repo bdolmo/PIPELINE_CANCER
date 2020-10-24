@@ -257,7 +257,7 @@ def extract_coverage_metrics():
                 print (msg)
                 logging.info(msg)
         else:
-            msg = " INFO: Skipping coverage metrics analysis. Data is already available"
+            msg = " INFO: Skipping coverage metrics analysis"
             print (msg)
             logging.info(msg)
 
@@ -375,8 +375,8 @@ def remove_duplicates():
                 print (msg)
                 logging.info(msg)
 
-                bam_summary_picard = p.sample_env[sample]['BAM_FOLDER'] + sample + ".picard.metrics.txt"
-                qc_summary_picard  = p.sample_env[sample]['QC_FOLDER'] + sample + ".picard.metrics.txt"
+                bam_summary_picard = p.sample_env[sample]['BAM_FOLDER'] + "/" + sample + ".picard.metrics.txt"
+                qc_summary_picard  = p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".picard.metrics.txt"
 
                 shutil.copy2(bam_summary_picard, qc_summary_picard)
 
@@ -468,8 +468,8 @@ def map_fastq():
     # Now map fastq files with bwa mem
 
 
-    bashCommand = ('{} mem {} -R \'@RG\\tID:{}\\tSM:{}\' -M -t {} {} {} | {} view -Shu -@{} - |' 
-      '{} sort -@{} -T {} -o {}').format(
+    bashCommand = ('{} mem {} -R \'@RG\\tID:{}\\tSM:{}\' -M -t {} {} {} | {} view -Shu - |' 
+      '{} sort -T {} -o {}').format(
       p.system_env['BWA'], 
       p.aux_env['GENOME_FASTA'],
       sample,
@@ -478,9 +478,7 @@ def map_fastq():
       p.sample_env[sample]['READY_FQ1'], 
       p.sample_env[sample]['READY_FQ2'],
       p.system_env['SAMTOOLS'], 
-      p.analysis_env['THREADS'],
       p.system_env['SAMTOOLS'], 
-      p.analysis_env['THREADS'],
       'TMP',
       p.sample_env[sample]['RAW_BAM']
       )
@@ -496,7 +494,7 @@ def map_fastq():
       
       output, error = process.communicate()
     else:
-        msg = " INFO: Skipping mapping for sample " + sample + " BAM file  is already available"
+        msg = " INFO: Skipping mapping for sample " + sample + " BAM file is already available"
         print (msg)
         p.logging.info(msg)
     index_bam(p.sample_env[sample]['RAW_BAM'])

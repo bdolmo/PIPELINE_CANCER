@@ -63,6 +63,9 @@ class Roi(db.Model):
         self.panel_version = PANEL_VERSION
 
 def load_panel_transcripts(pname):
+    pname= pname.replace(".bed", "")
+    pname= pname.replace(".v1", "")
+
     roi_env = defaultdict(dict)
     roi_info = Roi.query.filter_by(panel_name=pname).all()
     if roi_info:

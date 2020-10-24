@@ -14,15 +14,6 @@ from modules import sqlite as s
 global sample_env 
 sample_env = defaultdict(dict)
 
-def update_variant_databases():
-
-    if not os.path.isfile(analysis_env['CIVIC_VCF']):
-        with open(analysis_env['CIVIC_VCF'], 'w', newline='') as file:
-            w = exports.VCFWriter(file)
-            all_variants = civic.get_all_variants()
-            w.addrecords(all_variants)
-            w.writerecords()
-
 
 def set_analysis_env(args):
 
@@ -42,9 +33,20 @@ def set_analysis_env(args):
         'ROI_NUMBER'     : '.',
         'GENOME_VERSION' : args.reference,
         'VARIANT_CLASS'  : args.var_class,
-        'CIVIC_VCF'      : defaults['CIVIC_FOLDER'] + "/" + "civic.variants.vcf",
+        'CIVIC_VCF'      : defaults['CIVIC_FOLDER'] + "/" + "01-Aug-2020-civic_accepted.vcf.gz",
+        'CIVIC_VCF_NAME' : "01-Aug-2020-civic_accepted.vcf.gz",
         'THREADS'        : args.threads,
     }
+
+    if analysis_env['VARIANT_CLASS'] == "somatic":
+        if analysis_env['GENOME_VERSION'] == "hg19":
+            analysis_env['CHIMERKB_BED'] = defaults['CHIMERKB_FOLDER'] + "/" \
+                + "chimerKB_hg19_fusions.bed"
+            analysis_env['CHIMERKB_BED_NAME'] = "chimerKB_hg19_fusions.bed"
+            analysis_env['CIVIC_VCF'] = defaults['CIVIC_FOLDER'] + "/" \
+                + "01-Aug-2020-civic_accepted.vcf.gz",
+            analysis_env['CIVIC_VCF_NAME'] = "01-Aug-2020-civic_accepted.vcf.gz"
+
     # Creating output directory
     output_path = Path(analysis_env['OUTPUT_DIR'])
     if not output_path.is_dir():
@@ -78,9 +80,10 @@ def set_defaults(main_dir):
         'PANEL_FOLDER'  : main_dir + "/PANEL_FOLDER",
         # Folder with annotation files
         'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
-
+        # CIVIC folder
         'CIVIC_FOLDER' : main_dir + "/ANNOTATION_FOLDER/CIVIC",
-
+        # CIVIC folder
+        'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
         # Setting VEP directories
         'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
         'VEP_DATA'        :  main_dir + "/VEP_DATA",

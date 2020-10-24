@@ -13,6 +13,7 @@ from modules import map as m
 from modules import var_call as v
 from modules import annotate as a
 from modules import sqlite as s
+from modules import report as r
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -27,7 +28,7 @@ def main(args):
     # Settingg panel configuration
     p.set_panel_configuration(main_dir)
 
-    p.update_variant_databases()
+    #p.update_variant_databases()
 
     # Setting system binary variables
     p.set_system_env()
@@ -46,6 +47,8 @@ def main(args):
 
     # Perform vcf annotation
     a.do_annotation()
+
+    #r.do_report()
 
 
 def parse_arguments():

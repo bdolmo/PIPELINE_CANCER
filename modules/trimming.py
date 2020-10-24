@@ -90,7 +90,8 @@ def trim_fastqs():
     if not os.path.isfile(p.sample_env[sample_name]['READY_FQ1']) \
       and not os.path.isfile(p.sample_env[sample_name]['READY_FQ2']):
 
-      msg = " INFO: Trmming sample " +  sample_name 
+      msg = " INFO: Trimming sample " +  sample_name 
+      print(msg)
       p.logging.info(msg)
       p.logging.info(bashCommand)
 
@@ -98,3 +99,7 @@ def trim_fastqs():
         stderr=subprocess.PIPE)
       
       output, error = process.communicate()
+    else:
+      msg = " INFO: Skipping trimming of sample " +  sample_name 
+      print(msg)
+      p.logging.info(msg)

@@ -4,3 +4,11 @@
 *.fa.gz
 *.bam
 *.sam
+*.db
+BUNDLE_FOLDER/
+SQLITE_DB_FOLDER/
+VEP_DATA/
+
+
+
+
