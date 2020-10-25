@@ -46,25 +46,25 @@ class Civic:
 
     candidate_var_list = []
     candidate_var_list.append(variant)
-    candidate_var_list.append(variant[:-1])
-    candidate_var_list.append(variant[1:])
-    candidate_var_list.append(variant[1:-1])    
-    candidate_var_list.append(variant[:-1]+"X")
 
-    if conseq == 'intron_variant' or conseq == 'splice_region_variant':
-      v = "EXON " +  str(exon)
-      candidate_var_list.append(v)
-    if vartype == 'DELETION':
-      v = "EXON " + str(exon) + " DELETION"
-      candidate_var_list.append(v)
-    if vartype == 'INSERTION':
-      v ="EXON " + str(exon) + " INSERTION"
-      candidate_var_list.append(v)
+    if not 'synonymous_variant' in conseq:
+      candidate_var_list.append(variant[:-1])
+      candidate_var_list.append(variant[1:])
+      candidate_var_list.append(variant[1:-1])    
+      candidate_var_list.append(variant[:-1]+"X")
 
+    # if 'intron_variant' in conseq or 'splice_region_variant' in conseq:
+    #   v = "EXON " +  str(exon)
+    #   candidate_var_list.append(v)
+    # if vartype == 'DELETION':
+    #   v = "EXON " + str(exon) + " DELETION"
+    #   candidate_var_list.append(v)
+    # if vartype == 'INSERTION':
+    #   v ="EXON " + str(exon) + " INSERTION"
+    #   candidate_var_list.append(v)
     chosen_var_id = '.'
     if gene in self.variants_dict:
       # Now look for all variants
-      
       for var in candidate_var_list:
         for mut in self.variants_dict[gene]:
           mut_uc = mut.upper()
@@ -73,8 +73,8 @@ class Civic:
             break
         if chosen_var_id != '.':
           break
-
-      ev_list = []
+      if chosen_var_id == ".":
+        return ev_list
       # Get all evidences
       for ev_id in self.evidence_dict[chosen_var_id]:
         ev_direction   =  self.evidence_dict[chosen_var_id][ev_id]['evidence_direction']
@@ -94,6 +94,7 @@ class Civic:
         ev_info.append(ev_clintrials)
         ev_str = '|'.join(ev_info)
         ev_list.append(ev_str)
+
     return ev_list
 
   def loadCivic(self):
@@ -135,13 +136,13 @@ class Civic:
         drugs_list.append(drug['name'])
       drug_set = set(drugs_list)
       drugs_list = list(drug_set)
-      self.evidence_dict[variant_id][ev_id]['drugs']  = ','.join(drugs_list) 
+      self.evidence_dict[variant_id][ev_id]['drugs']  = '&'.join(drugs_list) 
       self.evidence_dict[variant_id][ev_id]['disease'] = evidence['disease']['name'].replace(" ", "_")
       self.evidence_dict[variant_id][ev_id]['pmid'] = evidence['source']['citation_id']
       clintrials_list = []
       for trial in evidence['source']['clinical_trials']:
         clintrials_list.append(trial['nct_id'])
-      self.evidence_dict[variant_id][ev_id]['clinical_trials'] = ','.join(clintrials_list)
+      self.evidence_dict[variant_id][ev_id]['clinical_trials'] = '&'.join(clintrials_list)
 
 def do_civic():
 
@@ -157,13 +158,14 @@ def do_civic():
 
     for sample in p.sample_env:
 
+        msg = " INFO: Annotating sample "+ sample + " with CIViC database"
+        print(msg)
+        logging.info(msg)
+
         p.sample_env[sample]['CIVIC_VCF'] = \
             p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".civic.vcf")
         p.sample_env[sample]['CIVIC_VCF_NAME'] = \
-            os.path.basename(p.sample_env[sample]['READY_SNV_VCF_NAME']).replace(".vcf", ".vep.vcf")
-
-        print(p.sample_env[sample]['READY_SNV_VCF'])
-        sys.exit()
+            os.path.basename(p.sample_env[sample]['READY_SNV_VCF_NAME']).replace(".vcf", ".civic.vcf")
 
         vep_dict = defaultdict(dict)
         vep_list = []
@@ -215,6 +217,7 @@ def do_civic():
 
                     info_list = info.split(';')
                     idx = 0
+                    civic_ann_list = []
                     civic_annotation = '.'
                     for item in info_list:
                         if item.startswith('CSQ'):
@@ -222,19 +225,18 @@ def do_civic():
                             for transcript_info in tmp_transcript:
                                 transcript_info = transcript_info.replace("CSQ=", "")
                                 transcript_list = transcript_info.split("|")
+
+                                # Get features from VEP annotation
                                 gene = transcript_list[vep_dict['SYMBOL']]
                                 ensg_id = transcript_list[vep_dict['Gene']]
                                 enst_id = transcript_list[vep_dict['Feature']]
-
                                 exon = re.search("\d+", transcript_list[vep_dict['EXON']])
                                 consequence = transcript_list[vep_dict['Consequence']]
                                 aminoacids = transcript_list[vep_dict['Amino_acids']]
                                 protein_position = transcript_list[vep_dict['Protein_position']]
                                 variant = "."
-                                if not exon:
-                                    exon = '.'
-                                if not consequence:
-                                    consequence = '.'
+
+                                # Do civic query
                                 if aminoacids != "" and protein_position != "":
                                   if "/" in aminoacids:
                                     variant = aminoacids.replace("/", protein_position)
@@ -242,6 +244,8 @@ def do_civic():
                                     variant = aminoacids + protein_position
                                   civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
                                   civic_annotation = ','.join(civic_ev_list)
+                                  if len(civic_ev_list)>0:
+                                    civic_ann_list.append(civic_annotation)
                             #item = tmp_transcript[tidx]
                         idx+=1
 
@@ -270,13 +274,13 @@ def do_vep():
 
         vep_output_vcf = p.defaults['VEP_DATA_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
 
-        bashCommand = ('{} run -t -i -v {}:/civic_folder/ -v {}:/opt/vep/.vep ensemblorg/ensembl-vep'
+        bashCommand = ('{} run -t -i -v {}:/opt/vep/.vep ensemblorg/ensembl-vep'
         ' perl vep --cache --offline --dir_cache /opt/vep/.vep/ --dir_plugins /opt/vep/.vep/Plugins/'
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
         ' --af_1kg --af_gnomad '
         ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b'
         ' --symbol --force_overwrite --fork {} --canonical '
-        .format(p.system_env['DOCKER'], p.defaults['CIVIC_FOLDER'], p.defaults['VEP_DATA'], p.sample_env[sample]['READY_SNV_VCF_NAME'],\
+        .format(p.system_env['DOCKER'], p.defaults['VEP_DATA'], p.sample_env[sample]['READY_SNV_VCF_NAME'],\
         p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS']))
 
 

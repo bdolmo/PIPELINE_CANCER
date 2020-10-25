@@ -33,19 +33,15 @@ def set_analysis_env(args):
         'ROI_NUMBER'     : '.',
         'GENOME_VERSION' : args.reference,
         'VARIANT_CLASS'  : args.var_class,
-        'CIVIC_VCF'      : defaults['CIVIC_FOLDER'] + "/" + "01-Aug-2020-civic_accepted.vcf.gz",
-        'CIVIC_VCF_NAME' : "01-Aug-2020-civic_accepted.vcf.gz",
         'THREADS'        : args.threads,
     }
 
+    # Default annotation files for each genome version
     if analysis_env['VARIANT_CLASS'] == "somatic":
         if analysis_env['GENOME_VERSION'] == "hg19":
             analysis_env['CHIMERKB_BED'] = defaults['CHIMERKB_FOLDER'] + "/" \
                 + "chimerKB_hg19_fusions.bed"
             analysis_env['CHIMERKB_BED_NAME'] = "chimerKB_hg19_fusions.bed"
-            analysis_env['CIVIC_VCF'] = defaults['CIVIC_FOLDER'] + "/" \
-                + "01-Aug-2020-civic_accepted.vcf.gz",
-            analysis_env['CIVIC_VCF_NAME'] = "01-Aug-2020-civic_accepted.vcf.gz"
 
     # Creating output directory
     output_path = Path(analysis_env['OUTPUT_DIR'])
@@ -80,9 +76,7 @@ def set_defaults(main_dir):
         'PANEL_FOLDER'  : main_dir + "/PANEL_FOLDER",
         # Folder with annotation files
         'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
-        # CIVIC folder
-        'CIVIC_FOLDER' : main_dir + "/ANNOTATION_FOLDER/CIVIC",
-        # CIVIC folder
+        # chimerKB folder
         'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
         # Setting VEP directories
         'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",

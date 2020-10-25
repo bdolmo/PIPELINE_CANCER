@@ -48,7 +48,7 @@ def main(args):
     # Perform vcf annotation
     a.do_annotation()
 
-    #r.do_report()
+    r.do_report()
 
 
 def parse_arguments():

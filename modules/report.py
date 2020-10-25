@@ -45,7 +45,7 @@ def select_clinical_variants():
                     if re.search("ID=CSQ", line):
                         vep_dict, vep_list = u.create_vep_dict(line)
                     if re.search("ID=CIVIC", line):
-                        civic_dict, civic_list = create_vep_dict(line)
+                        civic_dict, civic_list = u.create_vep_dict(line)
                 else:
                     tmp = line.split('\t')
                     chr = tmp[0]
@@ -80,8 +80,8 @@ def select_clinical_variants():
                                     if enst_id == p.roi_env[gene] or enst_id == p.roi_env[ensg_id]:
                                         # Now, dump the variant if present at civic
 
-                                        if transcript_list[vep_dict['EV_DIRECTION']] == "Supports" \
-                                            or max_af < 0.01:
+                                        if transcript_list[civic_dict['EV_DIRECTION']] == "Supports" \
+                                            or 'pathogenic' in transcript_list[vep_dict['CLIN_SIG']]:
                                             line = '\t'.join(tmp)
                                             o.write(line+"\n")
                                             info_list[idx] = transcript_info
