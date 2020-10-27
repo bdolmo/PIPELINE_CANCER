@@ -10,6 +10,7 @@ from os import path
 from collections import defaultdict
 from pprint import pprint
 import json
+import logging
 
 from pathlib import Path
 import subprocess
@@ -19,7 +20,7 @@ from modules import params as p
 def vcf_2_bed(vcf):
 
   bed = vcf.replace(".vcf", ".bed")
-  o.open(bed, 'w')
+  o = open(bed, 'w')
   with open (vcf, "r") as f:
     for line in f:
       line = line.rstrip("\n")
@@ -35,7 +36,7 @@ def vcf_2_bed(vcf):
 
         chr_B = "."
         pos_B = "."
-
+        end_B = "."
         info_list = info.split(";")
         for field in info_list:
           if field.startswith("END="):
@@ -44,9 +45,11 @@ def vcf_2_bed(vcf):
         if pos_B == ".":
           m = re.search('chr(\d+)+:(\d+)', tmp[4])
           if m:
-            tmp_posB = m.split(":")
+            m_str = m.group(0)
+            tmp_posB = m_str.split(":")
             chr_B = tmp_posB[0]
             pos_B = tmp_posB[1]
+            end_B = int(pos_B)+1
         out_list = []
         out_list.append(str(chr_A))
         out_list.append(str(pos_A))
@@ -55,8 +58,9 @@ def vcf_2_bed(vcf):
         out_list.append(str(pos_B))
         out_list.append(str(end_B))
         out_list.append(str(info))
-        o.write("\t".join(out_list))
+        o.write("\t".join(out_list)+"\n")
   o.close()
+  return bed
 
 
 def create_vep_dict(info):
@@ -65,13 +69,15 @@ def create_vep_dict(info):
     vep_list = list()
     if info:
         tmp = info.split('Format:')
-
         # remove unwanted characters
         rawfields = re.sub('(">)', "", tmp[1])
+        rawfields = rawfields.replace(" ", "")
         fields = rawfields.split('|')
         i = 0
         for field in fields:
+            field = field.replace(" ", "")
             vep_list.append(field)
+
             vep_dict[field] = i
             i += 1
 
@@ -120,6 +126,10 @@ def convert_vcf_2_json(vcf):
                     vep_dict, vep_list = create_vep_dict(line)
                 if re.search("ID=CIVIC", line):
                     civic_dict, civic_list = create_vep_dict(line)
+                if re.search("ID=CGI", line):
+                    cgi_dict, cgi_list = create_vep_dict(line)
+                if re.search("ID=FUSION", line):
+                    fusion_dict, fusion_list = create_vep_dict(line)
                 if re.search('##FORMAT', line):
                     line = line.replace("##FORMAT=<ID=", "")
                     line = line.replace(">","")
@@ -163,6 +173,8 @@ def convert_vcf_2_json(vcf):
                 vcf_dict['variants'][var_name]['INFO'] = defaultdict(dict)
                 for item in info_list:
                     tmp_item = item.split('=')
+                    if len(tmp_item) < 2:
+                      continue
                     if item.startswith('CSQ'):
                         vcf_dict['variants'][var_name]['INFO']['CSQ'] = defaultdict(dict)
                         tmp_multidim = item.split(',')
@@ -174,7 +186,7 @@ def convert_vcf_2_json(vcf):
                             num_field = 0
                             for subfield in tmp_subfield:
                                 if subfield == "":
-                                    subfield = '.'
+                                  subfield = '.'
                                 subitem_name = vep_list[num_field]
                                 #print (subfield + " " + subitem_name + " " + str(num_field))
                                 vcf_dict['variants'][var_name]['INFO']['CSQ'][subitem_name] = subfield
@@ -183,14 +195,43 @@ def convert_vcf_2_json(vcf):
                     elif item.startswith('CIVIC'):
                         tmp_multidim = item.split(',')
                         for subitem in tmp_multidim:
-                            civic_evidence = "Evidence_"+str(n)
+                            subitem = subitem.replace("CIVIC=", "")
+                            civic_evidence = "EV_"+str(n)
                             tmp_subfield = subitem.split('|')
                             num_field = 0
                             for subfield in tmp_subfield:
                                 if subfield == "":
-                                    subfield = '.'
+                                  subfield = '.'
                                 subitem_name = civic_list[num_field]
-                                vcf_dict['variants'][var_name]['INFO']['CIVIC_EVIDENCE'][subitem_name] = subfield
+                                vcf_dict['variants'][var_name]['INFO']['CIVIC'][subitem_name] = subfield
+                                num_field=num_field+1
+                            n =n+1
+                    elif item.startswith('CGI'):
+                        tmp_multidim = item.split(',')
+                        for subitem in tmp_multidim:
+                            subitem = subitem.replace("CGI=", "")
+                            cgi_evidence = str(n)
+                            tmp_subfield = subitem.split('|')
+                            num_field = 0
+                            for subfield in tmp_subfield:
+                                if subfield == "":
+                                  subfield = '.'
+                                subitem_name = cgi_list[num_field]
+                                vcf_dict['variants'][var_name]['INFO']['CGI'][subitem_name] = subfield
+                                num_field=num_field+1
+                            n =n+1
+                    elif item.startswith('FUSION'):
+                        tmp_multidim = item.split(',')
+                        for subitem in tmp_multidim:
+                            subitem = subitem.replace("FUSION=", "")
+                            fusion_evidence = str(n)
+                            tmp_subfield = subitem.split('|')
+                            num_field = 0
+                            for subfield in tmp_subfield:
+                                if subfield == "":
+                                  subfield = '.'
+                                subitem_name = fusion_list[num_field]
+                                vcf_dict['variants'][var_name]['INFO']['FUSION'][subitem_name] = subfield
                                 num_field=num_field+1
                             n =n+1
                     else:
@@ -234,8 +275,11 @@ def index_vcf(input_vcf):
     Index a bgzipped vcf
   '''
   output_vcf_tbi = input_vcf + ".tbi"
-  bashCommand = ('){} -p vcf {}').format(p.system_env['TABIX'], input_vcf)
+  bashCommand = ('{} -p vcf {} -f').format(p.system_env['TABIX'], input_vcf)
   if not os.path.isfile(output_vcf_tbi):
+
+    msg = " INFO: Indexing vcf " + input_vcf
+    logging.info(msg)
 
     process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
@@ -251,9 +295,12 @@ def compress_vcf(input_vcf):
   '''
     Compress a plain text vcf
   '''
-  output_vcf = input_vcf.replace(".vcf", ".gz.vcf")
+  output_vcf = input_vcf.replace(".vcf", ".vcf.gz")
   bashCommand = ('{} -c {} > {}').format(p.system_env['BGZIP'], input_vcf, output_vcf)
   if not os.path.isfile(output_vcf):
+
+    msg = " INFO: Compressing vcf " + input_vcf
+    logging.info(msg)
 
     process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
       stderr=subprocess.PIPE)
@@ -264,6 +311,7 @@ def compress_vcf(input_vcf):
       msg = " ERROR: Could not create a gzip for vcf " + input_vcf
       print(msg)
       logging.error(msg)
+  return output_vcf
 
 
 

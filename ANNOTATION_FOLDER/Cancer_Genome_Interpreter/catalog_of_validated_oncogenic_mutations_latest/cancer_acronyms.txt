@@ -1,0 +1,114 @@
+acronym	cancer
+AA	Adrenal adenoma
+AC	Adrenal cortex
+ACA	Adrenal cortex adenoma
+AG	Anaplastic oligodendroglioma
+ALL	Acute lymphoblastic leukemia
+AML	Acute myeloid leukemia
+AS	Angiosarcoma
+B	Brain
+BCC	Basal cell carcinoma
+BLCA	Bladder
+BLTC	Bladder transitional cell
+BRCA	Breast adenocarcinoma
+BRCAL	Breast lobular
+BT	Billiary tract
+CANCER	Any cancer type
+CANCER-PR	Cancer predisposition
+CER	Cervix
+CLL	Chronic lymphocytic leukemia
+CM	Cutaneous melanoma
+CM-PR	Cutaneous melanoma predisposition
+CML	Chronic myeloid leukemia
+CMP	Chronic myeloproliferitve neoplasm
+COC	Colon carcinoma
+COC-PR	Colon carcinoma predisposition
+COCA	Colon adenocarcinoma
+COREAD	Colorectal adenocarcinoma
+DEST	Desmoid tumor
+DT-PR	Digestive tract predisposition
+ED	Endometrium
+EDA	Endometrial adenocarcinoma
+ESCA	Esophagous
+ESSC	Esophagous squamous cell
+FH	Fibrous histiocytoma
+FL	Follicular lymphoma
+G	Glioma
+GIST	Gastrointestinal stromal
+GIST-PR	Gastrointestinal stromal predisposition
+HC	Hepatic carcinoma
+HC-PR	Hepatic carcinoma predisposition
+HCL	Hairy-Cell leukemia
+HEMATO	Hematologic malignancies
+HEMATO-PR	Hematologic malignancies predisposition
+HES	Hyper eosinophilic advanced snydrome
+HISEC	Erdheim-Chester histiocytosis
+HISLC	Lagerhans cell histiocytosis
+HNC	Head an neck
+HNSC	Head an neck squamous
+L	Lung
+LUAD	Lung adenocarcinoma
+LUSC	Lung squamous cell
+LY	Lymphoma
+MA	Malignant astrocytoma
+MALT	MALT lymphoma
+MB	Medulloblastoma
+MCL	Mantle cell lymphoma
+MCLK	Mast cell leukemia
+MDPS	Myelodisplasic proliferative syndrome
+MEN	Meningioma
+MERC	Merkel cell carcinoma
+MGCT	Male germ cell tumor
+MKB	Megakaryoblastic leukemia
+MM	Multiple myeloma
+MML	Myelomonocyitic leukemia
+MRT-PR	Malignant rhabdoid tumor predisposition
+MY	Myelofibrosis
+MYMA	Myeloma
+NB	Neuroblastoma
+NEU	Neuroendocrine
+NHLY	Non-hodking lymphoma
+NSCLC	Non-small cell lung
+NSMGCT	Non-seminomatous germ cell tumor
+NSPH	Nasopharyngeal
+OCSC	Oral cavity squamous cell
+OS	Osteosarcoma
+OV	Ovary
+OVE	Ovary epithelial cell
+OVG	Ovary granulosa cell
+PA	Pancreas
+PATH	Parathyroid adenoma
+PG	Pediatric glioma
+PIA	Pilocityc astrocytoma
+PRAD	Prostate adenocarcinoma
+PV	Polycitemia vera
+R	Renal
+R-PR	Renal predisposition
+RB	Retinoblastoma
+RCCC	Renal clear cell
+REC	Rectal carcinoma
+RHBDS	Rhabdomyosarcoma
+RPC	Renal papillary cell
+SCC	Squamous cell carcinoma
+SCC-PR	Squamous cell carcinoma predisposition
+SCGS	Sex-cord gonadal stromal
+SCLC	Small cell lung
+SK-PR	Skin predisposition
+SM	Systemic mastocytosis
+SOLID-PR	Solid tumors predisposition
+ST	Stomach
+ST-PR	Stomach predisposition
+STAD	Stomach adenocarcinoma
+T	Testis
+TCALL	T-cell acute lymphoblastic leukemia
+TCPL	T-cell prolymphocytic leukemia
+TER	Teratoma
+TH	Thyroid
+THCA	Thyroid carcinoma
+THF	Thyroid follicular
+THM	Thyroid medullary
+THYM	Thymic
+TOSC	Tongue squamous cell
+UTH	Urothelial
+UVM	Uveal melanoma
+WT	Wilms tumor

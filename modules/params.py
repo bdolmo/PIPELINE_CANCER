@@ -42,6 +42,10 @@ def set_analysis_env(args):
             analysis_env['CHIMERKB_BED'] = defaults['CHIMERKB_FOLDER'] + "/" \
                 + "chimerKB_hg19_fusions.bed"
             analysis_env['CHIMERKB_BED_NAME'] = "chimerKB_hg19_fusions.bed"
+            analysis_env['CGI_BIOMARKERS'] = defaults['CGI_FOLDER'] + "/" \
+                + "cgi_biomarkers_latest" + "/" + "cgi_biomarkers_per_variant.tsv"
+            analysis_env['CGI_BIOMARKERS_NAME'] = "cgi_biomarkers_per_variant.tsv"
+
 
     # Creating output directory
     output_path = Path(analysis_env['OUTPUT_DIR'])
@@ -78,6 +82,8 @@ def set_defaults(main_dir):
         'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
         # chimerKB folder
         'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
+        # CGI folder
+        'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
         # Setting VEP directories
         'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
         'VEP_DATA'        :  main_dir + "/VEP_DATA",
@@ -126,6 +132,7 @@ def set_system_env():
     system_env = defaultdict(dict)
     system_env = {
         'DOCKER' : '/usr/bin/docker',
+        'BCFTOOLS' : defaults['BIN_FOLDER'] +  "/bcftools",
         'SAMTOOLS' : defaults['BIN_FOLDER'] +  "/samtools",
         'BEDTOOLS' : defaults['BIN_FOLDER'] +  "/bedtools",
         'FREEBAYES': defaults['BIN_FOLDER'] +  "/freebayes",

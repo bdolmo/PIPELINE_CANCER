@@ -45,6 +45,12 @@ def create_summary_qc():
     p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
         "/" + "summary_qc.tsv"
 
+    if os.path.isfile(p.analysis_env['SUMMARY_QC']):
+        msg = " INFO: Skipping summary QC joining"
+        print (msg)
+        logging.info(msg)
+        return
+
     header = ['Fic ID','Lab ID','Read L','Panel','N Ex','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup']
 
     with open(p.analysis_env['SUMMARY_QC'], 'wt') as out_file:
@@ -71,6 +77,15 @@ def create_summary_qc():
 
 def extract_mapping_metrics():
 
+    p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
+        "/" + "summary_qc.tsv"
+
+    if os.path.isfile(p.analysis_env['SUMMARY_QC']):
+        msg = " INFO: Skipping mapping metric extraction"
+        print (msg)
+        logging.info(msg)
+        return
+        
     for sample in p.sample_env:
 
         p.sample_env[sample]['TOTAL_READS']        = "."
@@ -216,6 +231,15 @@ def extract_mapping_metrics():
 #                               specified at least once. Required. 
 
 def extract_coverage_metrics():
+
+    p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
+        "/" + "summary_qc.tsv"
+
+    if os.path.isfile(p.analysis_env['SUMMARY_QC']):
+        msg = " INFO: Skipping coverage metric extraction"
+        print (msg)
+        logging.info(msg)
+        return
 
     for sample in p.sample_env:
 
