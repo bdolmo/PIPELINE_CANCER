@@ -10,6 +10,7 @@ import subprocess
 from civicpy import civic, exports
 from modules import utils as u
 from modules import sqlite as s
+from datetime import datetime
 
 global sample_env 
 sample_env = defaultdict(dict)
@@ -20,6 +21,8 @@ def set_analysis_env(args):
 
     global analysis_env 
     #analysis_env = defaultdict(dict)
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     analysis_env = {
         'INPUT_DIR'      : os.path.abspath(args.input_dir),
@@ -34,6 +37,7 @@ def set_analysis_env(args):
         'GENOME_VERSION' : args.reference,
         'VARIANT_CLASS'  : args.var_class,
         'THREADS'        : args.threads,
+        'ANALYSIS_DATE'  : dt_string,
     }
 
     # Default annotation files for each genome version
@@ -107,8 +111,12 @@ def set_panel_configuration(main_dir):
     '''    
     global roi_env 
     roi_env = defaultdict(dict)
-
     roi_env = s.load_panel_transcripts(analysis_env['PANEL_NAME'])
+
+    global biomarker_env
+    biomarker_env = defaultdict(dict)
+    biomarker_env = s.load_panel_biomarkers(analysis_env['PANEL_NAME'])
+    print(str(biomarker_env))
 
 
 def set_auxfiles_env():

@@ -1,0 +1,121 @@
+ INFO: Annotating sample AP0078-20 with CGI database
+ INFO: Annotating sample AP0079-20 with CGI database
+ INFO: Annotating sample AP0080-20 with CGI database
+ INFO: Annotating sample AP0081-20 with CGI database
+ INFO: Annotating sample AP0082-20 with CGI database
+ INFO: Annotating sample AP0083-20 with CGI database
+ INFO: Annotating sample AP0084-20 with CGI database
+ INFO: Annotating sample AP0085-20 with CGI database
+ INFO: Annotating sample AP0086-20 with CGI database
+ INFO: Annotating sample Undetermined with CGI database
+ INFO: Creating summary QC
+ INFO: Fusion annotation for sample AP0078-20 ended successfully
+ INFO: Fusion annotation for sample AP0079-20 ended successfully
+ INFO: Fusion annotation for sample AP0080-20 ended successfully
+ INFO: Fusion annotation for sample AP0081-20 ended successfully
+ INFO: Fusion annotation for sample AP0082-20 ended successfully
+ INFO: Fusion annotation for sample AP0083-20 ended successfully
+ INFO: Fusion annotation for sample AP0084-20 ended successfully
+ INFO: Fusion annotation for sample AP0085-20 ended successfully
+ INFO: Fusion annotation for sample AP0086-20 ended successfully
+ INFO: Fusion annotation for sample Undetermined ended successfully
+ INFO: Loading Cancer Genome Interpreter database
+ INFO: Merging AP0078-20 vcfs
+ INFO: Merging AP0079-20 vcfs
+ INFO: Merging AP0080-20 vcfs
+ INFO: Merging AP0081-20 vcfs
+ INFO: Merging AP0082-20 vcfs
+ INFO: Merging AP0083-20 vcfs
+ INFO: Merging AP0084-20 vcfs
+ INFO: Merging AP0085-20 vcfs
+ INFO: Merging AP0086-20 vcfs
+ INFO: Merging Undetermined vcfs
+ INFO: Skipping CIViC annotation
+ INFO: Skipping Manta analysis for AP0078-20
+ INFO: Skipping Manta analysis for AP0079-20
+ INFO: Skipping Manta analysis for AP0080-20
+ INFO: Skipping Manta analysis for AP0081-20
+ INFO: Skipping Manta analysis for AP0082-20
+ INFO: Skipping Manta analysis for AP0083-20
+ INFO: Skipping Manta analysis for AP0084-20
+ INFO: Skipping Manta analysis for AP0085-20
+ INFO: Skipping Manta analysis for AP0086-20
+ INFO: Skipping Manta analysis for Undetermined
+ INFO: Skipping Mutect2 analysis for AP0078-20
+ INFO: Skipping Mutect2 analysis for AP0079-20
+ INFO: Skipping Mutect2 analysis for AP0080-20
+ INFO: Skipping Mutect2 analysis for AP0081-20
+ INFO: Skipping Mutect2 analysis for AP0082-20
+ INFO: Skipping Mutect2 analysis for AP0083-20
+ INFO: Skipping Mutect2 analysis for AP0084-20
+ INFO: Skipping Mutect2 analysis for AP0085-20
+ INFO: Skipping Mutect2 analysis for AP0086-20
+ INFO: Skipping Mutect2 analysis for Undetermined
+ INFO: Skipping VEP annotation for AP0078-20
+ INFO: Skipping VEP annotation for AP0079-20
+ INFO: Skipping VEP annotation for AP0080-20
+ INFO: Skipping VEP annotation for AP0081-20
+ INFO: Skipping VEP annotation for AP0082-20
+ INFO: Skipping VEP annotation for AP0083-20
+ INFO: Skipping VEP annotation for AP0084-20
+ INFO: Skipping VEP annotation for AP0085-20
+ INFO: Skipping VEP annotation for AP0086-20
+ INFO: Skipping VEP annotation for Undetermined
+ INFO: Skipping coverage metric extraction
+ INFO: Skipping duplicate removal for sample AP0078-20
+ INFO: Skipping duplicate removal for sample AP0079-20
+ INFO: Skipping duplicate removal for sample AP0080-20
+ INFO: Skipping duplicate removal for sample AP0081-20
+ INFO: Skipping duplicate removal for sample AP0082-20
+ INFO: Skipping duplicate removal for sample AP0083-20
+ INFO: Skipping duplicate removal for sample AP0084-20
+ INFO: Skipping duplicate removal for sample AP0085-20
+ INFO: Skipping duplicate removal for sample AP0086-20
+ INFO: Skipping duplicate removal for sample Undetermined
+ INFO: Skipping list file generation for panel TruetaLungCancer.v1.bed . File is already available
+ INFO: Skipping mapping for sample AP0078-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0079-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0080-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0081-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0082-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0083-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0084-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0085-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0086-20 BAM file is already available
+ INFO: Skipping mapping for sample Undetermined BAM file is already available
+ INFO: Skipping mapping metric extraction
+ INFO: Skipping summary QC joining
+ INFO: Skipping trimming of sample AP0078-20
+ INFO: Skipping trimming of sample AP0079-20
+ INFO: Skipping trimming of sample AP0080-20
+ INFO: Skipping trimming of sample AP0081-20
+ INFO: Skipping trimming of sample AP0082-20
+ INFO: Skipping trimming of sample AP0083-20
+ INFO: Skipping trimming of sample AP0084-20
+ INFO: Skipping trimming of sample AP0085-20
+ INFO: Skipping trimming of sample AP0086-20
+ INFO: Skipping trimming of sample Undetermined
+ INFO: docker image for broadinstitute/gatk:4.1.3.0 was found
+ INFO: docker image for broadinstitute/picard was found
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bcftools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bedtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bgzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bwa is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/fastp is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/freebayes is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/gunzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/manta-1.6.0.centos6_x86_64/bin/configManta.py is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/mosdepth is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/samtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/tabix is available
+ INFO:/usr/bin/docker is available
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0078-20/VCF_FOLDER/AP0078-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0079-20/VCF_FOLDER/AP0079-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0080-20/VCF_FOLDER/AP0080-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0081-20/VCF_FOLDER/AP0081-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0082-20/VCF_FOLDER/AP0082-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0083-20/VCF_FOLDER/AP0083-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0084-20/VCF_FOLDER/AP0084-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0085-20/VCF_FOLDER/AP0085-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0086-20/VCF_FOLDER/AP0086-20.mutect2.vep.tmp.vcf
+/home/bdelolmo/Escriptori/RUN20201022-CGC64004/Undetermined/VCF_FOLDER/Undetermined.mutect2.vep.tmp.vcf

@@ -27,6 +27,9 @@ def do_annotation():
     # Variant effect Predict annotation
     do_vep()
 
+    # Select VEP-matching transcripts with our panel 
+    filter_transcripts()
+
     if p.analysis_env['VARIANT_CLASS'] == "somatic":
         # CIViC annotation
         do_civic()
@@ -39,6 +42,84 @@ def do_annotation():
 
         # merge snv and fusion vcf  
         merge_vcfs()
+
+def filter_transcripts():
+    '''
+        Select VEP-matching transcripts with our panel
+    '''
+
+    for sample in p.sample_env:
+
+        p.sample_env[sample]['TMP_SNV_VCF'] = p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".tmp.vcf")
+        o = open(p.sample_env[sample]['TMP_SNV_VCF'], 'w')
+
+        print (p.sample_env[sample]['TMP_SNV_VCF'])
+
+        vep_dict = defaultdict(dict)
+        vep_list = []
+
+        civic_dict = defaultdict(dict)
+        civic_list = []
+
+        with open (p.sample_env[sample]['READY_SNV_VCF']) as f:
+            for line in f:
+                line = line.rstrip("\n")
+                if line.startswith("#"):
+                    o.write(line+"\n")
+                    if re.search("ID=CSQ", line):
+                        vep_dict, vep_list = u.create_vep_dict(line)
+                    if re.search("ID=CIVIC", line):
+                        civic_dict, civic_list = u.create_vep_dict(line)
+                else:
+                    tmp = line.split('\t')
+                    chr = tmp[0]
+                    pos = tmp[1]
+                    id  = tmp[2]
+                    ref = tmp[3]
+                    alt = tmp[4]
+                    qual= tmp[5]
+                    filter = tmp[6]
+                    info = tmp[7]
+                    format_tag = tmp[8]
+                    format = tmp[9]
+   
+
+                    info_list = info.split(';')
+                    idx = 0
+                    for item in info_list:
+                        if item.startswith('CSQ'):
+                            tmp_transcript = item.split(",")
+                            for transcript_info in tmp_transcript:
+                                transcript_info = transcript_info.replace("CSQ=", "")
+                                transcript_list = transcript_info.split("|")
+                                gene = transcript_list[vep_dict['SYMBOL']]
+                                ensg_id = transcript_list[vep_dict['Gene']]
+                                enst_id = transcript_list[vep_dict['Feature']]
+                                
+                               # if not gene in p.roi_env: 
+                                if gene in p.roi_env or ensg_id in p.roi_env:
+                                    # Select the annotations from the desired transcript
+                                    if enst_id in p.roi_env[gene] or enst_id in p.roi_env[ensg_id]:
+                                        info_list[idx] ="CSQ="+transcript_info
+                                        break
+                                    else:
+                                        continue
+                                else:
+                                    continue
+                            #item = tmp_transcript[tidx]
+                        idx+=1
+
+                    info = ';'.join(info_list)
+
+                    tmp[7] = info
+                    line = '\t'.join(tmp)
+                    o.write(line+"\n")
+        f.close()
+        o.close()
+        os.remove(p.sample_env[sample]['READY_SNV_VCF'])
+        os.rename(p.sample_env[sample]['TMP_SNV_VCF'], p.sample_env[sample]['READY_SNV_VCF'])
+          # Create JSON file
+       # u.convert_vcf_2_json(p.sample_env[sample]['CLINICAL_SNV_VCF'])
 
 def merge_vcfs():
     '''
@@ -66,6 +147,7 @@ def merge_vcfs():
             vcf2 = vcf2 + ".gz"
         
         bashCommand = ('{} merge {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'], vcf1, vcf2, merged_vcf)
+        print(bashCommand)
         if not os.path.isfile(merged_vcf):
             msg = " INFO: " + bashCommand
             logging.info(msg)
@@ -217,6 +299,9 @@ def do_civic():
             p.sample_env[sample]['READY_SNV_JSON'] = p.sample_env[sample]['CIVIC_VCF'].replace(".vcf", ".json")
             p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CIVIC_VCF_NAME']  
             proceed = False
+        else:
+          proceed = True
+          break
 
     if proceed == False:
         msg = " INFO: Skipping CIViC annotation"
@@ -228,7 +313,7 @@ def do_civic():
     print(msg)
     logging.info(msg)
 
-    #Instantiante CIViC class
+    # Instantiante CIViC class
     civic = Civic()
 
     # In-memory loading of CIViC database
@@ -339,16 +424,6 @@ def do_civic():
         
         # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['READY_SNV_VCF'])
-
-# def merge_snv_fusions():
-#     for sample in p.sample_env:
-
-#         p.sample_env[sample]['VEP_VCF'] = \
-#             p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".vep.vcf")
-
-#         p.sample_env[sample]['MERGED_SNV_FUSIONS_VCF'] = \
-#             p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".merged.snv.fusions.vcf")
-
 
 def do_vep():
     '''

@@ -28,8 +28,6 @@ def main(args):
     # Settingg panel configuration
     p.set_panel_configuration(main_dir)
 
-    #p.update_variant_databases()
-
     # Setting system binary variables
     p.set_system_env()
 

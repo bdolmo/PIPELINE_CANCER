@@ -11,11 +11,47 @@ from collections import defaultdict
 from pprint import pprint
 import json
 import logging
-
+from scipy import stats
+import numpy as np
 from pathlib import Path
 import subprocess
 from modules import params as p
 
+def num_to_human(num):
+
+  num = int(num)
+  if num >= 1000000:
+    num_human = round( (int(num)/1000000), 3)
+    num_human = str(num_human) + "M"
+  else:
+    num_human = round( (int(num)/100000), 3)
+    num_human = str(num_human) + "K"
+
+  return num_human
+
+def mean_depth_coordinate(bam, coordinate):
+
+  bashCommand = ('{} depth {} -r {}').format(p.system_env['SAMTOOLS'], bam, coordinate)
+  process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
+    stderr=subprocess.PIPE)
+  output, error = process.communicate()
+  mean_depth_list =[]  
+  if not error.decode('UTF-8'):
+    output = output.decode('UTF-8')
+    if output:
+      for depth in output.split('\n'):
+        depth = depth.rstrip('\n')
+        if depth == "":
+          continue
+        tmp_depth = depth.split('\t')
+        depth = int(tmp_depth[2])
+        mean_depth_list.append(depth)
+  if mean_depth_list:
+    array = np.array(mean_depth_list)
+    mean_depth= round(np.mean(array))
+  else:
+    mean_depth = 0
+  return mean_depth
 
 def vcf_2_bed(vcf):
 
@@ -158,6 +194,9 @@ def convert_vcf_2_json(vcf):
                 info = tmp[7]
                 format_tag = tmp[8]
                 format = tmp[9]
+                format2 = ""
+                if len(tmp) > 10:
+                  format2 = tmp[10]
 
                 var_name = "var_" + str(n_var)
                 vcf_dict['variants'][var_name] = defaultdict(dict)
@@ -194,32 +233,40 @@ def convert_vcf_2_json(vcf):
                             n =n+1
                     elif item.startswith('CIVIC'):
                         tmp_multidim = item.split(',')
+                        num_id = 0
                         for subitem in tmp_multidim:
                             subitem = subitem.replace("CIVIC=", "")
                             civic_evidence = "EV_"+str(n)
                             tmp_subfield = subitem.split('|')
                             num_field = 0
+                            num_id_str = "num_" + str(num_id)
+                            vcf_dict['variants'][var_name]['INFO']['CIVIC'][num_id_str] = defaultdict(dict)
                             for subfield in tmp_subfield:
                                 if subfield == "":
                                   subfield = '.'
                                 subitem_name = civic_list[num_field]
-                                vcf_dict['variants'][var_name]['INFO']['CIVIC'][subitem_name] = subfield
+                                vcf_dict['variants'][var_name]['INFO']['CIVIC'][num_id_str][subitem_name] = subfield
                                 num_field=num_field+1
                             n =n+1
+                            num_id+=1
                     elif item.startswith('CGI'):
                         tmp_multidim = item.split(',')
+                        num_id = 0
                         for subitem in tmp_multidim:
                             subitem = subitem.replace("CGI=", "")
                             cgi_evidence = str(n)
                             tmp_subfield = subitem.split('|')
                             num_field = 0
+                            num_id_str = "num_" + str(num_id)
+                            vcf_dict['variants'][var_name]['INFO']['CGI'][num_id_str] = defaultdict(dict)
                             for subfield in tmp_subfield:
                                 if subfield == "":
                                   subfield = '.'
                                 subitem_name = cgi_list[num_field]
-                                vcf_dict['variants'][var_name]['INFO']['CGI'][subitem_name] = subfield
+                                vcf_dict['variants'][var_name]['INFO']['CGI'][num_id_str][subitem_name] = subfield
                                 num_field=num_field+1
                             n =n+1
+                            num_id+=1
                     elif item.startswith('FUSION'):
                         tmp_multidim = item.split(',')
                         for subitem in tmp_multidim:
@@ -237,8 +284,15 @@ def convert_vcf_2_json(vcf):
                     else:
                         vcf_dict['variants'][var_name]['INFO'][tmp_item[0]] = tmp_item[1]
  
-                tmp_format_tag = format_tag.split(':')
-                tmp_format = format.split(':')
+                if format2 != "":
+                  tmp_format_tag = format_tag.split(':')
+                  tmp_format = format2.split(':')
+                else:
+                  tmp_format_tag = format_tag.split(':')
+                  tmp_format = format2.split(':')      
+                if 'SVTYPE' in line:
+                  tmp_format_tag = format_tag.split(':')
+                  tmp_format = format.split(':')
                 j = 0
                 for val in tmp_format:
                     vcf_dict['variants'][var_name][tmp_format_tag[j]] = val

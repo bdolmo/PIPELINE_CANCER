@@ -51,7 +51,7 @@ def create_summary_qc():
         logging.info(msg)
         return
 
-    header = ['Fic ID','Lab ID','Read L','Panel','N Ex','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup']
+    header = ['Fic ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup']
 
     with open(p.analysis_env['SUMMARY_QC'], 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter='\t')
@@ -63,6 +63,7 @@ def create_summary_qc():
             info.append("76")
             info.append(p.analysis_env['PANEL_NAME'])
             info.append(str(p.analysis_env['ROI_NUMBER']))
+            info.append(str(u.num_to_human(p.sample_env[sample]['TOTAL_READS'])))
             for threshold in p.sample_env[sample]['CALL_RATE']:
                 if threshold in header:
                     info.append(str(p.sample_env[sample]['CALL_RATE'][threshold]))
@@ -84,6 +85,19 @@ def extract_mapping_metrics():
         msg = " INFO: Skipping mapping metric extraction"
         print (msg)
         logging.info(msg)
+        with open(p.analysis_env['SUMMARY_QC']) as f:
+            for line in f:
+                line = line.rstrip('\n')
+                tmp = line.split('\t')
+                sample = tmp[1] 
+                if 'Lab ID' in line:
+                    continue
+                else:
+                    p.sample_env[sample]['TOTAL_READS'] = tmp[5] 
+                    p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12] 
+                    p.sample_env[sample]['ROI_PERCENTAGE'] = tmp[13] 
+                    p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14] 
+
         return
         
     for sample in p.sample_env:
@@ -239,7 +253,7 @@ def extract_coverage_metrics():
         msg = " INFO: Skipping coverage metric extraction"
         print (msg)
         logging.info(msg)
-        return
+       # return
 
     for sample in p.sample_env:
 
@@ -326,6 +340,8 @@ def extract_coverage_metrics():
 
             if not 'LOST_EXONS' in p.sample_env[sample]:
                 p.sample_env[sample]['LOST_EXONS'] = {}
+            if not field in p.sample_env[sample]['LOST_EXONS']:
+                p.sample_env[sample]['LOST_EXONS'][field] = 0
             p.sample_env[sample]['LOST_EXONS'][field] = lost_exons_dict[field]
 
         # Now get the mean coverage
