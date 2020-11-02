@@ -88,7 +88,10 @@ def set_defaults(main_dir):
         'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
         # CGI folder
         'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
-        # Setting VEP directories
+        # Setting JASPER directories
+        'JASPERREPORT_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/MyReports",
+        'JDBC_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/JDBC/",
+
         'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
         'VEP_DATA'        :  main_dir + "/VEP_DATA",
         'VEP_DATA_INPUT'  :  main_dir + "/VEP_DATA/input",
@@ -130,6 +133,8 @@ def set_auxfiles_env():
         aux_env['GENOME_NAME'] = "ucsc.hg19.fasta"
         aux_env['GENOME_DICT'] = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
         aux_env['GENOME_DICT_NAME'] = "ucsc.hg19.dict"
+        aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
+         +"/JASPERREPORTS/MyReports/LungCancer_Report_v1.jrxml"
 
 
 def set_system_env():
@@ -150,7 +155,8 @@ def set_system_env():
         'MANTA_CONFIG' : defaults['BIN_FOLDER'] + '/manta-1.6.0.centos6_x86_64/bin/configManta.py',
         'BGZIP'    : defaults['BIN_FOLDER'] +  "/bgzip",
         'TABIX'    : defaults['BIN_FOLDER'] +  "/tabix",
-        'GUNZIP'   : defaults['BIN_FOLDER'] +  "/gunzip"
+        'GUNZIP'   : defaults['BIN_FOLDER'] +  "/gunzip",
+        'JASPERSTARTER' : defaults['BIN_FOLDER'] +"/JASPERREPORTS/jasperstarter/bin/jasperstarter"
     }
 
     for binary in system_env:

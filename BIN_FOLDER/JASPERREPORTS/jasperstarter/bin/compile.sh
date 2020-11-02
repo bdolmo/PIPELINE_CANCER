@@ -1,0 +1,10 @@
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/header.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Biomarkers.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Disclaimers.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/logos.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Other_variants.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Therapeutic_variants.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/rare_variants.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Summary_qc.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/Sample_information.jrxml
+./jasperstarter compile ~/JaspersoftWorkspace/MyReports/LungCancer_Report_v1.jrxml

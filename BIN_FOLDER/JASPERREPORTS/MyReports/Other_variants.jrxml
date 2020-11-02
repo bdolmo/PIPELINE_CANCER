@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Other_variants" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="752" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9c3b1dfa-eeb8-4d8d-99e6-806245bea561">
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[IE9USEVSX1ZBUklBTlRTICBBUyAsNjYsMTUsNTc2MDZjZjEtNDM4Zi00MTQwLTlmZGItMjAzMjVm
+YzU0ZTJiOw==]]>
+	</property>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<queryString language="SQL">
+		<![CDATA[SELECT  OTHER_VARIANTS .gene,
+	 OTHER_VARIANTS .enst_id,
+	 OTHER_VARIANTS .hgvsp,
+	 OTHER_VARIANTS .hgvsg,
+	 OTHER_VARIANTS .hgvsc,
+	 OTHER_VARIANTS .exon,
+	 OTHER_VARIANTS .variant_type,
+	 OTHER_VARIANTS .allele_frequency,
+	 OTHER_VARIANTS .max_af,
+	 OTHER_VARIANTS .max_af_pop,
+	 OTHER_VARIANTS .therapies,
+	 OTHER_VARIANTS .clinical_trials,
+	 OTHER_VARIANTS .tumor_type
+FROM  OTHER_VARIANTS]]>
+	</queryString>
+	<field name="gene" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="gene"/>
+		<property name="com.jaspersoft.studio.field.label" value="gene"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="enst_id" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="enst_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="enst_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="hgvsp" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="hgvsp"/>
+		<property name="com.jaspersoft.studio.field.label" value="hgvsp"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="hgvsg" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="hgvsg"/>
+		<property name="com.jaspersoft.studio.field.label" value="hgvsg"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="hgvsc" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="hgvsc"/>
+		<property name="com.jaspersoft.studio.field.label" value="hgvsc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="exon" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="exon"/>
+		<property name="com.jaspersoft.studio.field.label" value="exon"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="variant_type" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="variant_type"/>
+		<property name="com.jaspersoft.studio.field.label" value="variant_type"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="allele_frequency" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="allele_frequency"/>
+		<property name="com.jaspersoft.studio.field.label" value="allele_frequency"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="max_af" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="max_af"/>
+		<property name="com.jaspersoft.studio.field.label" value="max_af"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="max_af_pop" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="max_af_pop"/>
+		<property name="com.jaspersoft.studio.field.label" value="max_af_pop"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="therapies" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="therapies"/>
+		<property name="com.jaspersoft.studio.field.label" value="therapies"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="clinical_trials" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="clinical_trials"/>
+		<property name="com.jaspersoft.studio.field.label" value="clinical_trials"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<field name="tumor_type" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="tumor_type"/>
+		<property name="com.jaspersoft.studio.field.label" value="tumor_type"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="OTHER_VARIANTS"/>
+	</field>
+	<columnHeader>
+		<band height="24" splitType="Stretch">
+			<staticText>
+				<reportElement mode="Opaque" x="35" y="3" width="72" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="dcb488e4-9d86-4ff4-a5f8-fff2dd6c7d1f"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ GENE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="108" y="3" width="96" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="875f9f3f-6b1b-4f7a-bcd2-a40025cb6927"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ VARIANT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="205" y="3" width="75" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="04671d3a-3c97-4ece-942e-edb052f9456a">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Details]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="281" y="3" width="91" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="4903baff-7090-42cc-8c7d-f16f831e9b81">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Therapies]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="373" y="3" width="72" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="95b970ec-d851-46f6-9ce7-dce6a3d4ba38">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Clinical trials]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="446" y="3" width="68" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="f1c6ce5b-dc11-4a5c-bd2b-e0d9dae24c57"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Tumor type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="35" y="-12" width="272" height="19" uuid="56ea4ac5-b4a3-48f5-9f77-6d27d92f4809"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[OTHER VARIANTS WITH CLINICAL EVIDENCE]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="86" splitType="Stretch">
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="35" y="0" width="72" height="16" uuid="9c3cef73-7df2-4b58-b023-bbe4c6f6842a"/>
+				<textElement>
+					<font isBold="true" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{gene}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="35" y="16" width="72" height="16" uuid="029f3959-0522-40ab-923a-53d197ba8cc1"/>
+				<textElement>
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{enst_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="110" y="0" width="94" height="16" uuid="65e97aec-b152-4b6f-9084-94b7688ab2ff"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hgvsp}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="110" y="12" width="94" height="16" uuid="c84b9dd1-fea1-49cb-a2a8-63f1aec61ac6"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hgvsg}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="110" y="24" width="94" height="16" uuid="8012916a-49f1-4d30-bd71-50d541c04366"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hgvsc}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="228" y="0" width="58" height="16" uuid="8b561132-ea5c-426f-b46a-84fe973fa92d"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="224" y="11" width="74" height="16" uuid="5d6d197e-dbfd-4151-aff0-70c2f5e698c2"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{allele_frequency}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="282" y="0" width="90" height="80" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="80a68c2d-8c2e-4b30-99c1-914844baa5a7"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="373" y="0" width="72" height="80" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="8fd0eba7-eaf1-4328-a2cf-5782d31af1ce"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="447" y="0" width="66" height="80" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="28107f34-e4c5-487d-b074-ce898550b956"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tumor_type}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="205" y="0" width="46" height="17" uuid="509764d5-18dc-44f4-9d81-021bff0df71b"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[Exon:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="205" y="11" width="21" height="17" uuid="b81de5b9-0f75-4ab1-8d78-9282d124f057"/>
+				<textElement>
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[VAF:]]></text>
+			</staticText>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="234" y="21" width="51" height="12" uuid="587c7a96-73cb-43b1-b812-9293725ba128"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{max_af}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="205" y="44" width="48" height="12" uuid="97f5cfc3-4046-476a-aeb1-3864810d0c24"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="205" y="21" width="30" height="12" uuid="5cfb3653-ecf7-4fbf-9c24-e122144a58fc"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[Max AF:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="205" y="32" width="54" height="12" uuid="7fc04cda-0792-4b93-b4ec-b3c6dee380b6"/>
+				<textElement verticalAlignment="Middle">
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[Max AF Pop:]]></text>
+			</staticText>
+		</band>
+	</detail>
+</jasperReport>

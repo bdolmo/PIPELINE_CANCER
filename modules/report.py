@@ -83,6 +83,8 @@ def clinical_report_csv():
         if not report_folder_path.is_dir():
             os.mkdir(report_folder_path)
 
+        p.sample_env[sample]['REPORT_PDF'] = p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".report"
+
         p.sample_env[sample]['CLINICAL_REPORT_CSV'] = \
             p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".clinical.csv"
         o =  open (p.sample_env[sample]['CLINICAL_REPORT_CSV'], "w")
@@ -458,6 +460,26 @@ def clinical_report_csv():
               o.write('\t'.join(results_list)+ "\n")
         o.close()
 
+        # Create PDF report 
+        bashCommand = ('{} pr {} -r {} -f pdf -t generic --db-url jdbc:sqlite:{} --db-driver org.sqlite.JDBC -o {} --jdbc-dir {}') \
+          .format(p.system_env['JASPERSTARTER'],p.aux_env['REPORT_JRXML'], p.defaults['JASPERREPORT_FOLDER'], sample_db, p.sample_env[sample]['REPORT_PDF'], p.defaults['JDBC_FOLDER'])
+        msg = " INFO: Generating pdf report for sample " + sample
+        print (msg)
+        print(bashCommand)
+        logging.info(bashCommand)
+
+        process = subprocess.Popen(bashCommand,#.split(),
+          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = process.communicate()
+        if not error.decode('UTF-8') and not output.decode('UTF-8'):
+          msg = " INFO: Report generation for" + sample + " ended OK"
+          print(msg)
+          logging.info(msg)
+        else:
+          msg = " ERROR: Failed report generation for" + sample
+          print(msg)
+          logging.error(msg)
+
 def clinical_vcf():
 
     for sample in p.sample_env:
@@ -533,6 +555,9 @@ def clinical_vcf():
                     #o.write(line+"\n")
         f.close()
         o.close()
-          # Create JSON file
+        # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['CLINICAL_SNV_VCF'])
+
+        #$jasperst pr $report -f pdf -t generic --db-url jdbc:sqlite:$dbName --db-driver org.sqlite.JDBC -o $pdfReport -r
+        
 
