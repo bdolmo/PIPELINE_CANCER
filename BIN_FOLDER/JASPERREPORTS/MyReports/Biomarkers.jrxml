@@ -101,7 +101,7 @@ FROM  BIOMARKERS]]>
 				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="281" y="-5" width="110" height="17" uuid="fa6bc1a3-49ea-4533-ae1b-b96bd49e9e3f"/>
+				<reportElement x="281" y="-5" width="128" height="17" uuid="fa6bc1a3-49ea-4533-ae1b-b96bd49e9e3f"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>

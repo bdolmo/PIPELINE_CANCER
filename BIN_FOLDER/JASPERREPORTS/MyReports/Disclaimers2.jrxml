@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="details2" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="81d18573-f46a-42a1-a417-24fd3facac99">
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[IERJU0NMQUlNRVJTICBBUyAsMTAwLDg1LDg4ZDU0MWY5LTM4ODAtNDExNy1hNWVhLWI4YTVjZWVi
+N2Y3Njs=]]>
+	</property>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<queryString language="SQL">
+		<![CDATA[SELECT  DISCLAIMERS .technique_limitations,
+	 DISCLAIMERS .legal_provisions,
+	 DISCLAIMERS .analysis,
+	 DISCLAIMERS .lab_confirmation
+FROM  DISCLAIMERS]]>
+	</queryString>
+	<field name="technique_limitations" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="technique_limitations"/>
+		<property name="com.jaspersoft.studio.field.label" value="technique_limitations"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DISCLAIMERS"/>
+	</field>
+	<field name="legal_provisions" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="legal_provisions"/>
+		<property name="com.jaspersoft.studio.field.label" value="legal_provisions"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DISCLAIMERS"/>
+	</field>
+	<field name="analysis" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="analysis"/>
+		<property name="com.jaspersoft.studio.field.label" value="analysis"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DISCLAIMERS"/>
+	</field>
+	<field name="lab_confirmation" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="lab_confirmation"/>
+		<property name="com.jaspersoft.studio.field.label" value="lab_confirmation"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="DISCLAIMERS"/>
+	</field>
+	<detail>
+		<band height="184" splitType="Stretch">
+			<staticText>
+				<reportElement isPrintRepeatedValues="false" x="36" y="-17" width="150" height="16" isPrintInFirstWholeBand="true" uuid="091b68a6-86eb-4219-b0e9-c4357efea977"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Lab confirmation]]></text>
+			</staticText>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="37" y="-1" width="481" height="16" isPrintInFirstWholeBand="true" uuid="02b43ff0-5447-42b6-a3fa-0bb005b9f3a1"/>
+				<textElement textAlignment="Justified"/>
+				<textFieldExpression><![CDATA[$F{lab_confirmation}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement isPrintRepeatedValues="false" x="36" y="24" width="150" height="16" isPrintInFirstWholeBand="true" uuid="dc5a218a-c862-46c7-aae5-bc228800df4b"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Technical limitations]]></text>
+			</staticText>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="37" y="42" width="481" height="48" isPrintInFirstWholeBand="true" uuid="8ecd350e-2fcc-4336-aa91-473e767db17e"/>
+				<textElement textAlignment="Justified"/>
+				<textFieldExpression><![CDATA[$F{technique_limitations}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement isPrintRepeatedValues="false" x="36" y="95" width="150" height="16" isPrintInFirstWholeBand="true" uuid="f5b95550-1db4-4fb4-9077-a32768803d15"/>
+				<textElement>
+					<font size="10" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Legal provisions]]></text>
+			</staticText>
+			<textField>
+				<reportElement isPrintRepeatedValues="false" x="36" y="112" width="480" height="60" isPrintInFirstWholeBand="true" uuid="89f34210-fc4a-4af6-9575-55076c5c1113"/>
+				<textElement textAlignment="Justified"/>
+				<textFieldExpression><![CDATA[$F{legal_provisions}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

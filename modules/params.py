@@ -108,7 +108,7 @@ def set_defaults(main_dir):
             logging.error(msg)
             sys.exit()
 
-def set_panel_configuration(main_dir):
+def get_panel_configuration(main_dir):
     ''' 
         Set ancillary files (gnome fasta , etc)
     '''    
@@ -119,8 +119,10 @@ def set_panel_configuration(main_dir):
     global biomarker_env
     biomarker_env = defaultdict(dict)
     biomarker_env = s.load_panel_biomarkers(analysis_env['PANEL_NAME'])
-    print(str(biomarker_env))
 
+    global disclaimers_env
+    disclaimers_env = defaultdict(dict)
+    disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'])
 
 def set_auxfiles_env():
     ''' 
@@ -133,6 +135,7 @@ def set_auxfiles_env():
         aux_env['GENOME_NAME'] = "ucsc.hg19.fasta"
         aux_env['GENOME_DICT'] = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
         aux_env['GENOME_DICT_NAME'] = "ucsc.hg19.dict"
+        aux_env['GENE_LIST']  = defaults['BUNDLE_FOLDER'] + "/genelist.hg19.bed.gz"
         aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
          +"/JASPERREPORTS/MyReports/LungCancer_Report_v1.jrxml"
 

@@ -38,10 +38,110 @@ def do_annotation():
         do_cgi()
 
         # Fusion annotation with chimerKB  
-        annotate_fusions()
+        annotate_known_fusions()
+
+        # Add flanking genes to SVs
+        add_edge_genes()
 
         # merge snv and fusion vcf  
         merge_vcfs()
+
+def add_edge_genes():
+
+  msg = " INFO: Adding flanking genes to SVs"
+  logging.info(msg)
+  print(msg)
+
+  for sample in p.sample_env:
+
+    fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
+    intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
+    fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".tmp.vcf")
+    o = open(fusions_vcf, 'w')
+
+    bashCommand = '{} pairtopair -a {} -b {} -type either | sort -V | uniq > {}' \
+      .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['GENE_LIST'], intersect_file)
+      
+    process = subprocess.Popen(bashCommand,#.split(),
+      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output, error = process.communicate()
+    if not error.decode('UTF-8') and not output.decode('UTF-8'):
+      msg = " INFO: SV gene annotation for sample " + sample + " ended successfully"
+      print(msg)
+      logging.info(msg)
+    else:
+      msg = " ERROR: Something went wrong with SV gene annotation for sample " + sample
+      print(msg)
+      logging.error(msg)
+
+    fusions_dict = defaultdict(dict)
+    with open (intersect_file, "r") as f:
+      for line in f:
+        line = line.rstrip("\n")
+        tmp = line.split("\t")
+        coordinate = tmp[0]+"\t"+tmp[1]
+
+        if not coordinate in fusions_dict:
+          fusions_dict[coordinate] = defaultdict(dict)
+          fusions_dict[coordinate]['LEFT_FLANK'] = []
+          fusions_dict[coordinate]['RIGHT_FLANK'] = []
+
+        chrA = tmp[0]
+        posA = tmp[1]
+        endA = tmp[2]
+
+        chrB = tmp[3]
+        posB = tmp[4]      
+        endB = tmp[5]
+
+        chr = tmp[7]
+        pos = tmp[8]
+        end = tmp[9]
+        gene = tmp[10]
+        if chr == chrA and chr != chrB:
+          if posA >= pos and endA <= end:
+            fusions_dict[coordinate]['LEFT_FLANK'].append(gene)
+        elif chr == chrB and chr != chrA:
+          if posB >= pos and endB <= end:
+            fusions_dict[coordinate]['RIGHT_FLANK'].append(gene)
+        else:
+          if posA >= pos and posA <= end:
+            fusions_dict[coordinate]['LEFT_FLANK'].append(gene)
+          if posB >= pos and posB <= end:
+            fusions_dict[coordinate]['RIGHT_FLANK'].append(gene)                     
+    f.close()
+
+    fusion_fields = []
+    fusion_info_header = "##INFO=<ID=EDGE_GENES,Number=.,Type=String,Description=\"Genes at SV edges\">"
+
+    with open (p.sample_env[sample]['READY_SV_VCF']) as f:
+      for line in f:
+        line = line.rstrip("\n")
+        tmp = line.split("\t")
+        if line.startswith("#"):
+          if re.search("cmdline", line):
+            o.write(line+"\n")
+            o.write(fusion_info_header+"\n")
+          else:
+            o.write(line+"\n")
+          continue
+        coordinate = tmp[0]+"\t"+tmp[1]
+        if coordinate in fusions_dict:
+            fusion_ann_list = []
+            left_flank = ','.join(list(set( fusions_dict[coordinate]['LEFT_FLANK'])))
+            right_flank = ','.join(list(set( fusions_dict[coordinate]['RIGHT_FLANK'])))
+            annot = left_flank+"-"+right_flank
+          # fusion_ann_list.append(genes)
+            tmp[7]+=";EDGE_GENES=" + annot
+        else:
+          tmp[7]+=";EDGE_GENES=."
+        line  = '\t'.join(tmp)
+        o.write(line+"\n")
+    f.close()
+
+    os.remove(p.sample_env[sample]['READY_SV_VCF'])
+    os.rename(fusions_vcf, p.sample_env[sample]['READY_SV_VCF'])
+    u.convert_vcf_2_json(p.sample_env[sample]['READY_SV_VCF'])
 
 def filter_transcripts():
     '''
@@ -482,7 +582,6 @@ def do_vep():
         # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['READY_SNV_VCF'])
 
-
 def load_cgi_data():
   '''
   Load Cancer Genome Interpreter
@@ -664,7 +763,7 @@ def do_cgi():
         # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['READY_SNV_VCF'])
 
-def annotate_fusions():
+def annotate_known_fusions():
 
     for sample in p.sample_env:
 

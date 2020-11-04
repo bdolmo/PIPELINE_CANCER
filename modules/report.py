@@ -32,11 +32,11 @@ def do_report():
 
     clinical_vcf()
 
-    annotate_biomarkers()
+    if p.analysis_env['VARIANT_CLASS'] == "somatic":
 
-    clinical_report_csv()
+      annotate_biomarkers()
 
-  #  create_jasper_db()
+      create_somatic_report()
 
 
 def annotate_biomarkers():
@@ -63,17 +63,7 @@ def annotate_biomarkers():
       p.sample_env[sample]['BIOMARKER'][idx]['MEAN_DEPTH'] = mean_depth
       idx+=1
 
-   # db.create_all()
-    # db.session.add(admin)
-    # db.session.add(guest)
-    # db.session.commit()
-    #Create the database  
-    # Base = declarative_base()
-    # engine = create_engine("sqlite:///"+sample_db, echo=True)
-    # Base.metadata.create_all(bind=engine)
-
-
-def clinical_report_csv():
+def create_somatic_report():
 
     for sample in p.sample_env:
 
@@ -202,12 +192,12 @@ def clinical_report_csv():
             __tablename__ = 'DISCLAIMERS'
 
             id = db.Column(db.Integer, primary_key=True)
-            gene_list = db.Column(db.String(120))
-            lab_methodology = db.Column(db.String(120))
-            analysis =  db.Column(db.String(120))
-            lab_confirmation = db.Column(db.String(120))
-            technique_limitations =  db.Column(db.String(120))
-            legal_provisions = db.Column(db.String(120))
+            gene_list = db.Column(db.String(3000))
+            lab_methodology = db.Column(db.String(3000))
+            analysis =  db.Column(db.String(3000))
+            lab_confirmation = db.Column(db.String(3000))
+            technique_limitations =  db.Column(db.String(3000))
+            legal_provisions = db.Column(db.String(3000))
             def __repr__(self):
                 return '<Disclaimers %r>' % self.gene_list
         db.create_all()
@@ -218,9 +208,15 @@ def clinical_report_csv():
         db.session.add(sample_r)
         db.session.commit()
 
+        disclaimer_r = Disclaimers(gene_list=p.disclaimers_env['GENES'], lab_methodology=p.disclaimers_env['METHODOLOGY'], 
+          analysis=p.disclaimers_env['ANALYSIS'], lab_confirmation=p.disclaimers_env['LAB_CONFIRMATION'], 
+          technique_limitations=p.disclaimers_env['TECHNICAL_LIMITATIONS'],legal_provisions=p.disclaimers_env['LEGAL_PROVISIONS'])
+        db.session.add(disclaimer_r)
+        db.session.commit()
+
         idx = 0
         for biomarker in p.biomarker_env:
-          biomarker_r = Biomarkers(gene=p.sample_env[sample]['BIOMARKER'][idx]['VARIANT'],
+          biomarker_r = Biomarkers(gene=p.sample_env[sample]['BIOMARKER'][idx]['GENE'],
           variant=p.sample_env[sample]['BIOMARKER'][idx]['VARIANT'],
           exon=p.sample_env[sample]['BIOMARKER'][idx]['EXON'],
           allele_fraction='.', sequencing_depth=p.sample_env[sample]['BIOMARKER'][idx]['MEAN_DEPTH'])
@@ -294,6 +290,9 @@ def clinical_report_csv():
               var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
               gene = var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] + " FUSION"
             if gene != '.' or fusion_out == True:
+
+              if gene == '.':
+                gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
               results_list.append(gene)
               p_code = '.'
               results_list.append(p_code)

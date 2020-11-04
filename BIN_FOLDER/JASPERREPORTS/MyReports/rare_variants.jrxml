@@ -178,7 +178,7 @@ FROM  RARE_VARIANTS]]>
 	<columnHeader>
 		<band height="28">
 			<staticText>
-				<reportElement mode="Opaque" x="159" y="6" width="61" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="d318611c-df94-437b-9e5b-2dbc16eed467">
+				<reportElement mode="Opaque" x="159" y="6" width="55" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="d318611c-df94-437b-9e5b-2dbc16eed467">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -187,7 +187,7 @@ FROM  RARE_VARIANTS]]>
 				<text><![CDATA[ HGVSp]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="418" y="6" width="76" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1907c574-e276-427c-bdc3-6df4ec249d3f"/>
+				<reportElement mode="Opaque" x="419" y="6" width="82" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1907c574-e276-427c-bdc3-6df4ec249d3f"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
@@ -211,14 +211,14 @@ FROM  RARE_VARIANTS]]>
 				<text><![CDATA[ Transcript]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="221" y="6" width="123" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="a57c72d0-28ac-4aca-bb4a-640dd48b66c6"/>
+				<reportElement mode="Opaque" x="215" y="6" width="115" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="a57c72d0-28ac-4aca-bb4a-640dd48b66c6"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[ HGVSg]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="345" y="6" width="72" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="bb630dfc-56bd-4487-976e-2ca6058d4050"/>
+				<reportElement mode="Opaque" x="331" y="6" width="87" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="bb630dfc-56bd-4487-976e-2ca6058d4050"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
@@ -250,42 +250,44 @@ FROM  RARE_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{enst_id}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="159" y="-3" width="60" height="11" uuid="f89a4dbe-7ef6-4bcb-8bc1-394226f6151d"/>
+				<reportElement x="159" y="-3" width="55" height="11" uuid="f89a4dbe-7ef6-4bcb-8bc1-394226f6151d"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsp}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="221" y="-3" width="124" height="10" uuid="6618b878-ad20-48dd-9fd9-b721195a77f6"/>
+				<reportElement x="215" y="-3" width="115" height="10" uuid="6618b878-ad20-48dd-9fd9-b721195a77f6"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsg}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="345" y="-3" width="72" height="10" uuid="6f4c58ac-cfcb-4887-b19e-f544ada60dfc"/>
+				<reportElement isPrintRepeatedValues="false" x="331" y="-3" width="87" height="10" uuid="6f4c58ac-cfcb-4887-b19e-f544ada60dfc"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="418" y="-3" width="36" height="10" uuid="3ac097a1-a10b-4c45-b8fc-038fc2cd9511"/>
+				<reportElement x="419" y="-3" width="38" height="10" uuid="3ac097a1-a10b-4c45-b8fc-038fc2cd9511">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="454" y="-3" width="40" height="10" uuid="274514e0-d86c-46d1-b94a-eca9e8157050"/>
+				<reportElement x="457" y="-3" width="44" height="10" uuid="274514e0-d86c-46d1-b94a-eca9e8157050"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement mode="Opaque" x="57" y="7" width="437" height="1" forecolor="#F0F0F0" uuid="f09796b6-2e5d-47da-8946-23e7a19b9374">
+				<reportElement mode="Opaque" x="57" y="7" width="442" height="1" forecolor="#F0F0F0" uuid="f09796b6-2e5d-47da-8946-23e7a19b9374">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>

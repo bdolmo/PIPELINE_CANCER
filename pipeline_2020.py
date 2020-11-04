@@ -26,7 +26,7 @@ def main(args):
     p.set_analysis_env(args)
 
     # Settingg panel configuration
-    p.set_panel_configuration(main_dir)
+    p.get_panel_configuration(main_dir)
 
     # Setting system binary variables
     p.set_system_env()

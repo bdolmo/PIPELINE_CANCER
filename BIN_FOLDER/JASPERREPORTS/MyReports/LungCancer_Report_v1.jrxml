@@ -81,15 +81,19 @@ FROM  SAMPLE_INFORMATION]]>
 				<subreportExpression><![CDATA["Summary_qc.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="91">
+		<band height="53">
 			<subreport>
-				<reportElement x="-20" y="10" width="595" height="70" uuid="5c5d4bce-5870-4725-8c57-6f53538f3292"/>
+				<reportElement x="-20" y="2" width="595" height="45" isPrintInFirstWholeBand="true" uuid="5c5d4bce-5870-4725-8c57-6f53538f3292"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Disclaimers.jasper"]]></subreportExpression>
 			</subreport>
-			<break>
-				<reportElement x="0" y="5" width="100" height="1" uuid="1b18898d-e8e7-45e8-a815-e03f291cee05"/>
-			</break>
+		</band>
+		<band height="66">
+			<subreport>
+				<reportElement x="-20" y="5" width="595" height="55" uuid="9a837391-a0b3-48d1-9de2-9d8e5912a6d9"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Disclaimers2.jasper"]]></subreportExpression>
+			</subreport>
 		</band>
 	</detail>
 	<pageFooter>

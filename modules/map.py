@@ -400,7 +400,6 @@ def remove_duplicates():
 
         msg = " INFO: Removing duplicates of sample " + sample
         print (msg)
-        print (bashCommand)
         logging.info(msg)
         logging.info(bashCommand)
 
@@ -419,7 +418,6 @@ def remove_duplicates():
                 qc_summary_picard  = p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".picard.metrics.txt"
 
                 shutil.copy2(bam_summary_picard, qc_summary_picard)
-
             else:
                 msg = " ERROR: Something went wrong with rm duplicates " + sample
                 print (msg)
@@ -502,12 +500,12 @@ def map_fastq():
       p.sample_env[sample]['BAM_FOLDER'] + "/" + sample + ".bam"
     p.sample_env[sample]['RAW_BAM_NAME'] = sample + ".bam"
 
+    # READY_BAM will be overwritten after each post-processing step (e.g remove dups, etc) 
     p.sample_env[sample]['READY_BAM'] = p.sample_env[sample]['RAW_BAM']
     p.sample_env[sample]['READY_BAM_NAME'] = sample + ".bam"
 
-    # Now map fastq files with bwa mem
-
-
+    # Now map fastq files with bwa mem 
+    # Plus samtools sort and conversion (avoid threading in sam->bam if you have less than 16Gb of RAM)
     bashCommand = ('{} mem {} -R \'@RG\\tID:{}\\tSM:{}\' -M -t {} {} {} | {} view -Shu - |' 
       '{} sort -T {} -o {}').format(
       p.system_env['BWA'], 
@@ -525,7 +523,8 @@ def map_fastq():
 
     if not os.path.isfile(p.sample_env[sample]['RAW_BAM']):
 
-      msg = " INFO: Mapping sample " +  sample 
+      msg = " INFO: Mapping sample " +  sample
+      print (msg)
       p.logging.info(msg)
       p.logging.info(bashCommand)
 

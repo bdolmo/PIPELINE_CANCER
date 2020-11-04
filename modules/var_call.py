@@ -56,7 +56,6 @@ def do_manta():
             bashCommand = ('{} --tumorBam {} --referenceFasta {} --exome --runDir {}').format(
              p.system_env['MANTA_CONFIG'], p.sample_env[sample]['READY_BAM'], \
              p.aux_env['GENOME_FASTA'], p.sample_env[sample]['VCF_FOLDER'] )
-            print (bashCommand)
             logging.info(bashCommand)
             process = subprocess.Popen(bashCommand,#.split(),
                 shell=True, stdout=subprocess.PIPE,
@@ -79,7 +78,6 @@ def do_manta():
             print(msg)
             logging.info(msg)
             logging.info(bashCommand)
-            print (bashCommand)
 
             process = subprocess.Popen(bashCommand,#.split(),
                 shell=True, stdout=subprocess.PIPE,
@@ -96,7 +94,6 @@ def do_manta():
                 logging.error(msg)
 
         if not os.path.isfile(p.sample_env[sample]['MANTA_VCF']):
-            print(p.sample_env[sample]['MANTA_TUMOR'])
             input = gzip.GzipFile(p.sample_env[sample]['MANTA_TUMOR'], 'rb')
             s = input.read()
             input.close()

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<jdbcDataAdapter class="net.sf.jasperreports.data.jdbc.JdbcDataAdapterImpl"><name>versio2</name><driver>org.sqlite.JDBC</driver><username></username><password></password><savePassword>true</savePassword><url>jdbc:sqlite:/home/bdelolmo/Escriptori/RUN20201022-CGC64004/AP0085-20/REPORT_FOLDER/AP0085-20.db</url><database></database><serverAddress></serverAddress></jdbcDataAdapter>

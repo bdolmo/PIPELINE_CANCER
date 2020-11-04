@@ -78,6 +78,7 @@ def vcf_2_bed(vcf):
           if field.startswith("END="):
             chr_B = chr_A
             pos_B = field.replace("END=", "")
+            end_B = int(pos_B)+1
         if pos_B == ".":
           m = re.search('chr(\d+)+:(\d+)', tmp[4])
           if m:
