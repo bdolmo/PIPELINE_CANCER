@@ -95,8 +95,9 @@ class Disclaimer(db.Model):
     lab_confirmation = db.Column(String(3000))
     technical_limitations = db.Column(String(3000))
     legal_provisions = db.Column(String(3000))
+    language = db.Column(String(3000))
 
-    def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation,technical_limitations, legal_provisions):
+    def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation,technical_limitations, legal_provisions, language):
         self.id        = id
         self.panel     = panel
         self.genes     = genes
@@ -105,6 +106,7 @@ class Disclaimer(db.Model):
         self.lab_confirmation= lab_confirmation
         self.technical_limitations = technical_limitations
         self.legal_provisions= legal_provisions
+        self.language = language
 
 
 def load_panel_biomarkers(pname):
@@ -123,20 +125,22 @@ def load_panel_biomarkers(pname):
             biomarkers_env[biomarker.id]['END'] = biomarker.end
     return biomarkers_env
 
-def load_panel_disclaimers(pname):
+def load_panel_disclaimers(pname, lang):
     pname= pname.replace(".bed", "")
     pname= pname.replace(".v1", "")
 
     disclaimer_env = defaultdict(dict)
-    disclaimer_info = Disclaimer.query.filter_by(panel=pname).all()
+    disclaimer_info = Disclaimer.query.filter_by(panel=pname).filter_by(language=lang).all()
     if disclaimer_info:
         for entry in disclaimer_info:
+            print(entry.language)
             disclaimer_env['GENES']            = entry.genes
             disclaimer_env['METHODOLOGY']      = entry.methodology
             disclaimer_env['ANALYSIS']         = entry.analysis
             disclaimer_env['LAB_CONFIRMATION'] = entry.lab_confirmation
             disclaimer_env['TECHNICAL_LIMITATIONS'] = entry.technical_limitations
             disclaimer_env['LEGAL_PROVISIONS'] = entry.legal_provisions
+            disclaimer_env['LANGUAGE'] = entry.language
 
     return disclaimer_env
 

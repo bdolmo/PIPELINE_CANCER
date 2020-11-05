@@ -38,6 +38,7 @@ def set_analysis_env(args):
         'VARIANT_CLASS'  : args.var_class,
         'THREADS'        : args.threads,
         'ANALYSIS_DATE'  : dt_string,
+        'LANGUAGE'       : args.language,
     }
 
     # Default annotation files for each genome version
@@ -49,7 +50,8 @@ def set_analysis_env(args):
             analysis_env['CGI_BIOMARKERS'] = defaults['CGI_FOLDER'] + "/" \
                 + "cgi_biomarkers_latest" + "/" + "cgi_biomarkers_per_variant.tsv"
             analysis_env['CGI_BIOMARKERS_NAME'] = "cgi_biomarkers_per_variant.tsv"
-
+    if analysis_env['LANGUAGE'] == "cat":
+        defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat"
 
     # Creating output directory
     output_path = Path(analysis_env['OUTPUT_DIR'])
@@ -122,7 +124,7 @@ def get_panel_configuration(main_dir):
 
     global disclaimers_env
     disclaimers_env = defaultdict(dict)
-    disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'])
+    disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'], analysis_env['LANGUAGE'])
 
 def set_auxfiles_env():
     ''' 
@@ -136,10 +138,12 @@ def set_auxfiles_env():
         aux_env['GENOME_DICT'] = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
         aux_env['GENOME_DICT_NAME'] = "ucsc.hg19.dict"
         aux_env['GENE_LIST']  = defaults['BUNDLE_FOLDER'] + "/genelist.hg19.bed.gz"
-        aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
-         +"/JASPERREPORTS/MyReports/LungCancer_Report_v1.jrxml"
-
-
+        if analysis_env['LANGUAGE'] == "cat": 
+            aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
+            +"/JASPERREPORTS/MyReports/cat/LungCancer_Report_v1_cat.jrxml"
+        if analysis_env['LANGUAGE'] == "en": 
+            aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
+            +"/JASPERREPORTS/MyReports/en/LungCancer_Report_v1_en.jrxml"
 def set_system_env():
     ''' 
         Set system binary parameters

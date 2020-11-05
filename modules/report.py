@@ -114,12 +114,14 @@ def create_somatic_report():
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
+            consequence =  db.Column(db.String(120))
+            depth = db.Column(db.String(120))
             allele_frequency = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
-            therapies = db.Column(db.String(120))
-            clinical_trials = db.Column(db.String(120))
-            tumor_type = db.Column(db.String(120))
+            therapies = db.Column(db.String(240))
+            clinical_trials = db.Column(db.String(240))
+            tumor_type = db.Column(db.String(240))
 
             def __repr__(self):
                 return '<TherapeuticVariants %r>' % self.gene
@@ -134,12 +136,14 @@ def create_somatic_report():
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
+            consequence =  db.Column(db.String(120))
+            depth = db.Column(db.String(120))
             allele_frequency = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
-            therapies = db.Column(db.String(120))
-            clinical_trials = db.Column(db.String(120))
-            tumor_type = db.Column(db.String(120))
+            therapies = db.Column(db.String(240))
+            clinical_trials = db.Column(db.String(240))
+            tumor_type = db.Column(db.String(240))
 
             def __repr__(self):
                 return '<OtherClinicalVariants %r>' % self.gene
@@ -154,12 +158,14 @@ def create_somatic_report():
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
+            consequence =  db.Column(db.String(120))
+            depth = db.Column(db.String(120))           
             allele_frequency = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
-            therapies = db.Column(db.String(120))
-            clinical_trials = db.Column(db.String(120))
-            tumor_type = db.Column(db.String(120))
+            therapies = db.Column(db.String(240))
+            clinical_trials = db.Column(db.String(240))
+            tumor_type = db.Column(db.String(240))
 
             def __repr__(self):
                 return '<RareVariants %r>' % self.gene
@@ -279,11 +285,15 @@ def create_somatic_report():
             fusion_out = False
             if (pe_alt > 0 and sr_alt > 0):
               fusion_out = True
+            depth = '.'
             if sr_alt+sr_ref > 0:
+              depth = str(sr_alt+sr_ref)
               VAF = str(round((sr_alt/(sr_alt+sr_ref)),3))
             elif pe_ref+pe_alt >0:
+              depth = str(pe_alt+pe_ref)
               VAF = str(round((pe_alt/(pe_alt+pe_ref)),3))
             else:
+              depth = "0"
               VAF = "0"
             gene = '.'
             if var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != '.' and \
@@ -319,8 +329,8 @@ def create_somatic_report():
               results_list.append(clin_trials)
               o.write('\t'.join(results_list)+ "\n")
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='FUSION', allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
-              therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+              hgvsc=c_code, exon=exon, variant_type='SV', consequence='.', depth=depth, allele_frequency=VAF,
+              max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
               db.session.commit() 
           else:
@@ -344,6 +354,8 @@ def create_somatic_report():
             results_list.append(exon)
             enst_id= var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             results_list.append(enst_id)
+            consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
+            depth  = var_dict['variants'][variant]['INFO']['DP']
             VAF    = var_dict['variants'][variant]['AF']
             results_list.append(VAF)
             clin_sig = var_dict['variants'][variant]['INFO']['CSQ']['CLIN_SIG']
@@ -437,22 +449,25 @@ def create_somatic_report():
             # Filling therapeutic table  
             if go_therapeutic == True:
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
+              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
               therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
               db.session.commit()           
             # Filling Other clinical variants  
             if go_other == True:
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
-              therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+              clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(other_r)
               db.session.commit()
             # Filling Rare variants  
             if go_rare == True:
               rare_v = RareVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
-              therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)  
+              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+              clinical_trials=clintrials_str,tumor_type=diseases_str)  
               db.session.add(rare_v)
               db.session.commit()  
             if 'pathogenic' in clin_sig:
@@ -461,7 +476,8 @@ def create_somatic_report():
 
         # Create PDF report 
         bashCommand = ('{} pr {} -r {} -f pdf -t generic --db-url jdbc:sqlite:{} --db-driver org.sqlite.JDBC -o {} --jdbc-dir {}') \
-          .format(p.system_env['JASPERSTARTER'],p.aux_env['REPORT_JRXML'], p.defaults['JASPERREPORT_FOLDER'], sample_db, p.sample_env[sample]['REPORT_PDF'], p.defaults['JDBC_FOLDER'])
+          .format(p.system_env['JASPERSTARTER'],p.aux_env['REPORT_JRXML'], 
+          p.defaults['JASPERREPORT_FOLDER'], sample_db, p.sample_env[sample]['REPORT_PDF'], p.defaults['JDBC_FOLDER'])
         msg = " INFO: Generating pdf report for sample " + sample
         print (msg)
         print(bashCommand)

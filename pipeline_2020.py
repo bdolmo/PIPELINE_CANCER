@@ -25,7 +25,7 @@ def main(args):
     # Setting analysis variables
     p.set_analysis_env(args)
 
-    # Settingg panel configuration
+    # Get panel configuration from db
     p.get_panel_configuration(main_dir)
 
     # Setting system binary variables
@@ -65,7 +65,8 @@ def parse_arguments():
         help="Output directory", dest='output_dir')
     parser.add_argument("-i", "--input_dir", required=True, type=str,
         help="Input directory", dest='input_dir')
-
+    parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
+        help="Report language", dest='language')
     # Now subparsers
     subparsers = parser.add_subparsers(help='sub-command help', dest='subparser_name')
     parser_mapping = subparsers.add_parser('mapping', help='mapping pipeline')

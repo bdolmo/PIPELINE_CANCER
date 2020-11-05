@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Summary_qc" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="17093567-dfda-4151-8169-162da2a9bf7c">
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[IFNVTU1BUllfUUMgIEFTICw2NCwxNyxkOTUzNWM2YS04M2E5LTQ0OWEtYmVmYy02M2FlZDEzYjVj
+NTU7]]>
+	</property>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<queryString language="SQL">
+		<![CDATA[SELECT  SUMMARY_QC .total_reads,
+	 SUMMARY_QC .mean_coverage,
+	 SUMMARY_QC .enrichment,
+	 SUMMARY_QC .call_rate,
+	 SUMMARY_QC .lost_exons,
+	 SUMMARY_QC .pct_read_duplicates
+FROM  SUMMARY_QC]]>
+	</queryString>
+	<field name="total_reads" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="total_reads"/>
+		<property name="com.jaspersoft.studio.field.label" value="total_reads"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<field name="mean_coverage" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="mean_coverage"/>
+		<property name="com.jaspersoft.studio.field.label" value="mean_coverage"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<field name="enrichment" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="enrichment"/>
+		<property name="com.jaspersoft.studio.field.label" value="enrichment"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<field name="call_rate" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="call_rate"/>
+		<property name="com.jaspersoft.studio.field.label" value="call_rate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<field name="lost_exons" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="lost_exons"/>
+		<property name="com.jaspersoft.studio.field.label" value="lost_exons"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<field name="pct_read_duplicates" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="pct_read_duplicates"/>
+		<property name="com.jaspersoft.studio.field.label" value="pct_read_duplicates"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SUMMARY_QC"/>
+	</field>
+	<columnHeader>
+		<band height="23">
+			<staticText>
+				<reportElement mode="Opaque" x="37" y="4" width="67" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="5f6a73ee-e1f6-4262-98f5-7a2cd4bce39f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[Reads totals]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="105" y="4" width="58" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="73529c74-b809-49f0-a7ab-bb090232b6d2"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Cov. mitja]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="316" y="4" width="85" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e9f5c812-b474-4696-b1fd-6a78e2dd1994">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Enriquiment (%)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="164" y="4" width="70" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="8b8adbac-4fe5-4e5f-b19d-0332659ec84e"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle"/>
+				<text><![CDATA[ Call rate 30X]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="235" y="4" width="80" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e369924f-2a1e-42fa-baa3-2aa49e5a9d67"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Ex. perduts 30X]]></text>
+			</staticText>
+			<staticText>
+				<reportElement mode="Opaque" x="402" y="4" width="104" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e110bf6d-ea62-48b6-beaf-bdd5db2b034e"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Read duplicats (%)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="37" y="-11" width="348" height="19" uuid="b281e5fb-ffa6-4362-a2a9-5f50967d3a5a"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[MÈTRIQUES DE QUALITAT DE SEQÜENCIACIÓ]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="28" splitType="Stretch">
+			<textField>
+				<reportElement x="38" y="1" width="66" height="16" uuid="a2fcd469-c6d5-4398-9222-fba52ce10ae2"/>
+				<textFieldExpression><![CDATA[$F{total_reads}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="106" y="1" width="58" height="17" uuid="9b2b4f64-9898-494d-af21-d61340a835ea"/>
+				<textFieldExpression><![CDATA[$F{mean_coverage}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="164" y="1" width="69" height="17" uuid="db694be8-3b5e-4a81-9552-eb0515a63d4e"/>
+				<textFieldExpression><![CDATA[$F{call_rate}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="235" y="1" width="80" height="17" uuid="4ed94036-5b28-44c1-ae75-a33c0fb7d9bb"/>
+				<textFieldExpression><![CDATA[$F{lost_exons}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="316" y="1" width="84" height="17" uuid="caf40a9e-4c87-4cc4-9a63-d1719cc2cd5d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{enrichment}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="402" y="1" width="104" height="17" uuid="94c2736c-226a-4133-aff4-70998c64386a"/>
+				<textFieldExpression><![CDATA[$F{pct_read_duplicates}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>

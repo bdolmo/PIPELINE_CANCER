@@ -2,8 +2,8 @@
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Therapeutic_variants" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="ed1b7c32-5c53-4964-939f-9b652637854d">
 	<property name="com.jaspersoft.studio.data.sql.tables">
-		<![CDATA[IFRIRVJBUEVVVElDX1ZBUklBTlRTICBBUyAsMTE2LDY1LDdlMTg0NDNlLTEwNzktNGE4ZS1hYjgx
-LTNkMTg1ZDU1OGYxMzs=]]>
+		<![CDATA[IFRIRVJBUEVVVElDX1ZBUklBTlRTICAsMTUsMTUsYTlmY2QxZWMtMmRjOC00YzcyLTk0YzEtZTBm
+NDRmYjAwMGMzOw==]]>
 	</property>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
 	<subDataset name="therapeutic_table" uuid="80249774-1574-4fcd-ac47-1d3d1ecdbe41">
@@ -107,7 +107,9 @@ FROM  THERAPEUTIC_VARIANTS]]>
 	 THERAPEUTIC_VARIANTS .max_af_pop,
 	 THERAPEUTIC_VARIANTS .therapies,
 	 THERAPEUTIC_VARIANTS .clinical_trials,
-	 THERAPEUTIC_VARIANTS .tumor_type
+	 THERAPEUTIC_VARIANTS .tumor_type,
+	 THERAPEUTIC_VARIANTS .consequence,
+	 THERAPEUTIC_VARIANTS .depth
 FROM  THERAPEUTIC_VARIANTS]]>
 	</queryString>
 	<field name="gene" class="java.lang.Object">
@@ -176,186 +178,197 @@ FROM  THERAPEUTIC_VARIANTS]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="THERAPEUTIC_VARIANTS"/>
 	</field>
 	<columnHeader>
-		<band height="17">
-			<staticText>
-				<reportElement mode="Opaque" x="207" y="-4" width="76" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="2c40cd69-b49e-497f-8a9b-fdaf43be625d">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Details]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="109" y="-4" width="97" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="d5d2e2de-dfce-47a7-819a-66db6a634809"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ VARIANT]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="34" y="-4" width="74" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="a5999830-4aa0-4ca6-a2dc-e8b3fe365390"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ GENE]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="446" y="-4" width="68" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="8629967b-f64d-459a-8cfa-0ebb2c35d7d7"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Tumor type]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="374" y="-4" width="71" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="5736a922-fcf7-4f7b-9fca-d01147832b59"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Clinical trials]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Opaque" x="284" y="-4" width="89" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="431f29e0-f341-4e30-ad35-bbb33d908210"/>
-				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Therapies]]></text>
-			</staticText>
+		<band height="2">
 			<staticText>
 				<reportElement x="34" y="-20" width="266" height="19" uuid="187ba375-6eb4-4ef1-92f6-c4a0080ecaa3"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>
-				<text><![CDATA[VARIANTS WITH THERAPEUTIC EVIDENCE]]></text>
+				<text><![CDATA[VARIANTS AMB EVIDÈNCIA TERAPÈUTICA]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="76">
+		<band height="157">
 			<textField>
-				<reportElement x="35" y="-1" width="74" height="14" uuid="133b44bd-66d6-4638-ba51-07b926db4b60"/>
+				<reportElement positionType="Float" x="36" y="18" width="84" height="14" uuid="133b44bd-66d6-4638-ba51-07b926db4b60"/>
 				<textElement verticalAlignment="Middle">
 					<font isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gene}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="35" y="14" width="74" height="14" uuid="67a13c8a-e71e-4c04-b67a-f1c0a46dce2d"/>
+				<reportElement positionType="Float" x="36" y="33" width="86" height="14" uuid="67a13c8a-e71e-4c04-b67a-f1c0a46dce2d"/>
 				<textElement verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{enst_id}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="110" y="-1" width="96" height="14" uuid="1a801141-344c-41fc-bd60-89ab172ac949"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="122" y="33" width="128" height="14" uuid="fbc28b75-13b9-4aa1-a3b1-0ca00f29003e"/>
 				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{hgvsp}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement isPrintRepeatedValues="false" x="110" y="14" width="96" height="14" uuid="fbc28b75-13b9-4aa1-a3b1-0ca00f29003e"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsg}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="110" y="29" width="96" height="12" uuid="c8cbbd54-9355-475f-8906-a9d7c02a35b4"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="122" y="48" width="128" height="12" uuid="c8cbbd54-9355-475f-8906-a9d7c02a35b4"/>
 				<textElement verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="60" y="29" width="38" height="12" uuid="1b836ba4-9e62-4097-98ef-954ae4e375b3"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="60" y="48" width="60" height="12" uuid="1b836ba4-9e62-4097-98ef-954ae4e375b3"/>
 				<textElement verticalAlignment="Middle">
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="225" y="14" width="50" height="12" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
+				<reportElement positionType="Float" x="53" y="96" width="50" height="12" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{allele_frequency}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="236" y="27" width="51" height="12" uuid="16926d5e-0d17-487f-84cd-7517f6dcd79d"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="66" y="109" width="51" height="12" uuid="16926d5e-0d17-487f-84cd-7517f6dcd79d"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="207" y="53" width="76" height="12" uuid="ca2a4aa7-92ce-4428-ba76-1ffd7bf7b9a4"/>
+				<reportElement positionType="Float" x="35" y="135" width="76" height="12" uuid="ca2a4aa7-92ce-4428-ba76-1ffd7bf7b9a4"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement isPrintRepeatedValues="false" x="285" y="0" width="88" height="76" uuid="94a0d40a-77a4-48c1-b4fd-cf138de4c0ce"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" stretchType="ElementGroupBottom" isPrintRepeatedValues="false" x="113" y="82" width="152" height="65" uuid="94a0d40a-77a4-48c1-b4fd-cf138de4c0ce">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
 				<textElement>
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="376" y="1" width="69" height="74" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="267" y="82" width="116" height="65" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9"/>
 				<textElement>
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
-			<textField>
-				<reportElement x="447" y="0" width="66" height="76" uuid="ca214483-512d-41d2-a550-a133c449acfb"/>
+			<textField isStretchWithOverflow="true">
+				<reportElement positionType="Float" x="385" y="82" width="108" height="65" uuid="ca214483-512d-41d2-a550-a133c449acfb"/>
 				<textElement>
-					<font size="8"/>
+					<font size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tumor_type}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="207" y="-1" width="76" height="14" uuid="abcef12a-7a64-4ea1-996e-7170155266bc"/>
+				<reportElement positionType="Float" x="35" y="81" width="76" height="14" uuid="abcef12a-7a64-4ea1-996e-7170155266bc"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{variant_type}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="35" y="29" width="25" height="12" uuid="1155cccb-fe69-44d5-b41c-274240c5e3f0"/>
+				<reportElement positionType="Float" x="36" y="48" width="25" height="12" uuid="1155cccb-fe69-44d5-b41c-274240c5e3f0"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<text><![CDATA[Exon:]]></text>
+				<text><![CDATA[Exó:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="207" y="27" width="30" height="12" uuid="80d7b3c8-5b5f-41ea-86aa-21920569f36d"/>
+				<reportElement positionType="Float" x="35" y="109" width="35" height="12" uuid="80d7b3c8-5b5f-41ea-86aa-21920569f36d"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Max AF:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="207" y="40" width="53" height="12" uuid="f65e049a-c6d1-4792-85a3-9955c85a725c"/>
+				<reportElement positionType="Float" x="35" y="122" width="53" height="12" uuid="f65e049a-c6d1-4792-85a3-9955c85a725c"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<text><![CDATA[Max AF Pop:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="207" y="14" width="22" height="12" uuid="a06ee759-09f1-48d4-bbeb-49ea19c33853"/>
+				<reportElement positionType="Float" x="35" y="96" width="22" height="12" uuid="a06ee759-09f1-48d4-bbeb-49ea19c33853"/>
 				<textElement verticalAlignment="Middle">
-					<font size="7"/>
+					<font size="8"/>
 				</textElement>
 				<text><![CDATA[VAF:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="385" y="61" width="108" height="19" forecolor="#000000" backcolor="#DBDBDB" uuid="8629967b-f64d-459a-8cfa-0ebb2c35d7d7"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Tipus de tumor]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="266" y="61" width="118" height="19" forecolor="#000000" backcolor="#DBDBDB" uuid="5736a922-fcf7-4f7b-9fca-d01147832b59"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Assaigs clínics]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="112" y="61" width="153" height="19" forecolor="#000000" backcolor="#DBDBDB" uuid="431f29e0-f341-4e30-ad35-bbb33d908210"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Teràpies]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="35" y="61" width="76" height="19" forecolor="#000000" backcolor="#DBDBDB" uuid="2c40cd69-b49e-497f-8a9b-fdaf43be625d">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ Detalls]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" mode="Opaque" x="35" y="148" width="454" height="1" forecolor="#D9D9D9" uuid="5c516abf-395f-495e-a3f1-36e98f9851df">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="0.5"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="122" y="18" width="128" height="14" uuid="1a801141-344c-41fc-bd60-89ab172ac949"/>
+				<textElement verticalAlignment="Middle">
+					<font size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{hgvsp}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="35" y="-1" width="86" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="a5999830-4aa0-4ca6-a2dc-e8b3fe365390"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ GEN]]></text>
+			</staticText>
+			<staticText>
+				<reportElement positionType="Float" mode="Opaque" x="122" y="-1" width="128" height="19" forecolor="#FFFFFF" backcolor="#113178" uuid="d5d2e2de-dfce-47a7-819a-66db6a634809"/>
+				<textElement verticalAlignment="Middle"/>
+				<text><![CDATA[ VARIANT]]></text>
 			</staticText>
 		</band>
 	</detail>
 	<noData>
-		<band height="45">
+		<band height="67">
 			<staticText>
-				<reportElement x="34" y="15" width="456" height="19" uuid="db99b11d-9705-4765-9c34-08382d5c6b50"/>
+				<reportElement x="34" y="28" width="456" height="19" uuid="db99b11d-9705-4765-9c34-08382d5c6b50"/>
 				<textElement>
 					<font size="11" isBold="false"/>
 				</textElement>
-				<text><![CDATA[No variants with therapeutic evidence were detected]]></text>
+				<text><![CDATA[No s'han detectat variants amb evidència terapèutica]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="34" y="0" width="266" height="19" uuid="8458cabe-db10-4bca-9ccc-773545efae48"/>
+				<reportElement x="34" y="13" width="266" height="19" uuid="8458cabe-db10-4bca-9ccc-773545efae48"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>
-				<text><![CDATA[VARIANTS WITH THERAPEUTIC EVIDENCE]]></text>
+				<text><![CDATA[VARIANTS AMB EVIDÈNCIA TERAPÈUTICA]]></text>
 			</staticText>
 		</band>
 	</noData>

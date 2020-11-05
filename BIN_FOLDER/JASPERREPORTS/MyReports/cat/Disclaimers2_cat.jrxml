@@ -36,38 +36,26 @@ FROM  DISCLAIMERS]]>
 	<detail>
 		<band height="232" splitType="Stretch">
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="36" y="-17" width="150" height="16" isPrintInFirstWholeBand="true" uuid="091b68a6-86eb-4219-b0e9-c4357efea977"/>
+				<reportElement isPrintRepeatedValues="false" x="36" y="-13" width="150" height="16" isPrintInFirstWholeBand="true" uuid="dc5a218a-c862-46c7-aae5-bc228800df4b"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Lab confirmation]]></text>
+				<text><![CDATA[Limitacions tècniques]]></text>
 			</staticText>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="37" y="-1" width="481" height="16" isPrintInFirstWholeBand="true" uuid="02b43ff0-5447-42b6-a3fa-0bb005b9f3a1"/>
-				<textElement textAlignment="Justified"/>
-				<textFieldExpression><![CDATA[$F{lab_confirmation}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="36" y="21" width="150" height="16" isPrintInFirstWholeBand="true" uuid="dc5a218a-c862-46c7-aae5-bc228800df4b"/>
-				<textElement>
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Technical limitations]]></text>
-			</staticText>
-			<textField>
-				<reportElement isPrintRepeatedValues="false" x="37" y="39" width="481" height="48" isPrintInFirstWholeBand="true" uuid="8ecd350e-2fcc-4336-aa91-473e767db17e"/>
+				<reportElement isPrintRepeatedValues="false" x="37" y="5" width="481" height="64" isPrintInFirstWholeBand="true" uuid="8ecd350e-2fcc-4336-aa91-473e767db17e"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{technique_limitations}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="36" y="95" width="150" height="16" isPrintInFirstWholeBand="true" uuid="f5b95550-1db4-4fb4-9077-a32768803d15"/>
+				<reportElement isPrintRepeatedValues="false" x="36" y="72" width="150" height="16" isPrintInFirstWholeBand="true" uuid="f5b95550-1db4-4fb4-9077-a32768803d15"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Legal provisions]]></text>
+				<text><![CDATA[Disposicions legals]]></text>
 			</staticText>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="36" y="112" width="480" height="107" isPrintInFirstWholeBand="true" uuid="89f34210-fc4a-4af6-9575-55076c5c1113"/>
+				<reportElement isPrintRepeatedValues="false" x="36" y="89" width="480" height="107" isPrintInFirstWholeBand="true" uuid="89f34210-fc4a-4af6-9575-55076c5c1113"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{legal_provisions}]]></textFieldExpression>
 			</textField>

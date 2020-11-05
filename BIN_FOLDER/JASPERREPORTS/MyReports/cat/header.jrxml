@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="header" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="af63b3a0-691e-4a4a-8128-67ffb27097db">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<title>
+		<band height="17" splitType="Stretch">
+			<staticText>
+				<reportElement x="183" y="-15" width="150" height="32" forecolor="#404040" uuid="94bd0bca-3dd2-440f-b116-809e08992cac"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="20"/>
+				</textElement>
+				<text><![CDATA[Lung Cancer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="36" y="-16" width="150" height="32" forecolor="#FFB236" uuid="d708c497-7245-4339-80c3-88d048188667"/>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
+					<font size="24"/>
+				</textElement>
+				<text><![CDATA[NGS Report:]]></text>
+			</staticText>
+		</band>
+	</title>
+</jasperReport>

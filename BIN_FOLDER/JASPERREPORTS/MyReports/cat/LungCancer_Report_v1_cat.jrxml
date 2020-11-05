@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LungCancer_Report_v1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="27e71b7b-825f-44e7-a876-57d68c7febbe">
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[U0FNUExFX0lORk9STUFUSU9OICwxNSwxNSwwNTc5MzJmNC0xMDQyLTQzMWEtYWUwYS02YjdjOGQ4
+NmY0ZjU7]]>
+	</property>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<queryString language="SQL">
+		<![CDATA[SELECT SAMPLE_INFORMATION.lab_id,
+	SAMPLE_INFORMATION.ext_id
+FROM SAMPLE_INFORMATION]]>
+	</queryString>
+	<field name="lab_id" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="lab_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="lab_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SAMPLE_INFORMATION"/>
+	</field>
+	<field name="ext_id" class="java.lang.Object">
+		<property name="com.jaspersoft.studio.field.name" value="ext_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ext_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="SAMPLE_INFORMATION"/>
+	</field>
+	<title>
+		<band height="27">
+			<subreport>
+				<reportElement x="-20" y="-18" width="595" height="40" uuid="78e8e39a-6397-47be-b8da-82e6180ea54e"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["header.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="42">
+			<subreport>
+				<reportElement x="-20" y="-5" width="595" height="40" isRemoveLineWhenBlank="true" uuid="de679d2e-0083-474c-b749-5f17f047ab05"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Sample_information_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="80">
+			<subreport>
+				<reportElement x="-20" y="10" width="595" height="62" uuid="b5a32bb8-41bd-4461-99c1-4048082b8bbe"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Therapeutic_variants_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="86">
+			<subreport>
+				<reportElement x="-20" y="10" width="595" height="61" uuid="8faf948c-5c06-4202-ad77-9f0ea883581f"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Other_variants_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="67">
+			<subreport>
+				<reportElement x="-20" y="6" width="595" height="52" uuid="d37a7398-9864-48f2-bbbc-35d2780b8653"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["rare_variants_cat.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="3" width="101" height="1" uuid="2b928cd9-4d59-4c85-a33a-170031d5fa4a"/>
+			</break>
+		</band>
+		<band height="68">
+			<subreport>
+				<reportElement x="-20" y="20" width="595" height="27" uuid="744b1bf3-0abc-4881-901f-9cc7833490e8"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Biomarkers_cat.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="4" width="100" height="1" uuid="9bd7243f-be72-49a4-971e-beb4e93519d8"/>
+			</break>
+		</band>
+		<band height="100">
+			<subreport>
+				<reportElement x="-20" y="19" width="595" height="61" uuid="2c08f92a-8c5c-4eda-8fbc-5e765b2ff6ea"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Summary_qc_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="53">
+			<subreport>
+				<reportElement x="-20" y="2" width="595" height="45" isPrintInFirstWholeBand="true" uuid="5c5d4bce-5870-4725-8c57-6f53538f3292"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Disclaimers_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="66">
+			<subreport>
+				<reportElement x="-20" y="5" width="595" height="55" uuid="9a837391-a0b3-48d1-9de2-9d8e5912a6d9"/>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["Disclaimers2_cat.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="84" splitType="Stretch">
+			<textField>
+				<reportElement x="278" y="62" width="111" height="18" uuid="747f5f85-2a09-4879-b06a-aadd42856731"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<image>
+				<reportElement x="32" y="39" width="60" height="37" uuid="c1857f27-dd99-4117-b5ae-2724098e994c"/>
+				<imageExpression><![CDATA["Gencardio_Diagnostics.png"]]></imageExpression>
+			</image>
+			<line>
+				<reportElement x="35" y="3" width="478" height="1" forecolor="#918E8E" uuid="75e6189f-af8c-4f49-bf77-1b25d63fcbf9">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="1.5" lineColor="#595959"/>
+				</graphicElement>
+			</line>
+			<staticText>
+				<reportElement x="287" y="63" width="20" height="17" uuid="097963d5-19d1-4908-a167-d6e277ca884b"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="8"/>
+				</textElement>
+				<text><![CDATA[/]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement x="294" y="65" width="100" height="15" uuid="8d045337-f377-4906-a1bd-69dbfde04177"/>
+				<textElement verticalAlignment="Bottom">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="35" y="26" width="478" height="11" uuid="e2ee9282-4fd3-4d99-9a1d-839672364886"/>
+				<textElement textAlignment="Left">
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[L'activitat del laboratori està sota el sistema general de qualitat ISO9001:2015]]></text>
+			</staticText>
+			<image>
+				<reportElement x="103" y="41" width="50" height="35" uuid="63d03fe4-b4e3-45b0-b66f-c6df6b538f5b"/>
+				<imageExpression><![CDATA["IdIBGi-logo-noticies.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="35" y="7" width="480" height="20" uuid="bca2ca0a-42d2-4827-ae29-3bf8d01b422d"/>
+				<textElement textAlignment="Left">
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[Centre de Genètica Cardiovascular. Institut d’Investigació Biomèdica de Girona Dr. Josep Trueta. Parc Hospitalari Martí i Julià. Edifici M2. Salt 17190 (Girona). Tel 878987087. NIE G17432592.]]></text>
+			</staticText>
+			<image>
+				<reportElement x="430" y="35" width="100" height="47" uuid="7dd495ff-c7f1-49d5-9ab4-7609dd8094f0"/>
+				<imageExpression><![CDATA["/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/MyReports/cat/image_2020_10_14T12_57_59_614Z.png"]]></imageExpression>
+			</image>
+		</band>
+	</pageFooter>
+</jasperReport>

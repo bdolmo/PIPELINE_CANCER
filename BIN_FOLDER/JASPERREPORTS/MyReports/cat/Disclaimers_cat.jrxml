@@ -46,14 +46,14 @@ FROM  DISCLAIMERS]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="DISCLAIMERS"/>
 	</field>
 	<detail>
-		<band height="517">
+		<band height="571">
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="37" y="35" width="490" height="71" isPrintInFirstWholeBand="true" uuid="5685223a-6469-42dc-afb3-5aaab233f384"/>
+				<reportElement isPrintRepeatedValues="false" x="37" y="35" width="490" height="79" isPrintInFirstWholeBand="true" uuid="5685223a-6469-42dc-afb3-5aaab233f384"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{gene_list}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="38" y="129" width="490" height="133" isPrintInFirstWholeBand="true" uuid="2466e3cc-8a0d-4844-869a-c36de54cc6b9"/>
+				<reportElement isPrintRepeatedValues="false" x="38" y="136" width="490" height="144" isPrintInFirstWholeBand="true" uuid="2466e3cc-8a0d-4844-869a-c36de54cc6b9"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{lab_methodology}]]></textFieldExpression>
 			</textField>
@@ -65,28 +65,28 @@ FROM  DISCLAIMERS]]>
 				<text><![CDATA[DISCLAIMERS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="37" y="18" width="40" height="16" isPrintInFirstWholeBand="true" forecolor="#000000" uuid="de095af6-267f-446e-8725-8083a761a773"/>
+				<reportElement isPrintRepeatedValues="false" x="37" y="18" width="103" height="16" isPrintInFirstWholeBand="true" forecolor="#000000" uuid="de095af6-267f-446e-8725-8083a761a773"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Genes]]></text>
+				<text><![CDATA[Gens analitzats]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="38" y="114" width="120" height="16" isPrintInFirstWholeBand="true" uuid="9f022a6f-5b21-4c7e-96ba-c780c95d1b66"/>
+				<reportElement isPrintRepeatedValues="false" x="38" y="121" width="120" height="16" isPrintInFirstWholeBand="true" uuid="9f022a6f-5b21-4c7e-96ba-c780c95d1b66"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Lab methodology]]></text>
+				<text><![CDATA[Metodologia]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="39" y="267" width="60" height="16" isPrintInFirstWholeBand="true" uuid="57744133-4c73-40df-b7db-ea6e3ae88be9"/>
+				<reportElement isPrintRepeatedValues="false" x="39" y="288" width="60" height="16" isPrintInFirstWholeBand="true" uuid="57744133-4c73-40df-b7db-ea6e3ae88be9"/>
 				<textElement>
 					<font size="10" isBold="true"/>
 				</textElement>
-				<text><![CDATA[Analysis]]></text>
+				<text><![CDATA[Anàlisi]]></text>
 			</staticText>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="38" y="283" width="490" height="212" isPrintInFirstWholeBand="true" uuid="cf74b447-e039-48d4-bcb0-827dc7191082"/>
+				<reportElement isPrintRepeatedValues="false" x="38" y="304" width="490" height="236" isPrintInFirstWholeBand="true" uuid="cf74b447-e039-48d4-bcb0-827dc7191082"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{analysis}]]></textFieldExpression>
 			</textField>
