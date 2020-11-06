@@ -180,9 +180,9 @@ FROM  RARE_VARIANTS]]>
 	<field name="depth" class="java.lang.String"/>
 	<field name="consequence" class="java.lang.String"/>
 	<columnHeader>
-		<band height="26">
+		<band height="19">
 			<staticText>
-				<reportElement mode="Opaque" x="142" y="6" width="138" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="d318611c-df94-437b-9e5b-2dbc16eed467">
+				<reportElement mode="Opaque" x="142" y="-2" width="128" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="d318611c-df94-437b-9e5b-2dbc16eed467">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -191,21 +191,21 @@ FROM  RARE_VARIANTS]]>
 				<text><![CDATA[ HGVS]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="422" y="6" width="88" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1907c574-e276-427c-bdc3-6df4ec249d3f"/>
+				<reportElement mode="Opaque" x="431" y="-2" width="88" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1907c574-e276-427c-bdc3-6df4ec249d3f"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[ Freq. poblacional]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="38" y="6" width="42" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="99232d09-d26d-4d86-beb7-7e42ca6a61e9"/>
+				<reportElement mode="Opaque" x="38" y="-2" width="42" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="99232d09-d26d-4d86-beb7-7e42ca6a61e9"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[ Gen]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="81" y="6" width="60" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="f50eeb88-4e53-4968-87b3-6282b04fb8c0">
+				<reportElement mode="Opaque" x="81" y="-2" width="60" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="f50eeb88-4e53-4968-87b3-6282b04fb8c0">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -215,67 +215,69 @@ FROM  RARE_VARIANTS]]>
 				<text><![CDATA[ Isoforma]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="38" y="-10" width="285" height="19" uuid="fd128da9-573a-43d9-a6e8-ede9c2d0f80e"/>
+				<reportElement x="38" y="-18" width="285" height="19" uuid="fd128da9-573a-43d9-a6e8-ede9c2d0f80e"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>
 				<text><![CDATA[VARIANTS RARES SENSE EVIDÈNCIA CLÍNICA]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="351" y="6" width="70" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="ab07fcd7-a168-4957-baf6-7149cd6509bc"/>
+				<reportElement mode="Opaque" x="360" y="-2" width="70" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="ab07fcd7-a168-4957-baf6-7149cd6509bc"/>
 				<textElement verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
 				<text><![CDATA[ Freq. al·lèlica]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="281" y="6" width="69" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1fa5759e-dd79-483e-adcb-95aec480428f"/>
-				<textElement verticalAlignment="Middle">
+				<reportElement mode="Opaque" x="271" y="-2" width="88" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1fa5759e-dd79-483e-adcb-95aec480428f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" verticalAlignment="Middle">
 					<font size="9"/>
 				</textElement>
-				<text><![CDATA[ Localització]]></text>
+				<text><![CDATA[ Localització/Efecte]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="30" splitType="Stretch">
+		<band height="31" splitType="Stretch">
 			<textField>
-				<reportElement x="39" y="8" width="42" height="11" uuid="c9679fd5-ba82-4b0f-934e-a25e135a9724"/>
+				<reportElement x="39" y="9" width="42" height="11" uuid="c9679fd5-ba82-4b0f-934e-a25e135a9724"/>
 				<textElement verticalAlignment="Middle">
-					<font size="6" isBold="true" isItalic="true"/>
+					<font size="7" isBold="true" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{gene}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="82" y="8" width="60" height="10" uuid="3c70164a-11d3-4a71-93fc-9bb140fd4299"/>
+				<reportElement x="82" y="9" width="60" height="10" uuid="3c70164a-11d3-4a71-93fc-9bb140fd4299"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{enst_id}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="143" y="-3" width="138" height="11" uuid="f89a4dbe-7ef6-4bcb-8bc1-394226f6151d"/>
+				<reportElement x="144" y="-2" width="126" height="11" uuid="f89a4dbe-7ef6-4bcb-8bc1-394226f6151d"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsp}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="143" y="7" width="138" height="10" uuid="6618b878-ad20-48dd-9fd9-b721195a77f6"/>
+				<reportElement x="144" y="8" width="126" height="10" uuid="6618b878-ad20-48dd-9fd9-b721195a77f6"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsg}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="143" y="17" width="138" height="10" uuid="6f4c58ac-cfcb-4887-b19e-f544ada60dfc"/>
+				<reportElement isPrintRepeatedValues="false" x="144" y="18" width="126" height="10" uuid="6f4c58ac-cfcb-4887-b19e-f544ada60dfc"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{hgvsc}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="455" y="-1" width="54" height="9" uuid="3ac097a1-a10b-4c45-b8fc-038fc2cd9511">
+				<reportElement isPrintRepeatedValues="false" x="464" y="1" width="54" height="9" uuid="3ac097a1-a10b-4c45-b8fc-038fc2cd9511">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle">
@@ -284,14 +286,14 @@ FROM  RARE_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{max_af}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="459" y="12" width="50" height="14" uuid="274514e0-d86c-46d1-b94a-eca9e8157050"/>
+				<reportElement isPrintRepeatedValues="false" x="469" y="15" width="60" height="14" uuid="274514e0-d86c-46d1-b94a-eca9e8157050"/>
 				<textElement verticalAlignment="Middle">
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement mode="Opaque" x="57" y="27" width="449" height="1" forecolor="#F0F0F0" uuid="f09796b6-2e5d-47da-8946-23e7a19b9374">
+				<reportElement mode="Opaque" x="40" y="29" width="468" height="1" forecolor="#F0F0F0" uuid="f09796b6-2e5d-47da-8946-23e7a19b9374">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -300,67 +302,85 @@ FROM  RARE_VARIANTS]]>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement x="422" y="-1" width="41" height="9" uuid="02d7317f-ca6e-49df-ae1f-c5d795903378"/>
+				<reportElement x="431" y="2" width="41" height="9" uuid="02d7317f-ca6e-49df-ae1f-c5d795903378"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<text><![CDATA[Max. freq:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="422" y="9" width="41" height="19" uuid="6b935b3a-32a8-4b67-8926-0490053c8104"/>
+				<reportElement x="431" y="12" width="41" height="15" uuid="6b935b3a-32a8-4b67-8926-0490053c8104"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<text><![CDATA[Grup poblacional:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="385" y="4" width="38" height="9" uuid="25be5dbc-a714-47d5-a25e-ea4cf8e6f0c6"/>
+				<reportElement isPrintRepeatedValues="false" x="395" y="5" width="38" height="9" uuid="25be5dbc-a714-47d5-a25e-ea4cf8e6f0c6"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{depth}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="362" y="13" width="57" height="9" uuid="4297ee5b-267e-47d7-a68a-44ea0f1e5a85"/>
+				<reportElement x="376" y="14" width="57" height="9" uuid="4297ee5b-267e-47d7-a68a-44ea0f1e5a85"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{allele_frequency}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="351" y="4" width="39" height="9" uuid="2168ffe6-89a9-4966-a71c-39ee45f185b2"/>
+				<reportElement x="361" y="5" width="39" height="9" uuid="2168ffe6-89a9-4966-a71c-39ee45f185b2"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
 				<text><![CDATA[Cobertura:]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="351" y="13" width="20" height="9" uuid="99310371-3338-4fbd-8506-4c3465093ac0"/>
+				<reportElement x="361" y="14" width="20" height="9" uuid="99310371-3338-4fbd-8506-4c3465093ac0"/>
 				<textElement>
 					<font size="6"/>
 				</textElement>
-				<text><![CDATA[AF:]]></text>
+				<text><![CDATA[VAF:]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="281" y="-2" width="69" height="29" uuid="5a3eb2c7-1e78-4c52-becd-d05ff29c2c97"/>
+				<reportElement isPrintRepeatedValues="false" x="274" y="10" width="78" height="18" uuid="5a3eb2c7-1e78-4c52-becd-d05ff29c2c97">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement verticalAlignment="Middle">
-					<font size="6"/>
+					<font size="6" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{consequence}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="274" y="3" width="19" height="8" uuid="809713e6-0268-48c7-880c-40cfccb26d32">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<text><![CDATA[Exó:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="293" y="3" width="57" height="8" uuid="d16d2667-46e8-4c13-8090-d4b2aca21937"/>
+				<textElement>
+					<font size="6"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
 	<noData>
-		<band height="50">
+		<band height="39">
 			<staticText>
-				<reportElement x="39" y="14" width="323" height="19" uuid="10065e66-5755-464f-9996-39c147ff14e1"/>
+				<reportElement x="39" y="16" width="323" height="19" uuid="10065e66-5755-464f-9996-39c147ff14e1"/>
 				<textElement>
 					<font size="11" isBold="false"/>
 				</textElement>
 				<text><![CDATA[No s'han detectat variants rares sense evidència clínica]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="39" y="0" width="285" height="19" uuid="789b7849-2eab-4680-80d4-b6b4b0afb54e"/>
+				<reportElement x="39" y="2" width="285" height="19" uuid="789b7849-2eab-4680-80d4-b6b4b0afb54e"/>
 				<textElement>
 					<font size="11" isBold="true"/>
 				</textElement>

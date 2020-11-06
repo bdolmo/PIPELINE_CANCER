@@ -22,6 +22,7 @@ from flask import Flask
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Table, Column, Float, Integer, String, MetaData, ForeignKey
+from googletrans import Translator
 
 from modules import utils as u
 from modules import params as p
@@ -328,15 +329,31 @@ def create_somatic_report():
               clin_trials = '.'
               results_list.append(clin_trials)
               o.write('\t'.join(results_list)+ "\n")
+              variant_type = "SV"
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='SV', consequence='.', depth=depth, allele_frequency=VAF,
+              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
               max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
               db.session.commit() 
           else:
+            variant_type = '.'
+            ref = var_dict['variants'][variant]['REF']
+            alt = var_dict['variants'][variant]['ALT']
+
+            if len(ref) > len(alt):
+              variant_type = "Deletion"
+            elif len(ref) < len(alt):
+              variant_type = "Insertion"
+            else:
+              if len(ref) > 1:
+                variant_type = "MNV"
+              else:
+                variant_type = "SNV"
+
             gene   = var_dict['variants'][variant]['INFO']['CSQ']['SYMBOL']
             results_list.append(gene)
             p_code = var_dict['variants'][variant]['INFO']['CSQ']['HGVSp']
+            p_code = p_code.replace('%3D', '=')
             if p_code:
               tmp_p_code = p_code.split(":")
               if len(tmp_p_code)>1:
@@ -354,7 +371,19 @@ def create_somatic_report():
             results_list.append(exon)
             enst_id= var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             results_list.append(enst_id)
+
             consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
+            c_list = [] 
+            conseq_list = consequence.split("&")
+            if len(conseq_list)>1:
+              for v in conseq_list:
+                v = v.replace("_", " ")
+                v = v.capitalize()
+                c_list.append(v)
+              consequence = ','.join(c_list)
+            else:
+              consequence = consequence.replace("_", " ")
+              consequence = consequence.capitalize()
             depth  = var_dict['variants'][variant]['INFO']['DP']
             VAF    = var_dict['variants'][variant]['AF']
             results_list.append(VAF)
@@ -403,9 +432,23 @@ def create_somatic_report():
                   disease_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DISEASE'].split('&')
                   for disease in disease_result:
                     if disease != '.':
+                      if disease == "Cancer":
+                        continue
+                      disease = disease.replace("_", " ")
+                      # print(disease)
+                      # if p.analysis_env['LANGUAGE'] == "cat":
+                      #   translator = Translator()
+                      #   print(translator.translate(disease, src='en', dest='ca'))
+                      #   translated = translator.translate(disease, src='en', dest='ca')
+                      #   disease = translated.text
+                      # if p.analysis_env['LANGUAGE'] == "esp":
+                      #   translator = Translator()
+                      #   translated = translator.translate(disease, src='en', dest='es')
+                      #   if translated is not None:
+                      #     disease = translated.text                       
                       diseases_list.append(disease)
             if drugs_list :
-              drugs_str = ','.join(list(set(drugs_list)))
+              drugs_str = ', '.join(list(set(drugs_list)))
             else:
               drugs_str = '.'
             if clin_trials_list:
@@ -449,7 +492,7 @@ def create_somatic_report():
             # Filling therapeutic table  
             if go_therapeutic == True:
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
               therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
@@ -457,7 +500,7 @@ def create_somatic_report():
             # Filling Other clinical variants  
             if go_other == True:
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(other_r)
@@ -465,7 +508,7 @@ def create_somatic_report():
             # Filling Rare variants  
             if go_rare == True:
               rare_v = RareVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type='.', consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)  
               db.session.add(rare_v)

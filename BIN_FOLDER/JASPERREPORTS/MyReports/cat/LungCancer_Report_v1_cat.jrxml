@@ -2,14 +2,14 @@
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LungCancer_Report_v1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="27e71b7b-825f-44e7-a876-57d68c7febbe">
 	<property name="com.jaspersoft.studio.data.sql.tables">
-		<![CDATA[U0FNUExFX0lORk9STUFUSU9OICwxNSwxNSwwNTc5MzJmNC0xMDQyLTQzMWEtYWUwYS02YjdjOGQ4
-NmY0ZjU7]]>
+		<![CDATA[IFNBTVBMRV9JTkZPUk1BVElPTiAgQVMgLDQyLDU4LDFhNWI5ZTdlLWE3NmUtNDc5Mi05ZGRiLWM2
+ZTQ1ZTFlOWM1ZTs=]]>
 	</property>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
 	<queryString language="SQL">
-		<![CDATA[SELECT SAMPLE_INFORMATION.lab_id,
-	SAMPLE_INFORMATION.ext_id
-FROM SAMPLE_INFORMATION]]>
+		<![CDATA[SELECT  SAMPLE_INFORMATION .lab_id,
+	 SAMPLE_INFORMATION .ext_id
+FROM  SAMPLE_INFORMATION]]>
 	</queryString>
 	<field name="lab_id" class="java.lang.Object">
 		<property name="com.jaspersoft.studio.field.name" value="lab_id"/>
@@ -42,7 +42,7 @@ FROM SAMPLE_INFORMATION]]>
 	<detail>
 		<band height="80">
 			<subreport>
-				<reportElement x="-20" y="10" width="595" height="62" uuid="b5a32bb8-41bd-4461-99c1-4048082b8bbe"/>
+				<reportElement isPrintRepeatedValues="false" x="-20" y="10" width="595" height="62" uuid="b5a32bb8-41bd-4461-99c1-4048082b8bbe"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Therapeutic_variants_cat.jasper"]]></subreportExpression>
 			</subreport>
@@ -56,7 +56,7 @@ FROM SAMPLE_INFORMATION]]>
 		</band>
 		<band height="67">
 			<subreport>
-				<reportElement x="-20" y="6" width="595" height="52" uuid="d37a7398-9864-48f2-bbbc-35d2780b8653"/>
+				<reportElement x="-20" y="6" width="595" height="52" isPrintInFirstWholeBand="true" uuid="d37a7398-9864-48f2-bbbc-35d2780b8653"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["rare_variants_cat.jasper"]]></subreportExpression>
 			</subreport>
@@ -106,7 +106,7 @@ FROM SAMPLE_INFORMATION]]>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="32" y="39" width="60" height="37" uuid="c1857f27-dd99-4117-b5ae-2724098e994c"/>
+				<reportElement x="32" y="37" width="60" height="37" uuid="c1857f27-dd99-4117-b5ae-2724098e994c"/>
 				<imageExpression><![CDATA["Gencardio_Diagnostics.png"]]></imageExpression>
 			</image>
 			<line>
@@ -134,28 +134,28 @@ FROM SAMPLE_INFORMATION]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="35" y="26" width="478" height="11" uuid="e2ee9282-4fd3-4d99-9a1d-839672364886"/>
-				<textElement textAlignment="Left">
-					<font size="7"/>
-				</textElement>
-				<text><![CDATA[L'activitat del laboratori està sota el sistema general de qualitat ISO9001:2015]]></text>
-			</staticText>
 			<image>
-				<reportElement x="103" y="41" width="50" height="35" uuid="63d03fe4-b4e3-45b0-b66f-c6df6b538f5b"/>
+				<reportElement x="103" y="39" width="50" height="35" uuid="63d03fe4-b4e3-45b0-b66f-c6df6b538f5b"/>
 				<imageExpression><![CDATA["IdIBGi-logo-noticies.png"]]></imageExpression>
 			</image>
 			<staticText>
-				<reportElement x="35" y="7" width="480" height="20" uuid="bca2ca0a-42d2-4827-ae29-3bf8d01b422d"/>
-				<textElement textAlignment="Left">
+				<reportElement x="34" y="17" width="480" height="20" uuid="bca2ca0a-42d2-4827-ae29-3bf8d01b422d"/>
+				<textElement textAlignment="Center">
 					<font size="7"/>
 				</textElement>
 				<text><![CDATA[Centre de Genètica Cardiovascular. Institut d’Investigació Biomèdica de Girona Dr. Josep Trueta. Parc Hospitalari Martí i Julià. Edifici M2. Salt 17190 (Girona). Tel 878987087. NIE G17432592.]]></text>
 			</staticText>
 			<image>
-				<reportElement x="430" y="35" width="100" height="47" uuid="7dd495ff-c7f1-49d5-9ab4-7609dd8094f0"/>
+				<reportElement x="430" y="33" width="100" height="47" uuid="7dd495ff-c7f1-49d5-9ab4-7609dd8094f0"/>
 				<imageExpression><![CDATA["/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/MyReports/cat/image_2020_10_14T12_57_59_614Z.png"]]></imageExpression>
 			</image>
+			<staticText>
+				<reportElement x="32" y="7" width="478" height="11" uuid="e2ee9282-4fd3-4d99-9a1d-839672364886"/>
+				<textElement textAlignment="Center">
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[L'activitat del laboratori està sota el sistema general de qualitat ISO9001:2015]]></text>
+			</staticText>
 		</band>
 	</pageFooter>
 </jasperReport>

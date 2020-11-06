@@ -319,31 +319,28 @@ def extract_coverage_metrics():
                     i = 0
                     for x in range (4,len(tmp)-1):
                         field = header[i]
-
                         # Checking number of bases at the threshold
                         if field not in call_rate_dict:
                             call_rate_dict[field] = 0
                         call_rate_dict[field] += int(tmp[x])
-
+                        if field not in lost_exons_dict:
+                            lost_exons_dict[field] = 0
                         # Now checking lost exons at the threshold
-                        if call_rate_dict[field] < length:
-                            if field not in lost_exons_dict:
-                                lost_exons_dict[field] = 0
+                        if int(tmp[x]) < length:
                             lost_exons_dict[field]+=1
                         i+=1
                 total_rois+=1
         p.analysis_env['ROI_NUMBER'] = str(total_rois)
+        if not 'CALL_RATE' in p.sample_env[sample]:
+            p.sample_env[sample]['CALL_RATE'] = {}
+        if not 'LOST_EXONS' in p.sample_env[sample]:
+            p.sample_env[sample]['LOST_EXONS'] = {}                 
         for field in call_rate_dict:
-            if not 'CALL_RATE' in p.sample_env[sample]:
-                p.sample_env[sample]['CALL_RATE'] = {}
             p.sample_env[sample]['CALL_RATE'][field] = round(100*(call_rate_dict[field]/total_bases),3)
 
-            if not 'LOST_EXONS' in p.sample_env[sample]:
-                p.sample_env[sample]['LOST_EXONS'] = {}
             if not field in p.sample_env[sample]['LOST_EXONS']:
                 p.sample_env[sample]['LOST_EXONS'][field] = 0
             p.sample_env[sample]['LOST_EXONS'][field] = lost_exons_dict[field]
-
         # Now get the mean coverage
         p.sample_env[sample]['MOSDEPTH_SUMMARY'] =  \
             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".mosdepth.summary.txt"
