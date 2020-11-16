@@ -97,7 +97,6 @@ def extract_mapping_metrics():
                     p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12] 
                     p.sample_env[sample]['ROI_PERCENTAGE'] = tmp[13] 
                     p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14] 
-
         return
         
     for sample in p.sample_env:
@@ -556,4 +555,3 @@ def index_bam(bam):
         else:
             msg = " ERROR: Something went wrong with Indexing process for " + bam
             logging.error(msg)
-            sys.exit()

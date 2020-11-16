@@ -108,6 +108,42 @@ class Disclaimer(db.Model):
         self.legal_provisions= legal_provisions
         self.language = language
 
+class Cna(db.Model):
+    __tablename__ = 'CNA'
+    id = db.Column(Integer, primary_key=True)
+    chromosome = db.Column(String(50))
+    start = db.Column(String(50))
+    end = db.Column(String(50))
+    gene = db.Column(String(50))
+    genome_version = db.Column(String(50))
+    panel_name = db.Column(String(50))
+    panel_version = db.Column(String(50))
+    def __init__(self, id, chromosome, start, end, gene, genome_version, panel_name, panel_version):
+        self.id        = id
+        self.chromosome= chromosome
+        self.start     = start
+        self.end       = end
+        self.gene      = gene
+        self.genome_version = genome_version
+        self.panel_name= panel_name
+        self.panel_version= panel_version
+
+def load_cna(pname):
+    pname = pname.replace(".bed", "")
+    pname = pname.replace(".v1", "")
+    cna_env = defaultdict(dict)
+    cna_info = Cna.query.filter_by(panel_name=pname).all()
+    if cna_info:
+        for g in cna_info:
+            print(g.gene)
+            cna_env[g.gene] = defaultdict(dict)
+            cna_env[g.gene]['gene'] = g.gene
+            cna_env[g.gene]['chromosome'] = g.chromosome
+            cna_env[g.gene]['start'] = g.start
+            cna_env[g.gene]['end'] = g.end
+            cna_env[g.gene]['GENOME_VERSION'] = g.genome_version
+    return cna_env
+
 
 def load_panel_biomarkers(pname):
 

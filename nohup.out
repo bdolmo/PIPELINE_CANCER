@@ -1,0 +1,180 @@
+cat
+ INFO:/usr/bin/docker is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bcftools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/samtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bedtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/freebayes is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/fastp is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bwa is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/mosdepth is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/manta-1.6.0.centos6_x86_64/bin/configManta.py is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bgzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/tabix is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/gunzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/jasperstarter/bin/jasperstarter is available
+ INFO: docker image for broadinstitute/gatk:4.1.3.0 was found
+ INFO: docker image for broadinstitute/picard was found
+ INFO: Trimming sample AP0025-20
+ INFO: Trimming sample AP0023-20
+ INFO: Trimming sample AP0030-20
+ INFO: Trimming sample AP0034-20
+ INFO: Trimming sample AP0024-20
+ INFO: Trimming sample AP0029-20
+ INFO: Trimming sample AP0032-20
+ INFO: Trimming sample AP0033-20
+ INFO: Trimming sample AP0031-20
+ INFO: Skipping list file generation for panel TruetaLungCancer.v1.bed . File is already available
+ INFO: Mapping sample AP0025-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0025-20/BAM_FOLDER/AP0025-20.bam
+ INFO: Mapping sample AP0023-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0023-20/BAM_FOLDER/AP0023-20.bam
+ INFO: Mapping sample AP0030-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0030-20/BAM_FOLDER/AP0030-20.bam
+ INFO: Mapping sample AP0034-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0034-20/BAM_FOLDER/AP0034-20.bam
+ INFO: Mapping sample AP0024-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0024-20/BAM_FOLDER/AP0024-20.bam
+ INFO: Mapping sample AP0029-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0029-20/BAM_FOLDER/AP0029-20.bam
+ INFO: Mapping sample AP0032-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0032-20/BAM_FOLDER/AP0032-20.bam
+ INFO: Mapping sample AP0033-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0033-20/BAM_FOLDER/AP0033-20.bam
+ INFO: Mapping sample AP0031-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0031-20/BAM_FOLDER/AP0031-20.bam
+ INFO: Removing duplicates of sample AP0025-20
+ ERROR: Something went wrong with rm duplicates AP0025-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200729-CGC64004/AP0025-20/BAM_FOLDER/AP0025-20.rmdup.bam
+cat
+ INFO:/usr/bin/docker is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bcftools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/samtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bedtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/freebayes is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/fastp is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bwa is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/mosdepth is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/manta-1.6.0.centos6_x86_64/bin/configManta.py is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bgzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/tabix is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/gunzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/jasperstarter/bin/jasperstarter is available
+ INFO: docker image for broadinstitute/gatk:4.1.3.0 was found
+ INFO: docker image for broadinstitute/picard was found
+ INFO: Trimming sample AP0045-20
+ INFO: Trimming sample AP0048-20
+ INFO: Trimming sample AP0037-20
+ INFO: Trimming sample AP0046-20
+ INFO: Trimming sample AP0043-20
+ INFO: Trimming sample AP0036-20
+ INFO: Trimming sample AP0047-20
+ INFO: Trimming sample AP0044-20
+ INFO: Skipping list file generation for panel TruetaLungCancer.v1.bed . File is already available
+ INFO: Mapping sample AP0045-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0045-20/BAM_FOLDER/AP0045-20.bam
+ INFO: Mapping sample AP0048-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0048-20/BAM_FOLDER/AP0048-20.bam
+ INFO: Mapping sample AP0037-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0037-20/BAM_FOLDER/AP0037-20.bam
+ INFO: Mapping sample AP0046-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0046-20/BAM_FOLDER/AP0046-20.bam
+ INFO: Mapping sample AP0043-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0043-20/BAM_FOLDER/AP0043-20.bam
+ INFO: Mapping sample AP0036-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0036-20/BAM_FOLDER/AP0036-20.bam
+ INFO: Mapping sample AP0047-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0047-20/BAM_FOLDER/AP0047-20.bam
+ INFO: Mapping sample AP0044-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0044-20/BAM_FOLDER/AP0044-20.bam
+ INFO: Removing duplicates of sample AP0045-20
+ ERROR: Something went wrong with rm duplicates AP0045-20
+ INFO: Indexing bam /home/bdelolmo/Escriptori/RUN20200901-CGC64004/AP0045-20/BAM_FOLDER/AP0045-20.rmdup.bam
+cat
+ INFO:/usr/bin/docker is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bcftools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/samtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bedtools is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/freebayes is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/fastp is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bwa is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/mosdepth is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/manta-1.6.0.centos6_x86_64/bin/configManta.py is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/bgzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/tabix is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/gunzip is available
+ INFO:/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/jasperstarter/bin/jasperstarter is available
+ INFO: docker image for broadinstitute/gatk:4.1.3.0 was found
+ INFO: docker image for broadinstitute/picard was found
+ INFO: Skipping trimming of sample AP0065-20
+ INFO: Skipping trimming of sample AP0069-20
+ INFO: Skipping trimming of sample AP0067-20
+ INFO: Skipping trimming of sample AP0062-20
+ INFO: Skipping trimming of sample AP0058-20
+ INFO: Skipping trimming of sample AP0064-20
+ INFO: Skipping trimming of sample AP0066-20
+ INFO: Skipping trimming of sample AP0068-20
+ INFO: Skipping trimming of sample AP0063-20
+ INFO: Skipping trimming of sample AP0061-20
+ INFO: Skipping trimming of sample AP0059-20
+ INFO: Skipping trimming of sample Undetermined
+ INFO: Skipping trimming of sample AP0060-20
+ INFO: Skipping list file generation for panel TruetaLungCancer.v1.bed . File is already available
+ INFO: Skipping mapping for sample AP0065-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0069-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0067-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0062-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0058-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0064-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0066-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0068-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0063-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0061-20 BAM file is already available
+ INFO: Skipping mapping for sample AP0059-20 BAM file is already available
+ INFO: Skipping mapping for sample Undetermined BAM file is already available
+ INFO: Skipping mapping for sample AP0060-20 BAM file is already available
+ INFO: Skipping duplicate removal for sample AP0065-20
+ INFO: Skipping duplicate removal for sample AP0069-20
+ INFO: Skipping duplicate removal for sample AP0067-20
+ INFO: Skipping duplicate removal for sample AP0062-20
+ INFO: Skipping duplicate removal for sample AP0058-20
+ INFO: Skipping duplicate removal for sample AP0064-20
+ INFO: Skipping duplicate removal for sample AP0066-20
+ INFO: Skipping duplicate removal for sample AP0068-20
+ INFO: Skipping duplicate removal for sample AP0063-20
+ INFO: Skipping duplicate removal for sample AP0061-20
+ INFO: Skipping duplicate removal for sample AP0059-20
+ INFO: Skipping duplicate removal for sample Undetermined
+ INFO: Skipping duplicate removal for sample AP0060-20
+ INFO: Skipping coverage metric extraction
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping coverage metrics analysis
+ INFO: Skipping mapping metric extraction
+ INFO: Creating summary QC
+ INFO: Skipping summary QC joining
+ INFO: Running Mutect2 for sample AP0065-20
+/usr/bin/docker run -v /home/bdelolmo/Escriptori/RUN20200930-CGC64004/AP0065-20/BAM_FOLDER:/bam_data/ -v /home/bdelolmo/Escriptori/RUN20200930-CGC64004/AP0065-20/VCF_FOLDER:/vcf_data/ -v /home/bdelolmo/Escriptori/PIPELINE_CANCER/BUNDLE_FOLDER/hg19/:/bundle/ -v /home/bdelolmo/Escriptori/PIPELINE_CANCER/PANEL_FOLDER:/panel_data/ -v /home/bdelolmo/Escriptori/PIPELINE_CANCER/ANNOTATION_FOLDER/gnomAD:/gnomad_data/ -it broadinstitute/gatk:4.1.3.0 gatk Mutect2 -I /bam_data/AP0065-20.rmdup.bam -O /vcf_data/AP0065-20.mutect2.vcf -L /panel_data/TruetaLungCancer.v1.list -R /bundle/ucsc.hg19.fasta --germline-resource /gnomad_data/somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz -max-mnp-distance 0 --native-pair-hmm-threads 4
+ ERROR: Something went wrong with Mutect2 varcall for sample AP0065-20
+ INFO: Running FilterMutectCalls for sample AP0065-20
+/usr/bin/docker run -v /home/bdelolmo/Escriptori/RUN20200930-CGC64004/AP0065-20/VCF_FOLDER:/vcf_data/ -v /home/bdelolmo/Escriptori/PIPELINE_CANCER/BUNDLE_FOLDER/hg19/:/bundle/ -it broadinstitute/gatk:4.1.3.0 gatk FilterMutectCalls -R /bundle/ucsc.hg19.fasta -V /vcf_data/AP0065-20.mutect2.vcf -O /vcf_data/AP0065-20.mutect2.filtered.vcf
+ ERROR: Something went wrong with FilterMutectCalls varcall for sample AP0065-20
+Traceback (most recent call last):
+  File "pipeline_2020.py", line 87, in <module>
+    main(ARGUM)
+  File "pipeline_2020.py", line 44, in main
+    v.do_var_call()
+  File "/home/bdelolmo/Escriptori/PIPELINE_CANCER/modules/var_call.py", line 23, in do_var_call
+    do_mutect2()
+  File "/home/bdelolmo/Escriptori/PIPELINE_CANCER/modules/var_call.py", line 249, in do_mutect2
+    os.remove(p.sample_env[sample]['MUTECT2_VCF'])
+FileNotFoundError: [Errno 2] No such file or directory: '/home/bdelolmo/Escriptori/RUN20200930-CGC64004/AP0065-20/VCF_FOLDER/AP0065-20.mutect2.vcf'

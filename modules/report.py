@@ -91,7 +91,8 @@ def create_somatic_report():
             __tablename__ = 'SAMPLE_INFORMATION'
             id = db.Column(db.Integer, primary_key=True)
             lab_id = db.Column(db.String(120))
-            ext_id = db.Column(db.String(80))
+            ext1_id = db.Column(db.String(80))
+            ext2_id = db.Column(db.String(80))
             sex    =  db.Column(db.String(80))
             diagnoses =  db.Column(db.String(80))
             physician_name =  db.Column(db.String(80))
@@ -208,10 +209,12 @@ def create_somatic_report():
             def __repr__(self):
                 return '<Disclaimers %r>' % self.gene_list
         db.create_all()
+        print(sample)
+        print(p.lab_data[sample]['AP_CODE']  )
 
-        sample_r = Sample(lab_id=sample, ext_id='.', sex='.', diagnoses='.', physician_name='.',
-          medical_center='.', medical_address='.', sample_type='.', extraction_date='.',
-          tumor_purity='.', panel=p.analysis_env['PANEL_NAME'], analysis_date= p.analysis_env['ANALYSIS_DATE'])
+        sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'], ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.', physician_name='.',
+          medical_center='.', medical_address='.', sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
+          tumor_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], analysis_date= p.analysis_env['ANALYSIS_DATE'])
         db.session.add(sample_r)
         db.session.commit()
 

@@ -34,12 +34,16 @@ def main(args):
     # Setting aux files
     p.set_auxfiles_env()
 
+
+
+
     # Trim fastq files
     t.trim_fastqs()
 
     # Map fastq files, rmdup, bam qc
     m.do_all()
-
+    for sample in p.lab_data:
+        print("sample" + sample + " APCODE" + p.lab_data[sample]['AP_CODE'])
     # Perform var calling
     v.do_var_call()
 
@@ -65,6 +69,10 @@ def parse_arguments():
         help="Output directory", dest='output_dir')
     parser.add_argument("-i", "--input_dir", required=True, type=str,
         help="Input directory", dest='input_dir')
+    parser.add_argument("--sample_data", type=str,
+        help="Sample data docx", dest='sample_data')
+    parser.add_argument("--lab_data", type=str,
+        help="Lab data xlsx", dest='lab_data')
     parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
         help="Report language", dest='language')
     # Now subparsers

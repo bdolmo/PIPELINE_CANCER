@@ -7,10 +7,13 @@ import logging
 from collections import defaultdict
 from pathlib import Path
 import subprocess
+import docx
+import csv
 from civicpy import civic, exports
 from modules import utils as u
 from modules import sqlite as s
 from datetime import datetime
+import pandas as pd
 
 global sample_env 
 sample_env = defaultdict(dict)
@@ -31,7 +34,7 @@ def set_analysis_env(args):
         'PANEL'          : os.path.abspath(args.panel),
         'PANEL_NAME'     : os.path.basename(args.panel),
         'PANEL_LIST'     : defaults['PANEL_FOLDER'] + "/" \
-            + os.path.basename(args.panel).replace(".bed", ".list"),
+            +  os.path.basename(args.panel) + "/" + os.path.basename(args.panel).replace(".bed", ".list"),
         'PANEL_LIST_NAME': os.path.basename(os.path.abspath(args.panel).replace(".bed", ".list")),
         'ROI_NUMBER'     : '.',
         'GENOME_VERSION' : args.reference,
@@ -40,6 +43,13 @@ def set_analysis_env(args):
         'ANALYSIS_DATE'  : dt_string,
         'LANGUAGE'       : args.language,
     }
+ 
+    if os.path.isfile(args.sample_data) :
+        analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
+    else:
+        analysis_env['SAMPLE_DATA'] = "."
+    if os.path.isfile(args.lab_data):
+        analysis_env['LAB_DATA'] = os.path.abspath(args.lab_data)
 
     # Default annotation files for each genome version
     if analysis_env['VARIANT_CLASS'] == "somatic":
@@ -50,6 +60,9 @@ def set_analysis_env(args):
             analysis_env['CGI_BIOMARKERS'] = defaults['CGI_FOLDER'] + "/" \
                 + "cgi_biomarkers_latest" + "/" + "cgi_biomarkers_per_variant.tsv"
             analysis_env['CGI_BIOMARKERS_NAME'] = "cgi_biomarkers_per_variant.tsv"
+            analysis_env['GNOMAD_AF_VCF'] = defaults['GNOMAD_FOLDER'] + "/" \
+                + "somatic-b37_af-only-gnomad.raw.sites.vcf"
+            analysis_env['GNOMAD_AF_VCF_NAME'] = "somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz"
     if analysis_env['LANGUAGE'] == "cat":
         defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat"
 
@@ -59,7 +72,7 @@ def set_analysis_env(args):
         os.mkdir(analysis_env['OUTPUT_DIR'])
 
     global logging
-    log_file = analysis_env['OUTPUT_DIR'] + "/" + analysis_env['OUTPUT_NAME'] + ".pipeline.log"
+    log_file = os.path.abspath(analysis_env['OUTPUT_DIR']) + "/" + analysis_env['OUTPUT_NAME'] + ".pipeline.log"
     logging.basicConfig(filename=log_file, filemode='w', 
         format='PID:%(process)d\t%(asctime)s\t%(message)s')
     logging.getLogger().setLevel(logging.INFO)
@@ -72,6 +85,75 @@ def set_analysis_env(args):
         logging.error(msg)
         sys.exit()
 
+    global sample_data
+    sample_data = defaultdict(dict)
+
+    # Load sample data; id's, tumor purity, etc
+    if os.path.isfile(analysis_env['SAMPLE_DATA']):
+
+        if not analysis_env['SAMPLE_DATA'].endswith(".docx"):
+            msg = " ERROR: --sample_data " + analysis_env['SAMPLE_DATA'] + " is not a docx file"
+            print(msg)
+            logging.error(msg)
+            sys.exit()
+
+        doc = docx.Document(analysis_env['SAMPLE_DATA'])
+        all_t = doc.tables
+        is_date = False
+        is_sample = False
+        petition_date = ""
+        for t in all_t:
+            row_idx = 0
+            for row in t.rows:
+                cell_idx = 0
+                for cell in row.cells:
+                    cell.text = cell.text.rstrip("\n")
+                    if cell.text == "":
+                        continue                    
+                    if cell.text.startswith('DATA'):
+                        is_date = True
+                        break
+                        continue
+                    if cell.text.startswith('NOM'):
+                        is_date = False
+                        is_sample= True
+                        break
+                        continue
+                    if is_date:
+                        if cell_idx == 0:
+                            petition_date = cell.text
+                    if is_sample:
+                        if cell_idx == 0:
+                            sample = cell.text
+                            sample_data[sample]['PETITION_DATE'] = petition_date
+                        if cell_idx == 1:
+                            purity = re.search('^\d+%', cell.text).group(0)
+                            sample_data[sample]['PURITY'] = purity
+                    cell_idx+=1
+            row_idx += 1
+    else:
+        msg = " WARNING: sample data (.docx) file was not found"
+        print (msg)
+        logging.error(msg)
+
+    global lab_data
+    lab_data = defaultdict(dict)
+    if os.path.isfile(analysis_env['LAB_DATA']):
+        lab_df = pd.read_excel(analysis_env['LAB_DATA'], skiprows=10)
+        for index,row in lab_df.iterrows():
+            lab_id  = row['#SAMPLE IDIBGI ID']
+            print (lab_id)
+            ext1_id = row['SAMPLE FIC ID']
+            ext2_id = row['HC PACIENT']
+           # if lab_id in sample_data:             
+            if ext1_id in sample_data:
+               # sample_data[lab_id]= defaultdict(dict)
+                lab_data[lab_id]['AP_CODE'] = ext1_id
+                lab_data[lab_id]['HC_CODE'] = ext2_id
+                lab_data[lab_id]['PURITY']  = sample_data[ext1_id]['PURITY']
+                lab_data[lab_id]['PETITION_DATE'] = sample_data[ext1_id]['PETITION_DATE']
+    for sample in lab_data:
+        print (sample + " " + (lab_data[sample]['AP_CODE'])
 def set_defaults(main_dir):
     ''' 
         Set default parameters
@@ -88,6 +170,8 @@ def set_defaults(main_dir):
         'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
         # chimerKB folder
         'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
+        # gnomAD folder
+        'GNOMAD_FOLDER' : main_dir + "/ANNOTATION_FOLDER/gnomAD",
         # CGI folder
         'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
         # Setting JASPER directories
@@ -126,6 +210,11 @@ def get_panel_configuration(main_dir):
     disclaimers_env = defaultdict(dict)
     disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'], analysis_env['LANGUAGE'])
 
+    global cna_plot_env
+    cna_plot_env = defaultdict(dict)
+    cna_plot_env = s.load_cna(analysis_env['PANEL_NAME'])
+    print(str(cna_plot_env))
+
 def set_auxfiles_env():
     ''' 
         Set ancillary files (gnome fasta , etc)
@@ -133,17 +222,23 @@ def set_auxfiles_env():
     global aux_env 
     aux_env = defaultdict(dict)
     if analysis_env['GENOME_VERSION'] == 'hg19':
-        aux_env['GENOME_FASTA']=  defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.fasta"
-        aux_env['GENOME_NAME'] = "ucsc.hg19.fasta"
-        aux_env['GENOME_DICT'] = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
+        defaults['BUNDLE_FOLDER'] = defaults['BUNDLE_FOLDER'] + "/hg19/"
+        aux_env['GENOME_FASTA']     =  defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.fasta"
+        aux_env['GENOME_NAME']      = "ucsc.hg19.fasta"
+        aux_env['GENOME_DICT']      = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
         aux_env['GENOME_DICT_NAME'] = "ucsc.hg19.dict"
-        aux_env['GENE_LIST']  = defaults['BUNDLE_FOLDER'] + "/genelist.hg19.bed.gz"
-        if analysis_env['LANGUAGE'] == "cat": 
-            aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
+        aux_env['GENE_LIST']        = defaults['BUNDLE_FOLDER'] + "/genelist.hg19.bed.gz"
+        aux_env['GENE_LIST_NAME']   = "genelist.hg19.bed.gz"
+        aux_env['NORMALS_REF_CNA']  = defaults['PANEL_FOLDER'] + "/" +  analysis_env['PANEL_NAME'].replace(".bed", "")\
+          + "/" + analysis_env['PANEL_NAME'].replace(".bed", ".cnn")
+        aux_env['NORMALS_REF_CNA_NAME']  = analysis_env['PANEL_NAME'].replace(".bed", "cnn")
+    if analysis_env['LANGUAGE'] == "cat": 
+        aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
             +"/JASPERREPORTS/MyReports/cat/LungCancer_Report_v1_cat.jrxml"
-        if analysis_env['LANGUAGE'] == "en": 
-            aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
+    if analysis_env['LANGUAGE'] == "en": 
+        aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
             +"/JASPERREPORTS/MyReports/en/LungCancer_Report_v1_en.jrxml"
+
 def set_system_env():
     ''' 
         Set system binary parameters
@@ -160,6 +255,8 @@ def set_system_env():
         'BWA'      : defaults['BIN_FOLDER'] +  "/bwa",
         'MOSDEPTH' : defaults['BIN_FOLDER'] +  "/mosdepth",
         'MANTA_CONFIG' : defaults['BIN_FOLDER'] + '/manta-1.6.0.centos6_x86_64/bin/configManta.py',
+        'PURECN'   : defaults['BIN_FOLDER'] + "/PureCN/extdata/PureCN.R",
+        'CNVKIT'   : defaults['BIN_FOLDER'] + "/cnvkit/cnvkit.py",
         'BGZIP'    : defaults['BIN_FOLDER'] +  "/bgzip",
         'TABIX'    : defaults['BIN_FOLDER'] +  "/tabix",
         'GUNZIP'   : defaults['BIN_FOLDER'] +  "/gunzip",
@@ -184,11 +281,13 @@ def set_system_env():
 
     gatkimage   = 'broadinstitute/gatk:4.1.3.0'
     picardimage = 'broadinstitute/picard'
+    cnvkitimage = 'etal/cnvkit'
     #vepimage    = 'ensembl/vep:latest
 
     docker_env = {
         'GATK'   : gatkimage,
-        'PICARD' : picardimage
+        'PICARD' : picardimage,
+        'CNVKIT' : cnvkitimage
     }
 
     for image in docker_env:
