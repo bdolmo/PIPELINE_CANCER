@@ -118,7 +118,9 @@ class Cna(db.Model):
     genome_version = db.Column(String(50))
     panel_name = db.Column(String(50))
     panel_version = db.Column(String(50))
-    def __init__(self, id, chromosome, start, end, gene, genome_version, panel_name, panel_version):
+    dump_therapeutic = db.Column(String(50))
+    min_cn = db.Column(String(50))
+    def __init__(self, id, chromosome, start, end, gene, genome_version, panel_name, panel_version, dump_therapeutic, min_cn):
         self.id        = id
         self.chromosome= chromosome
         self.start     = start
@@ -127,6 +129,8 @@ class Cna(db.Model):
         self.genome_version = genome_version
         self.panel_name= panel_name
         self.panel_version= panel_version
+        self.dump_therapeutic = dump_therapeutic
+        self.min_cn = min_cn
 
 def load_cna(pname):
     pname = pname.replace(".bed", "")
@@ -141,7 +145,9 @@ def load_cna(pname):
             cna_env[g.gene]['chromosome'] = g.chromosome
             cna_env[g.gene]['start'] = g.start
             cna_env[g.gene]['end'] = g.end
-            cna_env[g.gene]['GENOME_VERSION'] = g.genome_version
+            cna_env[g.gene]['genome_version'] = g.genome_version
+            cna_env[g.gene]['min_cn'] = g.min_cn
+
     return cna_env
 
 

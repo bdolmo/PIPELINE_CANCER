@@ -3,6 +3,7 @@
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Therapeutic_variants" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="ed1b7c32-5c53-4964-939f-9b652637854d">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<style name="Style1"/>
 	<subDataset name="therapeutic_table" uuid="80249774-1574-4fcd-ac47-1d3d1ecdbe41">
 		<property name="com.jaspersoft.studio.data.sql.tables">
 			<![CDATA[IFRIRVJBUEVVVElDX1ZBUklBTlRTICBBUyAsMTM4LDczLGQ3NGUyMzEzLTQyYmQtNDVlZC04ZTU0
@@ -226,30 +227,30 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8.51"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss")  || $F{variant_type}.equals("SV")? "" :  $F{exon}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="273" y="34" width="58" height="12" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
+				<reportElement positionType="Float" x="254" y="35" width="77" height="11" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{allele_frequency}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") ? CONCATENATE("Copy number:",$F{allele_frequency}.toString()) : CONCATENATE("VAF:",$F{allele_frequency}.toString())]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" isPrintRepeatedValues="false" x="393" y="21" width="51" height="12" uuid="16926d5e-0d17-487f-84cd-7517f6dcd79d"/>
+				<reportElement positionType="Float" isPrintRepeatedValues="false" x="349" y="21" width="95" height="12" uuid="16926d5e-0d17-487f-84cd-7517f6dcd79d"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{max_af}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" : CONCATENATE("Max AF:",$F{max_af}.toString())]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="422" y="34" width="78" height="12" uuid="ca2a4aa7-92ce-4428-ba76-1ffd7bf7b9a4"/>
+				<reportElement positionType="Float" x="349" y="34" width="151" height="12" uuid="ca2a4aa7-92ce-4428-ba76-1ffd7bf7b9a4"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" : CONCATENATE("Grup poblacional:",$F{max_af_pop}.toString())]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField>
 				<reportElement positionType="Float" stretchType="ElementGroupBottom" isPrintRepeatedValues="false" x="38" y="85" width="146" height="15" uuid="94a0d40a-77a4-48c1-b4fd-cf138de4c0ce">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -259,7 +260,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField>
 				<reportElement positionType="Float" x="195" y="85" width="150" height="15" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -270,7 +271,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement positionType="Float" x="353" y="85" width="142" height="15" uuid="ca214483-512d-41d2-a550-a133c449acfb">
+				<reportElement positionType="Float" x="352" y="85" width="142" height="15" uuid="ca214483-512d-41d2-a550-a133c449acfb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement>
@@ -283,36 +284,8 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{depth}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals( "Amplification") || $F{variant_type}.equals("Loss")  ? "" :  $F{depth}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement positionType="Float" x="36" y="48" width="25" height="12" uuid="1155cccb-fe69-44d5-b41c-274240c5e3f0"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8.5"/>
-				</textElement>
-				<text><![CDATA[Exó:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="349" y="21" width="52" height="12" uuid="80d7b3c8-5b5f-41ea-86aa-21920569f36d"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Max Freq.:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="349" y="34" width="83" height="12" uuid="f65e049a-c6d1-4792-85a3-9955c85a725c"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Grup poblacional:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement positionType="Float" x="253" y="34" width="22" height="12" uuid="a06ee759-09f1-48d4-bbeb-49ea19c33853"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[VAF:]]></text>
-			</staticText>
 			<staticText>
 				<reportElement positionType="Float" mode="Opaque" x="349" y="64" width="150" height="19" forecolor="#000000" backcolor="#DBDBDB" uuid="8629967b-f64d-459a-8cfa-0ebb2c35d7d7"/>
 				<textElement verticalAlignment="Middle"/>
@@ -379,26 +352,33 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<text><![CDATA[Classe:]]></text>
 			</staticText>
-			<staticText>
-				<reportElement x="253" y="19" width="45" height="14" uuid="b34c8ffc-ebd7-46b7-bef6-08f5e0f433a8"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Cobertura:]]></text>
-			</staticText>
-			<staticText>
-				<reportElement x="253" y="47" width="78" height="14" uuid="3a47b1c2-f07e-442d-8b0a-131cd58932ee"/>
-				<textElement verticalAlignment="Middle">
-					<font size="8"/>
-				</textElement>
-				<text><![CDATA[Localització/Efecte:]]></text>
-			</staticText>
 			<textField>
-				<reportElement positionType="Float" x="332" y="48" width="127" height="12" uuid="dd14c747-ebfd-43b7-b9b0-1c8115198db3"/>
+				<reportElement positionType="Float" x="333" y="47" width="127" height="14" uuid="dd14c747-ebfd-43b7-b9b0-1c8115198db3"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{consequence}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" :  $F{consequence}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="253" y="19" width="47" height="14" uuid="09f9ed9c-a4c0-4de6-9a01-51be0a8dfd95"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals( "Amplification") || $F{variant_type}.equals("Loss")  ? "" : "Cobertura:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="35" y="48" width="25" height="12" uuid="0ba1b15c-6edf-467a-802e-aba80356f5fe"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8.51"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" : "Exó:"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement positionType="Float" x="254" y="47" width="91" height="14" uuid="86d024ed-f6bf-446a-b2e6-5970a18a2d09"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" :  "Localització/Efecte:"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

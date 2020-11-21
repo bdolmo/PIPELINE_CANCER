@@ -31,7 +31,7 @@ def do_annotation():
     filter_transcripts()
 
     if p.analysis_env['VARIANT_CLASS'] == "somatic":
-        # CIViC annotation
+        # CIViC annotation for SNV/Indels
         do_civic()
 
         # Cancer Genome Interpreter annotation
@@ -43,8 +43,116 @@ def do_annotation():
         # Add flanking genes to SVs
         add_edge_genes()
 
-        # merge snv and fusion vcf  
+        annotate_cnas()
+        
+        # Merge snv and fusion vcf  
         merge_vcfs()
+        # sys.exit()
+
+def annotate_cnas():
+  
+  msg = " INFO: Adding genes to CNA segments"
+  logging.info(msg)
+  print(msg)
+
+  # Instantiante CIViC class
+  civic = Civic()
+
+  # In-memory loading of CIViC database
+  civic.loadCivic()
+
+  for sample in p.sample_env:
+
+    p.sample_env[sample]['READY_CNA_VCF'] = \
+      p.sample_env[sample]['CNV_VCF'].replace(".vcf", ".annotated.vcf")
+
+    if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
+
+      tmp_intersect =  p.sample_env[sample]['READY_CNA_VCF'].replace(".vcf", ".bed")
+
+      bashCommand = '{} intersect -a {} -b {} -header -wa -wb | cut -f 1,2,3,4,5,6,7,8,9,10,14 | uniq > {}' \
+        .format(p.system_env['BEDTOOLS'], p.sample_env[sample]['CNV_VCF'], p.analysis_env['PANEL'], tmp_intersect)
+
+      logging.info(bashCommand)
+      process = subprocess.Popen(bashCommand,#.split(),
+        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output, error = process.communicate()
+      if not error.decode('UTF-8') and not output.decode('UTF-8'):
+        msg = " INFO: CNA gene annotation for sample " + sample + " ended successfully"
+        print(msg)
+        logging.info(msg)
+      else:
+        msg = " ERROR: Something went wrong with CNA gene annotation for sample " + sample
+        print(msg)
+        logging.error(msg)
+
+      civic_fields = []
+      civic_fields.append("EV_ID")
+      civic_fields.append("EV_DIRECTION")
+      civic_fields.append("EV_LEVEL")
+      civic_fields.append("EV_SIGNIFICANCE")
+      civic_fields.append("EV_DRUGS")
+      civic_fields.append("EV_DISEASE")
+      civic_fields.append("EV_PMID")
+      civic_fields.append("EV_CLINICAL_TRIALS")
+      civic_info_header = "##INFO=<ID=CIVIC,Number=.,Type=String,Description=\"Civic evidence. Format: " + '|'.join(civic_fields) + "\">"
+      genes_info_header = "##INFO=<ID=CNA_GENES,Number=1,Type=String,Description=\"Genes affected by a CNA\">" 
+      seen = defaultdict(dict)
+      o = open(p.sample_env[sample]['READY_CNA_VCF'], "w")
+      with open(tmp_intersect) as f:
+        for line in f:
+          line = line.rstrip("\n")
+          if not line in seen:
+            seen[line] = 0
+          else:
+            seen[line]+=1
+            if seen[line] > 1:
+              continue   
+          tmp = line.split("\t")
+          if line.startswith("#"):
+            if line.startswith("#CHROM"):
+              o.write(civic_info_header + "\n")
+              o.write(genes_info_header + "\n")
+              o.write(line+"\n")
+            else:
+              o.write(line+"\n")
+          else:
+            chr = tmp[0]
+            pos = tmp[1]
+            id  = tmp[2]
+            ref = tmp[3]
+            alt = tmp[4]
+            qual= tmp[5]
+            filter = tmp[6]
+            info = tmp[7]
+            format_tag = tmp[8]
+            format = tmp[9]
+            gene = tmp[-1] 
+            vartype = "CNA"
+            variant  = ""
+            tmp_info = info.split(";")
+            for field in tmp_info:
+              if 'SVTYPE' in field:
+                variant = field.replace("SVTYPE=","")
+            exon = '.'
+            consequence = '.'
+            civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
+            civic_annotation = ','.join(civic_ev_list)
+            if civic_annotation == "":
+              civic_annotation = "."
+            tmp[7] = tmp[7] + ";CNA_GENES=" + gene + ";CIVIC="+civic_annotation
+            del tmp[-1]
+
+            line = '\t'.join(tmp)
+            o.write(line+"\n")
+      o.close()
+      u.convert_vcf_2_json(p.sample_env[sample]['READY_CNA_VCF'])
+      os.remove(tmp_intersect)
+    else:
+        msg = " INFO: Skipping CNA gene annotation for sample " + sample
+        print(msg)
+        logging.info(msg)     
+
 
 def add_edge_genes():
 
@@ -228,7 +336,7 @@ def merge_vcfs():
     for sample in p.sample_env:
         vcf1 = p.sample_env[sample]['READY_SV_VCF']
         vcf2 = p.sample_env[sample]['READY_SNV_VCF']
-
+        vcf3 = p.sample_env[sample]['READY_CNA_VCF']  
         msg = " INFO: Merging " + sample + " vcfs"
         print(msg)
         logging.info(msg)
@@ -245,8 +353,12 @@ def merge_vcfs():
             u.index_vcf(vcf2)
         else:
             vcf2 = vcf2 + ".gz"
-        
-        bashCommand = ('{} merge {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'], vcf1, vcf2, merged_vcf)
+        if not '.gz' in vcf3:
+            vcf3 = u.compress_vcf(vcf3)
+            u.index_vcf(vcf3)
+        else:
+            vcf3 = vcf3 + ".gz"
+        bashCommand = ('{} merge {} {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'], vcf1, vcf2, vcf3, merged_vcf)
         print(bashCommand)
         if not os.path.isfile(merged_vcf):
             msg = " INFO: " + bashCommand
@@ -276,42 +388,57 @@ class Civic:
 
   def queryCivic(self, gene, variant, vartype, exon, conseq):
     '''
-       return list of evidences given a gene,variant,exon and conseq
+       return list of evidences given a gene, variant, exon and conseq
     '''
     ev_list = []
     candidate_var = variant
-
     candidate_var_list = []
-    candidate_var_list.append(variant)
 
-    if not 'synonymous_variant' in conseq:
-      candidate_var_list.append(variant[:-1])
-      candidate_var_list.append(variant[1:])
-      candidate_var_list.append(variant[1:-1])    
-      candidate_var_list.append(variant[:-1]+"X")
+    if vartype == "CNA":
+      if variant == "DEL":
+        candidate_var_list.append("DELETION")
+        candidate_var_list.append("LOSS")
+      if variant == "DUP":
+        candidate_var_list.append("AMPLIFICATION")
+        candidate_var_list.append("GAIN")
+    else:
+      candidate_var_list.append(variant)
+      if not 'synonymous_variant' in conseq:
+        if 'splice' in conseq:
+          var = "EXON "  + str(exon) + " SKIPPING MUTATION"
+          candidate_var_list.append(var)       
+        candidate_var_list.append(variant[:-1])
+        candidate_var_list.append(variant[1:])
+        candidate_var_list.append(variant[1:-1])    
+        candidate_var_list.append(variant[:-1]+"X") 
 
-    # if 'intron_variant' in conseq or 'splice_region_variant' in conseq:
-    #   v = "EXON " +  str(exon)
-    #   candidate_var_list.append(v)
-    # if vartype == 'DELETION':
-    #   v = "EXON " + str(exon) + " DELETION"
-    #   candidate_var_list.append(v)
-    # if vartype == 'INSERTION':
-    #   v ="EXON " + str(exon) + " INSERTION"
-    #   candidate_var_list.append(v)
+    if vartype == 'DELETION':
+      v = "EXON " + str(exon) + " DELETION"
+      candidate_var_list.append(v)
+    if vartype == 'INSERTION':
+      v ="EXON " + str(exon) + " INSERTION"
+      candidate_var_list.append(v)
+
     chosen_var_id = '.'
     if gene in self.variants_dict:
       # Now look for all variants
       for var in candidate_var_list:
         for mut in self.variants_dict[gene]:
           mut_uc = mut.upper()
-          if var in mut_uc:
-            chosen_var_id = self.variants_dict[gene][mut]
-            break
+          var = var.upper()
+          if vartype == "CNA":
+            if var == mut_uc:
+              chosen_var_id = self.variants_dict[gene][mut]
+              break
+          else:
+            if var == mut_uc:
+              chosen_var_id = self.variants_dict[gene][mut]
+              break
         if chosen_var_id != '.':
           break
-      if chosen_var_id == ".":
+      if chosen_var_id == '.':
         return ev_list
+
       # Get all evidences
       for ev_id in self.evidence_dict[chosen_var_id]:
         ev_direction   =  self.evidence_dict[chosen_var_id][ev_id]['evidence_direction']
@@ -493,7 +620,13 @@ def do_civic():
                                 gene = transcript_list[vep_dict['SYMBOL']]
                                 ensg_id = transcript_list[vep_dict['Gene']]
                                 enst_id = transcript_list[vep_dict['Feature']]
+                                hgvs_p = transcript_list[vep_dict['HGVSp']]
                                 exon = re.search("\d+", transcript_list[vep_dict['EXON']])
+                                if exon is not None:
+                                  exon = exon.group(0)
+                                else:
+                                  exon= '.'
+
                                 consequence = transcript_list[vep_dict['Consequence']]
                                 aminoacids = transcript_list[vep_dict['Amino_acids']]
                                 protein_position = transcript_list[vep_dict['Protein_position']]
@@ -505,6 +638,14 @@ def do_civic():
                                     variant = aminoacids.replace("/", protein_position)
                                   else:
                                     variant = aminoacids + protein_position
+                                  if vartype == "INSERTION" or vartype == "DELETION" and hgvs_p != '.':
+                                   # ENSP00000275493.2:p.Glu746_Ala750del
+                                    tmp_p_code = hgvs_p.split(":")
+                                    p_code = tmp_p_code[1].replace("p.", "")
+                                    for aa in u.aa_dict:
+                                      if aa in p_code:
+                                        p_code = p_code.replace(aa, u.aa_dict[aa])
+                                    variant = p_code
                                   civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
                                   civic_annotation = ','.join(civic_ev_list)
                                   if len(civic_ev_list)>0:
@@ -610,7 +751,7 @@ def load_cgi_data():
           cgi_dict[gene][biomarker]['p_code'] = biomarker
           cgi_dict[gene][biomarker]['c_code'] = tmp[21]
           cgi_dict[gene][biomarker]['g_code'] = tmp[22]
-          cgi_dict[gene][biomarker]['pmid']   = tmp[17]
+          cgi_dict[gene][biomarker]['pmid']   = tmp[17].replace("PMID:", "").replace(";", "&")
           cgi_dict[gene][biomarker]['tumor_type'] = tmp[27]
   return cgi_dict
 
@@ -741,7 +882,7 @@ def do_cgi():
                                   cgi_annotation = ','.join(cgi_ev_list)
                                   if len(cgi_ev_list)>0:
                                     cgi_ann_list.append(cgi_annotation)
-                            #item = tmp_transcript[tidx]
+
                         idx+=1
 
                     info = ';'.join(info_list)

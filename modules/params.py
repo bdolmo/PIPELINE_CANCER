@@ -42,6 +42,7 @@ def set_analysis_env(args):
         'THREADS'        : args.threads,
         'ANALYSIS_DATE'  : dt_string,
         'LANGUAGE'       : args.language,
+        'MIN_FUSION_SIZE': args.min_fusion_size
     }
  
     if os.path.isfile(args.sample_data) :
@@ -112,7 +113,7 @@ def set_analysis_env(args):
                         continue                    
                     if cell.text.startswith('DATA'):
                         is_date = True
-                        break
+                       # break
                         continue
                     if cell.text.startswith('NOM'):
                         is_date = False
@@ -120,14 +121,19 @@ def set_analysis_env(args):
                         break
                         continue
                     if is_date:
-                        if cell_idx == 0:
+                        if row_idx == 0:
                             petition_date = cell.text
+                            is_date = False
                     if is_sample:
                         if cell_idx == 0:
                             sample = cell.text
                             sample_data[sample]['PETITION_DATE'] = petition_date
                         if cell_idx == 1:
-                            purity = re.search('^\d+%', cell.text).group(0)
+                            purity = re.search('^\d+%', cell.text)
+                            if purity:
+                                purity = purity.group(0)
+                            else:
+                                purity = 0
                             sample_data[sample]['PURITY'] = purity
                     cell_idx+=1
             row_idx += 1
@@ -141,10 +147,12 @@ def set_analysis_env(args):
     if os.path.isfile(analysis_env['LAB_DATA']):
         lab_df = pd.read_excel(analysis_env['LAB_DATA'], skiprows=10)
         for index,row in lab_df.iterrows():
-            lab_id  = row['#SAMPLE IDIBGI ID']
-            print (lab_id)
-            ext1_id = row['SAMPLE FIC ID']
-            ext2_id = row['HC PACIENT']
+            lab_id  = str(row['#SAMPLE IDIBGI ID'])
+            if lab_id == "nan":
+                continue
+            ext1_id = str(row['SAMPLE FIC ID'])
+            ext2_id = str(row['HC PACIENT'])
+
            # if lab_id in sample_data:             
             if ext1_id in sample_data:
                # sample_data[lab_id]= defaultdict(dict)
@@ -152,8 +160,14 @@ def set_analysis_env(args):
                 lab_data[lab_id]['HC_CODE'] = ext2_id
                 lab_data[lab_id]['PURITY']  = sample_data[ext1_id]['PURITY']
                 lab_data[lab_id]['PETITION_DATE'] = sample_data[ext1_id]['PETITION_DATE']
+            else:
+                lab_data[lab_id]['AP_CODE'] = ext1_id
+                lab_data[lab_id]['HC_CODE'] = ext2_id
+                lab_data[lab_id]['PURITY']  = '.'
+                lab_data[lab_id]['PETITION_DATE'] = '.'
     for sample in lab_data:
-        print (sample + " " + (lab_data[sample]['AP_CODE'])
+        print ("mostra " + sample + " " + lab_data[sample]['AP_CODE'] + " " + lab_data[sample]['PURITY'])
+
 def set_defaults(main_dir):
     ''' 
         Set default parameters

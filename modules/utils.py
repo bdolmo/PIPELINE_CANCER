@@ -196,9 +196,11 @@ def convert_vcf_2_json(vcf):
                 format_tag = tmp[8]
                 format = tmp[9]
                 format2 = ""
+                format3 = ""
                 if len(tmp) > 10:
                   format2 = tmp[10]
-
+                if len(tmp) > 11:
+                  format3 = tmp[11]
                 var_name = "var_" + str(n_var)
                 vcf_dict['variants'][var_name] = defaultdict(dict)
                 vcf_dict['variants'][var_name]['CHROM'] = chr
@@ -292,8 +294,12 @@ def convert_vcf_2_json(vcf):
                   tmp_format_tag = format_tag.split(':')
                   tmp_format = format2.split(':')      
                 if 'SVTYPE' in line:
-                  tmp_format_tag = format_tag.split(':')
-                  tmp_format = format.split(':')
+                  if 'CNA_GENES' in line:
+                    tmp_format_tag = format_tag.split(':')
+                    tmp_format = format3.split(':')
+                  else:
+                    tmp_format_tag = format_tag.split(':')
+                    tmp_format = format.split(':')
                 j = 0
                 for val in tmp_format:
                     vcf_dict['variants'][var_name][tmp_format_tag[j]] = val
@@ -419,3 +425,18 @@ def check_docker_images(command, image):
         msg = " ERROR: docker image for " + image +  " was not found" 
         print (msg)
         p.logging.error(msg)
+
+def long_aminoacid_2_short(long_aa):
+  d = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
+      'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 
+      'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 
+      'Ala': 'A', 'Val':'V', 'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}
+  
+  short_aa = d[long_aa]
+  return short_aa
+
+global aa_dict
+aa_dict = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
+  'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 
+  'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 
+  'Ala': 'A', 'Val':'V', 'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}

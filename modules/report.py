@@ -81,6 +81,12 @@ def create_somatic_report():
         o =  open (p.sample_env[sample]['CLINICAL_REPORT_CSV'], "w")
 
         sample_db = p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".db"  
+        p.sample_env[sample]['REPORT_DB'] = sample_db
+        if os.path.isfile(sample_db):
+          msg = " INFO: Skipping report creation for sample " + sample
+          print (msg)
+          logging.info(msg)
+          continue
 
         app = Flask(__name__)
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + sample_db
@@ -269,75 +275,199 @@ def create_somatic_report():
           results_list.append(lab_id)
           ext_id = "999999"
           results_list.append(ext_id)
-
+          go_therapeutic = False
+          go_other = False
+          go_rare = False
+          gene = '.'
+          p_code = '.'
+          g_code = '.'
+          c_code = '.'
+          depth  = '.'
+          exon = '.'
+          enst_id = '.'
+          clin_sig = '.'
+          rs_id = '.'
+          max_af = '.'
+          max_af_pop = '.'
+          drugs = '.'
+          clin_trials = '.'
+          variant_type = '.'         
           if 'SVTYPE' in var_dict['variants'][variant]['INFO']:
+            if 'CNA_GENES' in var_dict['variants'][variant]['INFO']:
+              gene  = var_dict['variants'][variant]['INFO']['CNA_GENES'] 
+              if 'CN' in var_dict['variants'][variant]:
+                VAF = int(var_dict['variants'][variant]['CN'])
+              else:
+                GT = var_dict['variants'][variant]['GT']
+                VAF = int(GT[0] )
+              svtype = var_dict['variants'][variant]['INFO']['SVTYPE']
+              if svtype == "DUP":
+                variant_type = "Amplification"
+              elif svtype == "DEL":
+                variant_type = "Loss"
+              drugs_list         = []
+              clin_trials_list   = []
+              ev_direction_list  = []
+              diseases_list      = []
+              ev_significance_list=[] 
+              if 'CIVIC' in var_dict['variants'][variant]['INFO']:
+                for ev_id in var_dict['variants'][variant]['INFO']['CIVIC']:
+                  if 'EV_DRUGS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]:
+                    drugs_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DRUGS'].split('&')
+                    for drug in drugs_result:
+                      if drug != '.':
+                        drugs_list.append(drug)
+                  if 'EV_CLINICAL_TRIALS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
+                    clin_trials_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_CLINICAL_TRIALS'].split('&')
+                    for ctrial in clin_trials_result:
+                      if ctrial != '.':
+                        clin_trials_list.append(ctrial)
+                  if 'EV_DIRECTION' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
+                    direction_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DIRECTION'].split('&')
+                    for direction in direction_result:
+                      print(direction)
+                      if direction != '.':
+                        ev_direction_list.append(direction)
+                  if 'EV_SIGNIFICANCE' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
+                    significance_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_SIGNIFICANCE'].split('&')
+                    for significance in significance_result:
+                      if significance != '.':
+                        ev_significance_list.append(significance)                      
+                  if 'EV_DISEASE' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
+                    disease_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DISEASE'].split('&')
+                    for disease in disease_result:
+                      if disease != '.':
+                        disease = disease.replace("_", " ")                   
+                        diseases_list.append(disease)
+              if drugs_list :
+                drugs_str = ', '.join(list(set(drugs_list)))
+              else:
+                drugs_str = '.'
+              if clin_trials_list:
+                clintrials_str = ','.join(list(set(clin_trials_list)))
+              else:
+                clintrials_str = '.'
+              if ev_direction_list:
+                direction_str = ','.join(list(set(ev_direction_list)))
+              else:
+                direction_str = '.'
+              if ev_significance_list:
+                significance_str = ','.join(list(set(ev_significance_list)))
+              else:
+                significance_str = '.'
+              if diseases_list:
+                diseases_str = ','.join(list(set(diseases_list)))
+                diseases_str = diseases_str.replace("_", " ")
+              else:
+                diseases_str = '.'
+              if gene == "MET":
+                print (gene + " " + direction_str + " " + significance_str +" " + drugs_str)
+                print(p.cna_plot_env[gene]['min_cn'])
+                print(str(VAF))
+              if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
+                if gene in p.cna_plot_env:
+                  print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
+                  if VAF >= int(p.cna_plot_env[gene]['min_cn']):
+                    go_therapeutic = True
+                    print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
 
-            if 'PR' in var_dict['variants'][variant]:
-              pe_info = var_dict['variants'][variant]['PR'].split(",")
-              pe_ref = int(pe_info[0])
-              pe_alt = int(pe_info[1])
-            else:
-              pe_ref = 0
-              pe_alt = 0
-            if 'SR' in var_dict['variants'][variant]:
-              sr_info = var_dict['variants'][variant]['SR'].split(",")
-              sr_ref = int(sr_info[0])
-              sr_alt = int(sr_info[1])
-            else:
-              sr_ref = 0
-              sr_alt = 0
-            fusion_out = False
-            if (pe_alt > 0 and sr_alt > 0):
-              fusion_out = True
-            depth = '.'
-            if sr_alt+sr_ref > 0:
-              depth = str(sr_alt+sr_ref)
-              VAF = str(round((sr_alt/(sr_alt+sr_ref)),3))
-            elif pe_ref+pe_alt >0:
-              depth = str(pe_alt+pe_ref)
-              VAF = str(round((pe_alt/(pe_alt+pe_ref)),3))
-            else:
-              depth = "0"
-              VAF = "0"
-            gene = '.'
-            if var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != '.' and \
-              var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
-              gene = var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] + " FUSION"
-            if gene != '.' or fusion_out == True:
+              elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:
+               
+                if gene in p.cna_plot_env:
+                  if VAF >= int(p.cna_plot_env[gene]['min_cn']): 
+                    go_other = True               
 
-              if gene == '.':
-                gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
-              results_list.append(gene)
-              p_code = '.'
-              results_list.append(p_code)
-              g_code = '.'
-              results_list.append(g_code)
-              c_code = '.'
-              results_list.append(c_code)
-              exon = '.'
-              results_list.append(exon)
-              enst_id = '.'
-              results_list.append(enst_id)
-              results_list.append(VAF)
-              clin_sig = '.'
-              results_list.append(clin_sig)
-              rs_id = '.'
-              results_list.append(rs_id)
-              max_af = '.'
-              results_list.append(max_af)
-              max_af_pop = '.'
-              results_list.append(max_af_pop)
-              drugs = '.'
-              results_list.append(drugs)
-              clin_trials = '.'
-              results_list.append(clin_trials)
-              o.write('\t'.join(results_list)+ "\n")
-              variant_type = "SV"
-              therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
-              max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
-              db.session.add(therapeutic_r)
-              db.session.commit() 
+              # Filling therapeutic table  
+              if go_therapeutic == True:
+                print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
+                therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
+                hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+                allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,
+                therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+                db.session.add(therapeutic_r)
+                db.session.commit()           
+              # Filling Other clinical variants  
+              if go_other == True:
+                other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
+                hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+                allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+                clinical_trials=clintrials_str,tumor_type=diseases_str)
+                db.session.add(other_r)
+                db.session.commit()
+            else:
+              svlen = '.'
+              if 'SVLEN' in var_dict['variants'][variant]['INFO']:
+                svlen = abs(int(var_dict['variants'][variant]['INFO']['SVLEN']))
+                if svlen < p.analysis_env['MIN_FUSION_SIZE']:
+                  continue 
+
+              if 'PR' in var_dict['variants'][variant]:
+                pe_info = var_dict['variants'][variant]['PR'].split(",")
+                pe_ref = int(pe_info[0])
+                pe_alt = int(pe_info[1])
+              else:
+                pe_ref = 0
+                pe_alt = 0
+              if 'SR' in var_dict['variants'][variant]:
+                sr_info = var_dict['variants'][variant]['SR'].split(",")
+                sr_ref = int(sr_info[0])
+                sr_alt = int(sr_info[1])
+              else:
+                sr_ref = 0
+                sr_alt = 0
+              fusion_out = False
+              if (pe_alt > 0 and sr_alt > 0):
+                fusion_out = True
+              depth = '.'
+              if sr_alt+sr_ref > 0:
+                depth = str(sr_alt+sr_ref)
+                VAF = str(round((sr_alt/(sr_alt+sr_ref)),3))
+              elif pe_ref+pe_alt >0:
+                depth = str(pe_alt+pe_ref)
+                VAF = str(round((pe_alt/(pe_alt+pe_ref)),3))
+              else:
+                depth = "0"
+                VAF = "0"
+              gene = '.'
+              if var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != '.' and \
+                var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
+                gene = var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] + " FUSION"
+              if gene != '.' or fusion_out == True:
+
+                if gene == '.':
+                  gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
+                results_list.append(gene)
+                p_code = '.'
+                results_list.append(p_code)
+                g_code = '.'
+                results_list.append(g_code)
+                c_code = '.'
+                results_list.append(c_code)
+                exon = '.'
+                results_list.append(exon)
+                enst_id = '.'
+                results_list.append(enst_id)
+                results_list.append(VAF)
+                clin_sig = '.'
+                results_list.append(clin_sig)
+                rs_id = '.'
+                results_list.append(rs_id)
+                max_af = '.'
+                results_list.append(max_af)
+                max_af_pop = '.'
+                results_list.append(max_af_pop)
+                drugs = '.'
+                results_list.append(drugs)
+                clin_trials = '.'
+                results_list.append(clin_trials)
+                o.write('\t'.join(results_list)+ "\n")
+                variant_type = "SV"
+                print("SV " + p_code)
+                therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
+                hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
+                max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+                db.session.add(therapeutic_r)
+                db.session.commit() 
           else:
             variant_type = '.'
             ref = var_dict['variants'][variant]['REF']
@@ -435,20 +565,9 @@ def create_somatic_report():
                   disease_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DISEASE'].split('&')
                   for disease in disease_result:
                     if disease != '.':
-                      if disease == "Cancer":
-                        continue
-                      disease = disease.replace("_", " ")
-                      # print(disease)
-                      # if p.analysis_env['LANGUAGE'] == "cat":
-                      #   translator = Translator()
-                      #   print(translator.translate(disease, src='en', dest='ca'))
-                      #   translated = translator.translate(disease, src='en', dest='ca')
-                      #   disease = translated.text
-                      # if p.analysis_env['LANGUAGE'] == "esp":
-                      #   translator = Translator()
-                      #   translated = translator.translate(disease, src='en', dest='es')
-                      #   if translated is not None:
-                      #     disease = translated.text                       
+                     # if disease == "Cancer":
+                       # continue
+                      disease = disease.replace("_", " ")                   
                       diseases_list.append(disease)
             if drugs_list :
               drugs_str = ', '.join(list(set(drugs_list)))
@@ -528,10 +647,11 @@ def create_somatic_report():
         print (msg)
         print(bashCommand)
         logging.info(bashCommand)
-
+        
         process = subprocess.Popen(bashCommand,#.split(),
           shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
+       # sys.exit()
         if not error.decode('UTF-8') and not output.decode('UTF-8'):
           msg = " INFO: Report generation for" + sample + " ended OK"
           print(msg)

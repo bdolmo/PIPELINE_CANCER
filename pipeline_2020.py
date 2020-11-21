@@ -34,9 +34,6 @@ def main(args):
     # Setting aux files
     p.set_auxfiles_env()
 
-
-
-
     # Trim fastq files
     t.trim_fastqs()
 
@@ -75,6 +72,9 @@ def parse_arguments():
         help="Lab data xlsx", dest='lab_data')
     parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
         help="Report language", dest='language')
+    parser.add_argument("--min-fusion-size", type=int, default=50000,
+        help="Minimum fusion size in bp to be reported", dest='min_fusion_size')
+
     # Now subparsers
     subparsers = parser.add_subparsers(help='sub-command help', dest='subparser_name')
     parser_mapping = subparsers.add_parser('mapping', help='mapping pipeline')

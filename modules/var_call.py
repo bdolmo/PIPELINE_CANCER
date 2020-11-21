@@ -23,6 +23,7 @@ def do_var_call():
         do_mutect2()
         do_manta()
         do_cnvkit()
+        
 def do_cnvkit():
 
   # Create accessible regions
@@ -193,6 +194,8 @@ def do_cnvkit():
       anticov_str = ' '.join(anticoverage_list)
       anticov_file = p.sample_env[sample]['CNV_FOLDER'] + "/" + sample + ".antitargetcoverage.cnn"
 
+      p.sample_env[sample]['CNV_VCF'] = p.sample_env[sample]['VCF_FOLDER'] + "/" + sample + ".CNV.vcf"
+
       # Fix and ratio creation
       ratio_file = p.sample_env[sample]['CNV_FOLDER'] + "/" +  sample + ".cnr"
       bashCommand = ('python3 {} fix {} {} {} -o {}').format(p.system_env['CNVKIT'], \
@@ -295,10 +298,13 @@ def do_cnvkit():
       if sample in p.lab_data:
         purity = p.lab_data[sample]['PURITY']
         purity = purity.replace("%", "")
+        if purity == "." or purity == 0:
+          purity = 1
         purity = str(float(purity)/100)
-        msg = " INFO: " + sample + " purity=" + purity
+        msg = " INFO: " + sample + " purity: " + purity
         print(msg)
         logging.info(msg)
+
       # # Call CNVs
       call_file = p.sample_env[sample]['CNV_FOLDER'] + "/" +  sample + ".calls.cns"
       bashCommand = ('python3 {} call {} -m clonal --purity {} -o {}').format(p.system_env['CNVKIT'], \
@@ -327,6 +333,33 @@ def do_cnvkit():
         msg = " INFO: Skipping CNA calling of sample " + sample
         print (msg)
         logging.info(msg)
+
+      if not os.path.isfile(p.sample_env[sample]['CNV_VCF']):
+
+        bashCommand = ('python3 {} export vcf {} -y  -o {}').format(p.system_env['CNVKIT'], \
+          call_file, p.sample_env[sample]['CNV_VCF'])
+        msg = " INFO: Exporting CNA calls to vcf for sample " + sample
+        print(msg)
+        logging.info(msg)
+        logging.info(bashCommand)
+        
+        process = subprocess.Popen(bashCommand,#.split(),
+          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output, error = process.communicate()
+          
+        if not error.decode('UTF-8'):
+          msg = " INFO: Exporting CNA calls to vcf for sample " +sample + " ended successfully"
+          print(msg)
+          logging.info(msg)        
+        else:
+          msg = " ERROR: Could not export CNA on sample " + sample
+          print (msg)
+          logging.error(msg)
+      else:
+        msg = " INFO: Skipping CNA exporting to vcf for sample " + sample
+        print (msg)
+        logging.info(msg)        
+
 
       plot_scatter( ratio_file, call_file, sample, p.sample_env[sample]['CNV_FOLDER'])
 
@@ -583,7 +616,7 @@ def do_mutect2():
 
     vcf_list = [] 
     for sample in p.sample_env:
-
+        print(sample)
         # Create BAM_FOLDER if not present
         p.sample_env[sample]['VCF_FOLDER'] = \
          p.sample_env[sample]['SAMPLE_FOLDER'] + "/" + "VCF_FOLDER"
