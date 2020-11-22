@@ -27,7 +27,7 @@ def do_var_call():
 def do_cnvkit():
 
   # Create accessible regions
-  paneldir = p.defaults['PANEL_FOLDER'] + "/" +  p.analysis_env['PANEL_NAME'].replace(".bed", "")
+  paneldir = p.analysis_env['PANEL_WORKDIR']
   access_regions_hg19 = paneldir + "/" + "access.hg19.bed"
 
   # Create target regions 
@@ -66,7 +66,7 @@ def do_cnvkit():
     # Create on/offtarget bins with autobin command
     bashCommand = ('python3 {} target {} -o {}').format(p.system_env['CNVKIT'], \
      p.analysis_env['PANEL'], target_bed)
-    print(bashCommand)
+
     msg = " INFO: Creating target regions file"
     print (msg)
     logging.info(msg)
@@ -134,7 +134,6 @@ def do_cnvkit():
 
       bashCommand = ('python3 {} coverage {} {} -o {} ').format(p.system_env['CNVKIT'], \
       bam, target_bed, coverage_file)
-      print(bashCommand)
 
       if not os.path.isfile(coverage_file):
 
@@ -163,7 +162,7 @@ def do_cnvkit():
 
       bashCommand = ('python3 {} coverage {} {} -o {}').format(p.system_env['CNVKIT'], \
       bam, antitarget_bed, anticoverage_file)
-      print(bashCommand)
+
       if not os.path.isfile(anticoverage_file):
         process = subprocess.Popen(bashCommand,#.split(),
           shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -462,7 +461,7 @@ def do_pureCN(vcf, segfile, ratiofile, sample):
  bashCommand = ('Rscript {} --out {} --sampleid {} --tumor {} --segfile {} --vcf {}'
  ' --genome hg19 --funsegmentation Hclust --force --postoptimize --seed 123 --sex=\"diploid\"').format(purecn, \
   outdir, sample, ratiofile, segfile, vcf)
- print(bashCommand)
+
  summary_purecn = outdir + "/" + sample + ".csv"
 
  if not os.path.isfile(summary_purecn):
@@ -641,8 +640,8 @@ def do_mutect2():
             '-O /vcf_data/{} -L /panel_data/{} -R /bundle/{} --genotype-germline-sites --germline-resource /gnomad_data/{}'
             ' -max-mnp-distance 0 --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],
             p.sample_env[sample]['BAM_FOLDER'], p.sample_env[sample]['VCF_FOLDER'], \
-            p.defaults['BUNDLE_FOLDER'], p.defaults['PANEL_FOLDER'], p.defaults['GNOMAD_FOLDER'], \
-            p.docker_env['GATK'], p.sample_env[sample]['READY_BAM'], 
+            p.defaults['BUNDLE_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.defaults['GNOMAD_FOLDER'], \
+            p.docker_env['GATK'], p.sample_env[sample]['READY_BAM_NAME'], 
             p.sample_env[sample]['MUTECT2_VCF_NAME'],p.analysis_env['PANEL_LIST_NAME'], \
             p.aux_env['GENOME_NAME'], p.analysis_env['GNOMAD_AF_VCF_NAME'], p.analysis_env['THREADS']
             ))
@@ -652,7 +651,6 @@ def do_mutect2():
             print(msg)
             logging.info(msg)
             logging.info(bashCommand)
-            print(bashCommand)
 
             process = subprocess.Popen(bashCommand,#.split(),
                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -684,7 +682,6 @@ def do_mutect2():
                 ))           
             msg = " INFO: Running FilterMutectCalls for sample "+ sample
             print(msg)
-            print(bashCommand)
             logging.info(msg)
             logging.info(bashCommand)
 

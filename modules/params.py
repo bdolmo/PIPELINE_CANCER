@@ -30,12 +30,8 @@ def set_analysis_env(args):
     analysis_env = {
         'INPUT_DIR'      : os.path.abspath(args.input_dir),
         'OUTPUT_DIR'     : os.path.abspath(args.output_dir),
-        'OUTPUT_NAME'    : os.path.basename(args.output_dir),
         'PANEL'          : os.path.abspath(args.panel),
         'PANEL_NAME'     : os.path.basename(args.panel),
-        'PANEL_LIST'     : defaults['PANEL_FOLDER'] + "/" \
-            +  os.path.basename(args.panel) + "/" + os.path.basename(args.panel).replace(".bed", ".list"),
-        'PANEL_LIST_NAME': os.path.basename(os.path.abspath(args.panel).replace(".bed", ".list")),
         'ROI_NUMBER'     : '.',
         'GENOME_VERSION' : args.reference,
         'VARIANT_CLASS'  : args.var_class,
@@ -44,7 +40,12 @@ def set_analysis_env(args):
         'LANGUAGE'       : args.language,
         'MIN_FUSION_SIZE': args.min_fusion_size
     }
- 
+    analysis_env['OUTPUT_NAME'] = os.path.basename(analysis_env['OUTPUT_DIR'])
+    analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" + os.path.basename(args.panel).replace(".bed", "")
+    analysis_env['PANEL_LIST'] = defaults['PANEL_FOLDER'] + "/" \
+        +  os.path.basename(args.panel) + "/" + os.path.basename(args.panel).replace(".bed", ".list")
+    analysis_env['PANEL_LIST_NAME']  =  os.path.basename(os.path.abspath(args.panel).replace(".bed", ".list"))
+
     if os.path.isfile(args.sample_data) :
         analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
     else:
@@ -72,8 +73,11 @@ def set_analysis_env(args):
     if not output_path.is_dir():
         os.mkdir(analysis_env['OUTPUT_DIR'])
 
+    print(analysis_env['OUTPUT_NAME'])
+
     global logging
     log_file = os.path.abspath(analysis_env['OUTPUT_DIR']) + "/" + analysis_env['OUTPUT_NAME'] + ".pipeline.log"
+    print(log_file)
     logging.basicConfig(filename=log_file, filemode='w', 
         format='PID:%(process)d\t%(asctime)s\t%(message)s')
     logging.getLogger().setLevel(logging.INFO)
@@ -165,6 +169,8 @@ def set_analysis_env(args):
                 lab_data[lab_id]['HC_CODE'] = ext2_id
                 lab_data[lab_id]['PURITY']  = '.'
                 lab_data[lab_id]['PETITION_DATE'] = '.'
+            if lab_data[lab_id]['AP_CODE'] == lab_id:
+                lab_data[lab_id]['AP_CODE'] = '.'
     for sample in lab_data:
         print ("mostra " + sample + " " + lab_data[sample]['AP_CODE'] + " " + lab_data[sample]['PURITY'])
 

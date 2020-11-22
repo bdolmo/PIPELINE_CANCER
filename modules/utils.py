@@ -132,6 +132,7 @@ def convert_vcf_2_json(vcf):
     ##fileDate=20200418
     ##source=Mutect2,freeBayes
     ##reference=/home/bdelolmo/Desktop/PIPELINE/BUNDLE/ucsc.hg19.fasta
+    seen = defaultdict(dict)
     n_var = 0
     with open (vcf) as f:
         for line in f:
@@ -185,6 +186,12 @@ def convert_vcf_2_json(vcf):
                 continue
             else:
                 tmp = line.split('\t')
+                if not line in seen:
+                  seen[line] = 0
+                else:
+                  seen[line]+= 1
+                if seen[line] > 1:
+                  continue   
                 chr = tmp[0]
                 pos = tmp[1]
                 id  = tmp[2]

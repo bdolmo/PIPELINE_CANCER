@@ -446,16 +446,16 @@ def do_generate_list_file():
     bashCommand = ('{} run -v {}:/bundle/ -v {}:/panels/ '
         '-it {} gatk BedToIntervalList -I /panels/{} -O /panels/{} '
         '-SD /bundle/{} --SORT --UNIQUE'.format(p.system_env['DOCKER'],
-        p.defaults['BUNDLE_FOLDER'], p.defaults['PANEL_FOLDER'], p.docker_env['GATK'], \
+        p.defaults['BUNDLE_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.docker_env['GATK'], \
         p.analysis_env['PANEL_NAME'], p.analysis_env['PANEL_LIST_NAME'], p.aux_env['GENOME_DICT_NAME']))
-    msg = " INFO: " + bashCommand
-    logging.info(msg)
+
 
     if not os.path.isfile(p.analysis_env['PANEL_LIST']):
 
         msg = " INFO: Generating list for the gene panel "+ p.analysis_env['PANEL_NAME']
         print (msg)
         logging.info(msg)
+        logging.info(bashCommand)
 
         process = subprocess.Popen(bashCommand,#.split(),
             shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -523,7 +523,7 @@ def map_fastq():
       print (msg)
       p.logging.info(msg)
       p.logging.info(bashCommand)
-
+    
       process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
       

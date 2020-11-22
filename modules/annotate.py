@@ -55,6 +55,19 @@ def annotate_cnas():
   logging.info(msg)
   print(msg)
 
+  do_ann = True
+  for sample in p.sample_env:
+    p.sample_env[sample]['READY_CNA_VCF'] = \
+      p.sample_env[sample]['CNV_VCF'].replace(".vcf", ".annotated.vcf")
+    if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
+      do_ann = False
+  
+  if do_ann == False:
+    msg = " INFO: Skipping gene annotation to CNAs"
+    logging.info(msg)
+    print(msg)
+    return
+
   # Instantiante CIViC class
   civic = Civic()
 
@@ -165,6 +178,10 @@ def add_edge_genes():
     fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
     intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
     fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".tmp.vcf")
+
+    if os.path.isfile(fusions_vcf):
+      continue
+
     o = open(fusions_vcf, 'w')
 
     bashCommand = '{} pairtopair -a {} -b {} -type either | sort -V | uniq > {}' \
@@ -910,10 +927,13 @@ def annotate_known_fusions():
 
         if not os.path.isfile(p.sample_env[sample]['READY_SV_VCF']):
             continue
-
         fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
         intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
         fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".fusions.vcf")
+        
+        if os.path.isfile(fusions_vcf):
+          continue
+
         o = open(fusions_vcf, 'w')
 
         bashCommand = ('{} pairtopair -a {} -b {} | sort -V | uniq > {}')\

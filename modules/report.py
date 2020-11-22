@@ -82,11 +82,6 @@ def create_somatic_report():
 
         sample_db = p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".db"  
         p.sample_env[sample]['REPORT_DB'] = sample_db
-        if os.path.isfile(sample_db):
-          msg = " INFO: Skipping report creation for sample " + sample
-          print (msg)
-          logging.info(msg)
-          continue
 
         app = Flask(__name__)
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + sample_db
@@ -214,9 +209,37 @@ def create_somatic_report():
             legal_provisions = db.Column(db.String(3000))
             def __repr__(self):
                 return '<Disclaimers %r>' % self.gene_list
+        if os.path.isfile(sample_db) and os.path.isfile(p.sample_env[sample]['REPORT_PDF']):
+          msg = " INFO: Skipping report creation for sample " + sample
+          print (msg)
+          logging.info(msg)
+          continue
+        if os.path.isfile(sample_db) and not os.path.isfile(p.sample_env[sample]['REPORT_PDF']):
+           # Create PDF report 
+          bashCommand = ('{} pr {} -r {} -f pdf -t generic --db-url jdbc:sqlite:{} --db-driver org.sqlite.JDBC -o {} --jdbc-dir {}') \
+            .format(p.system_env['JASPERSTARTER'],p.aux_env['REPORT_JRXML'], 
+            p.defaults['JASPERREPORT_FOLDER'], sample_db, p.sample_env[sample]['REPORT_PDF'], p.defaults['JDBC_FOLDER'])
+          msg = " INFO: Generating pdf report for sample " + sample
+          print (msg)
+          print(bashCommand)
+          logging.info(bashCommand)
+          
+          process = subprocess.Popen(bashCommand,#.split(),
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          output, error = process.communicate()
+          if not error.decode('UTF-8') and not output.decode('UTF-8'):
+            msg = " INFO: Report generation for " + sample + " ended OK"
+            print(msg)
+            logging.info(msg)
+          else:
+            msg = " ERROR: Failed report generation for " + sample
+            print(msg)
+            logging.error(msg)
+          continue     
+
         db.create_all()
+        
         print(sample)
-        print(p.lab_data[sample]['AP_CODE']  )
 
         sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'], ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.', physician_name='.',
           medical_center='.', medical_address='.', sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
@@ -325,7 +348,6 @@ def create_somatic_report():
                   if 'EV_DIRECTION' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
                     direction_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DIRECTION'].split('&')
                     for direction in direction_result:
-                      print(direction)
                       if direction != '.':
                         ev_direction_list.append(direction)
                   if 'EV_SIGNIFICANCE' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
@@ -360,26 +382,18 @@ def create_somatic_report():
                 diseases_str = diseases_str.replace("_", " ")
               else:
                 diseases_str = '.'
-              if gene == "MET":
-                print (gene + " " + direction_str + " " + significance_str +" " + drugs_str)
-                print(p.cna_plot_env[gene]['min_cn'])
-                print(str(VAF))
               if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
                 if gene in p.cna_plot_env:
-                  print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
                   if VAF >= int(p.cna_plot_env[gene]['min_cn']):
                     go_therapeutic = True
-                    print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
 
-              elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:
-               
+              elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:             
                 if gene in p.cna_plot_env:
                   if VAF >= int(p.cna_plot_env[gene]['min_cn']): 
                     go_other = True               
 
               # Filling therapeutic table  
               if go_therapeutic == True:
-                print(gene + " " + p.cna_plot_env[gene]['min_cn'] + " " + str(VAF))
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
                 hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
                 allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,
@@ -432,7 +446,7 @@ def create_somatic_report():
               if var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != '.' and \
                 var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
                 gene = var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] + " FUSION"
-              if gene != '.' or fusion_out == True:
+              if gene != '.' and fusion_out == True:
 
                 if gene == '.':
                   gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
@@ -657,7 +671,7 @@ def create_somatic_report():
           print(msg)
           logging.info(msg)
         else:
-          msg = " ERROR: Failed report generation for" + sample
+          msg = " ERROR: Failed report generation for " + sample
           print(msg)
           logging.error(msg)
 
