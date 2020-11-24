@@ -31,6 +31,7 @@ def do_annotation():
     filter_transcripts()
 
     if p.analysis_env['VARIANT_CLASS'] == "somatic":
+
         # CIViC annotation for SNV/Indels
         do_civic()
 
@@ -43,6 +44,7 @@ def do_annotation():
         # Add flanking genes to SVs
         add_edge_genes()
 
+        # CIViC annotation for CNAs
         annotate_cnas()
         
         # Merge snv and fusion vcf  
@@ -51,7 +53,7 @@ def do_annotation():
 
 def annotate_cnas():
   
-  msg = " INFO: Adding genes to CNA segments"
+  msg = " INFO: Annotating CNAs with CIViC"
   logging.info(msg)
   print(msg)
 
@@ -59,8 +61,11 @@ def annotate_cnas():
   for sample in p.sample_env:
     p.sample_env[sample]['READY_CNA_VCF'] = \
       p.sample_env[sample]['CNV_VCF'].replace(".vcf", ".annotated.vcf")
-    if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
+    if os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
       do_ann = False
+    else:
+      do_ann = True
+      break
   
   if do_ann == False:
     msg = " INFO: Skipping gene annotation to CNAs"
@@ -87,10 +92,10 @@ def annotate_cnas():
         .format(p.system_env['BEDTOOLS'], p.sample_env[sample]['CNV_VCF'], p.analysis_env['PANEL'], tmp_intersect)
 
       logging.info(bashCommand)
-      process = subprocess.Popen(bashCommand,#.split(),
-        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      output, error = process.communicate()
-      if not error.decode('UTF-8') and not output.decode('UTF-8'):
+      p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output = p1.stdout.decode('UTF-8')
+      error  = p1.stderr.decode('UTF-8')
+      if not error and not output:
         msg = " INFO: CNA gene annotation for sample " + sample + " ended successfully"
         print(msg)
         logging.info(msg)
@@ -151,6 +156,7 @@ def annotate_cnas():
             consequence = '.'
             civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
             civic_annotation = ','.join(civic_ev_list)
+            
             if civic_annotation == "":
               civic_annotation = "."
             tmp[7] = tmp[7] + ";CNA_GENES=" + gene + ";CIVIC="+civic_annotation
@@ -159,6 +165,11 @@ def annotate_cnas():
             line = '\t'.join(tmp)
             o.write(line+"\n")
       o.close()
+      if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
+        msg = " ERROR: " + p.sample_env[sample]['READY_CNA_VCF'] + " was not created"
+        print(msg)
+        logging.error(msg)
+
       u.convert_vcf_2_json(p.sample_env[sample]['READY_CNA_VCF'])
       os.remove(tmp_intersect)
     else:
@@ -178,19 +189,25 @@ def add_edge_genes():
     fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
     intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
     fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".tmp.vcf")
+    annotated_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".annotated.vcf")
 
-    if os.path.isfile(fusions_vcf):
-      continue
+    if os.path.isfile(annotated_vcf):
+      bashCommand = 'grep "EDGE_GENES" {}'.format(annotated_vcf)
+      p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output = p1.stdout.decode('UTF-8')
+      error  = p1.stderr.decode('UTF-8')
+      if re.search("EDGE_GENES", output):
+        continue
 
     o = open(fusions_vcf, 'w')
 
     bashCommand = '{} pairtopair -a {} -b {} -type either | sort -V | uniq > {}' \
       .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['GENE_LIST'], intersect_file)
       
-    process = subprocess.Popen(bashCommand,#.split(),
-      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = process.communicate()
-    if not error.decode('UTF-8') and not output.decode('UTF-8'):
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
+    if not error and not output:
       msg = " INFO: SV gene annotation for sample " + sample + " ended successfully"
       print(msg)
       logging.info(msg)
@@ -308,7 +325,6 @@ def filter_transcripts():
                     format_tag = tmp[8]
                     format = tmp[9]
    
-
                     info_list = info.split(';')
                     idx = 0
                     for item in info_list:
@@ -351,6 +367,7 @@ def merge_vcfs():
         merge VCFs with bcftools
     '''
     for sample in p.sample_env:
+
         vcf1 = p.sample_env[sample]['READY_SV_VCF']
         vcf2 = p.sample_env[sample]['READY_SNV_VCF']
         vcf3 = p.sample_env[sample]['READY_CNA_VCF']  
@@ -376,19 +393,22 @@ def merge_vcfs():
         else:
             vcf3 = vcf3 + ".gz"
         bashCommand = ('{} merge {} {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'], vcf1, vcf2, vcf3, merged_vcf)
-        print(bashCommand)
+
         if not os.path.isfile(merged_vcf):
             msg = " INFO: " + bashCommand
             logging.info(msg)
-            process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE)
-            output, error = process.communicate()
-            if not error.decode('UTF-8'):
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
+            if not error:
                 pass
             else:
-                msg = " ERROR: Could not merge " + vcf1 + " and" + vcf2
-                print(msg)
-                logging.error(msg)
+                if re.search("Failed", error):
+                  print(error)
+                  msg = " ERROR: Could not merge " + vcf1 + " and" + vcf2 + " and" + vcf3
+                  print(msg)
+                  logging.error(msg)
+                  sys.exit()
         p.sample_env[sample]['READY_MERGED_VCF'] = merged_vcf
         p.sample_env[sample]['READY_MERGED_JSON'] = merged_vcf.replace(".vcf", ".json")
         p.sample_env[sample]['READY_MERGED_VCF_NAME'] = sample + ".merged.variants.vcf"
@@ -405,7 +425,7 @@ class Civic:
 
   def queryCivic(self, gene, variant, vartype, exon, conseq):
     '''
-       return list of evidences given a gene, variant, exon and conseq
+      return list of evidences given a gene, variant, exon and conseq
     '''
     ev_list = []
     candidate_var = variant
@@ -423,17 +443,34 @@ class Civic:
       if not 'synonymous_variant' in conseq:
         if 'splice' in conseq:
           var = "EXON "  + str(exon) + " SKIPPING MUTATION"
-          candidate_var_list.append(var)       
-        candidate_var_list.append(variant[:-1])
-        candidate_var_list.append(variant[1:])
-        candidate_var_list.append(variant[1:-1])    
-        candidate_var_list.append(variant[:-1]+"X") 
+          candidate_var_list.append(var)
+        if variant == "SNV" or variant == "MNV":
+          candidate_var_list.append(variant[:-1])
+          candidate_var_list.append(variant[1:])
+          candidate_var_list.append(variant[1:-1])    
+          candidate_var_list.append(variant[:-1]+"X")
 
+    tmp_var = variant.split("_")
     if vartype == 'DELETION':
       v = "EXON " + str(exon) + " DELETION"
       candidate_var_list.append(v)
+      v = variant.replace("del", "")
+      candidate_var_list.append(v)
+      if len(tmp_var) > 1:          
+        candidate_var_list.append(tmp_var[0]+"DEL")
+      v = "EXON " + str(exon) + " MUTATION"
+      candidate_var_list.append(v)        
     if vartype == 'INSERTION':
       v ="EXON " + str(exon) + " INSERTION"
+      candidate_var_list.append(v)
+      if len(tmp_var) > 1:
+        v = tmp_var[0]+"INS"    
+        candidate_var_list.append(v)
+        v = variant.replace("ins", "")  
+        candidate_var_list.append(v)
+        v = variant.replace("dup", "")  
+        candidate_var_list.append(v)  
+      v = "EXON " + str(exon) + " MUTATION"
       candidate_var_list.append(v)
 
     chosen_var_id = '.'
@@ -450,6 +487,7 @@ class Civic:
           else:
             if var == mut_uc:
               chosen_var_id = self.variants_dict[gene][mut]
+              print("FOUND " + var + " " + mut)
               break
         if chosen_var_id != '.':
           break
@@ -457,6 +495,7 @@ class Civic:
         return ev_list
 
       # Get all evidences
+      num = 0
       for ev_id in self.evidence_dict[chosen_var_id]:
         ev_direction   =  self.evidence_dict[chosen_var_id][ev_id]['evidence_direction']
         ev_level       =  self.evidence_dict[chosen_var_id][ev_id]['evidence_level']
@@ -465,6 +504,7 @@ class Civic:
         ev_disease     =  self.evidence_dict[chosen_var_id][ev_id]['disease']
         ev_pmid        =  self.evidence_dict[chosen_var_id][ev_id]['pmid']
         ev_clintrials  =  self.evidence_dict[chosen_var_id][ev_id]['clinical_trials']
+
         ev_info = []
         ev_info.append(ev_id)
         ev_info.append(ev_direction)
@@ -475,8 +515,9 @@ class Civic:
         ev_info.append(ev_pmid)
         ev_info.append(ev_clintrials)
         ev_str = '|'.join(ev_info)
-        ev_list.append(ev_str)
-
+        if num <= 20:
+          ev_list.append(ev_str)
+        num+=1
     return ev_list
 
   def loadCivic(self):
@@ -671,7 +712,13 @@ def do_civic():
                         idx+=1
 
                     info = ';'.join(info_list)
-                    tmp[7] = info + ";CIVIC="+civic_annotation
+                    civic_out = "."
+                    if len(civic_ann_list) > 0:
+                      civic_out = ','.join(civic_ann_list)
+                    else:
+                      civic_out = civic_annotation
+                    tmp[7] = info + ";CIVIC="+civic_out
+
                     line = '\t'.join(tmp)
                     o.write(line+"\n")
         f.close()
@@ -718,9 +765,10 @@ def do_vep():
             logging.info(msg)
             logging.info(bashCommand)
 
-            process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, error = process.communicate()
-            if not error.decode('UTF-8'):
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
+            if not error:
                 pass
             else:
                 msg = " ERROR: VEP annotation failed for sample" + sample
@@ -925,13 +973,16 @@ def annotate_known_fusions():
 
     for sample in p.sample_env:
 
-        if not os.path.isfile(p.sample_env[sample]['READY_SV_VCF']):
-            continue
         fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
         intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
         fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".fusions.vcf")
         
         if os.path.isfile(fusions_vcf):
+          msg = " INFO: Skipping fusion annotation for sample "+ sample
+          print(msg)
+          logging.info(msg)
+          p.sample_env[sample]['READY_SV_VCF'] = fusions_vcf
+          u.convert_vcf_2_json(fusions_vcf)
           continue
 
         o = open(fusions_vcf, 'w')
@@ -939,10 +990,10 @@ def annotate_known_fusions():
         bashCommand = ('{} pairtopair -a {} -b {} | sort -V | uniq > {}')\
         .format(p.system_env['BEDTOOLS'], fusions_bed, p.analysis_env['CHIMERKB_BED'], intersect_file)
             
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-        if not error.decode('UTF-8') and not output.decode('UTF-8'):
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
+        if not error and not output:
             msg = " INFO: Fusion annotation for sample "+ sample +" ended successfully"
             print(msg)
             logging.info(msg)

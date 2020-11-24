@@ -41,11 +41,17 @@ def set_analysis_env(args):
         'MIN_FUSION_SIZE': args.min_fusion_size
     }
     analysis_env['OUTPUT_NAME'] = os.path.basename(analysis_env['OUTPUT_DIR'])
-    analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" + os.path.basename(args.panel).replace(".bed", "")
-    analysis_env['PANEL_LIST'] = defaults['PANEL_FOLDER'] + "/" \
-        +  os.path.basename(args.panel) + "/" + os.path.basename(args.panel).replace(".bed", ".list")
-    analysis_env['PANEL_LIST_NAME']  =  os.path.basename(os.path.abspath(args.panel).replace(".bed", ".list"))
+    analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" \
+        + os.path.basename(args.panel).replace(".bed", "")
 
+    if not os.path.isdir(analysis_env['PANEL_WORKDIR']):
+        os.mkdir(analysis_env['PANEL_WORKDIR'])
+
+    analysis_env['PANEL_LIST'] = analysis_env['PANEL_WORKDIR'] + "/" \
+        + os.path.basename(args.panel).replace(".bed", ".list")
+    analysis_env['PANEL_LIST_NAME']  = \
+        os.path.basename(analysis_env['PANEL_LIST'].replace(".bed", ".list"))
+    
     if os.path.isfile(args.sample_data) :
         analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
     else:

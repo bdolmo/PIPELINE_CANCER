@@ -31,13 +31,19 @@ def num_to_human(num):
 
 def mean_depth_coordinate(bam, coordinate):
 
+  if not os.path.isfile(bam):
+    msg = " ERROR: Unable to find bam " +  bam + " for biomarker calculation"
+    logging.error(msg)
+    print (msg)
+    mean_depth = 0
+    return mean_depth
+
   bashCommand = ('{} depth {} -r {}').format(p.system_env['SAMTOOLS'], bam, coordinate)
-  process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-    stderr=subprocess.PIPE)
-  output, error = process.communicate()
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
   mean_depth_list =[]  
-  if not error.decode('UTF-8'):
-    output = output.decode('UTF-8')
+  if not error:
     if output:
       for depth in output.split('\n'):
         depth = depth.rstrip('\n')
@@ -186,22 +192,31 @@ def convert_vcf_2_json(vcf):
                 continue
             else:
                 tmp = line.split('\t')
-                if not line in seen:
-                  seen[line] = 0
-                else:
-                  seen[line]+= 1
-                if seen[line] > 1:
-                  continue   
+                ident_list = [] 
                 chr = tmp[0]
+                ident_list.append(chr)
                 pos = tmp[1]
+                ident_list.append(pos)
                 id  = tmp[2]
+                ident_list.append(id)
                 ref = tmp[3]
+                ident_list.append(ref)
                 alt = tmp[4]
+                ident_list.append(qual)
                 qual= tmp[5]
                 filter = tmp[6]
                 info = tmp[7]
                 format_tag = tmp[8]
                 format = tmp[9]
+                identifier = "\t".join(ident_list)
+
+                # Skipping repeated variants  
+                if not identifier in seen:
+                  seen[identifier] = 0
+                seen[identifier]+= 1
+                if seen[identifier] > 1:
+                  continue  
+
                 format2 = ""
                 format3 = ""
                 if len(tmp) > 10:
@@ -319,7 +334,6 @@ def convert_vcf_2_json(vcf):
         json.dump(vcf_dict, fp)
 
 
-
 def decompress_vcf(input_vcf):
   '''
     Decompress a bgzipped vcf file
@@ -328,10 +342,10 @@ def decompress_vcf(input_vcf):
   bashCommand = ('{} -c {} > {}').format(p.system_env['GUNZIP'], input_vcf, output_vcf)
   if not os.path.isfile(output_vcf):
 
-    process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE)
-    output, error = process.communicate()
-    if not error.decode('UTF-8'):
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
+    if not error:
       pass
     else:
       msg = " ERROR: Could not create a gzip for vcf " + input_vcf
@@ -349,10 +363,10 @@ def index_vcf(input_vcf):
     msg = " INFO: Indexing vcf " + input_vcf
     logging.info(msg)
 
-    process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE)
-    output, error = process.communicate()
-    if not error.decode('UTF-8'):
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
+    if not error:
       pass
     else:
       msg = " ERROR: Could not create an index file for  for vcf " + input_vcf
@@ -370,10 +384,10 @@ def compress_vcf(input_vcf):
     msg = " INFO: Compressing vcf " + input_vcf
     logging.info(msg)
 
-    process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-      stderr=subprocess.PIPE)
-    output, error = process.communicate()
-    if not error.decode('UTF-8'):
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
+    if not error:
       pass
     else:
       msg = " ERROR: Could not create a gzip for vcf " + input_vcf
@@ -381,13 +395,10 @@ def compress_vcf(input_vcf):
       logging.error(msg)
   return output_vcf
 
-
-
 def get_fastq_files():
   '''
     Get fastq files from input directory
   '''
-
   fastq_list = []
   fastq_list = glob.glob(p.analysis_env['INPUT_DIR'] +  "/*.fastq.gz")
   if not fastq_list:
@@ -397,11 +408,14 @@ def get_fastq_files():
     print (msg)
     p.logging.error(msg)
     sys.exit()
+  filtered_list = []
+  for fastq in fastq_list:
+    if 'Undetermined' in fastq:
+      continue
+    else:
+      filtered_list.append(fastq) 
 
-  #out_fq_list = []
-  #for fq in fastq_file:
-
-  return fastq_list
+  return filtered_list
 
 def check_docker_images(command, image):
     '''simple check for docker images installed
@@ -409,29 +423,29 @@ def check_docker_images(command, image):
     bashCommand = '{} image ls {}'.format(command, image)
 
     p.logging.info(bashCommand)
-    process = subprocess.Popen(bashCommand,#.split(),
-      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    output, error = process.communicate()
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
 
-    if error.decode('UTF-8') == '':
-        output = output.decode('UTF-8')
-        if output:
-            c_lines = 0
-            for line in output.split('\n'):
-                c_lines += 1
-            if c_lines !=3:
-                msg = " ERROR: docker image for " + image +  " was not found" 
-                print (msg)
-                p.logging.error(msg)
-            else:
-                msg = " INFO: docker image for " + image +  " was found" 
-                print (msg)
-                p.logging.info(msg)
+    if not error:
+      if output:
+        c_lines = 0
+        for line in output.split('\n'):
+          c_lines += 1
+        if c_lines !=3:
+          msg = " ERROR: docker image for " + image +  " was not found" 
+          print (msg)
+          p.logging.error(msg)
+          sys.exit()
+        else:
+          msg = " INFO: docker image for " + image +  " was found" 
+          print (msg)
+          p.logging.info(msg)
     else:
         msg = " ERROR: docker image for " + image +  " was not found" 
         print (msg)
         p.logging.error(msg)
+        sys.exit()
 
 def long_aminoacid_2_short(long_aa):
   d = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',

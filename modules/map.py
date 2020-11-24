@@ -114,15 +114,14 @@ def extract_mapping_metrics():
         print (msg)
         logging.info(bashCommand)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-
-        if not error.decode('UTF-8'):
-            p.sample_env[sample]['TOTAL_READS'] = output.decode('UTF-8')
-        else:
-            msg = " ERROR: Could not extract the total number read of sample "+ sample
-            logging.error(msg)
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
+        if error:
+            msg = " ERROR: Could not extract the total number reads for sample "+ sample
+            print(msg)
+            p.logging.error(error)
+            sys.exit()
 
         # Getting total number of on-target reads
         bashCommand = ('{} view -c {} -L {}').format(p.system_env['SAMTOOLS'], \
@@ -132,15 +131,16 @@ def extract_mapping_metrics():
         logging.info(bashCommand)
         print (msg)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-
-        if not error.decode('UTF-8'):
-            p.sample_env[sample]['ON_TARGET_READS'] = output.decode('UTF-8')
-        else:
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
+        if error:
             msg = " ERROR: Could not extract the total on-target reads of sample "+ sample
-            logging.error(msg)
+            print(msg)
+            p.logging.error(error)
+            sys.exit()
+        else:
+            p.sample_env[sample]['ON_TARGET_READS'] = output
 
         if p.sample_env[sample]['TOTAL_READS'] != '.' \
             and p.sample_env[sample]['TOTAL_READS'] != '.':
@@ -157,14 +157,14 @@ def extract_mapping_metrics():
         logging.info(bashCommand)
         print (msg)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
 
         alignments = []
         i_sizes    = []
-        if not error.decode('UTF-8'):
-            alignments = output.decode('UTF-8').split('\n')
+        if not error:
+            alignments = output.split('\n')
             for aln in alignments:
                 tmp = aln.split('\t')
                 if len(tmp) < 10:
@@ -181,7 +181,7 @@ def extract_mapping_metrics():
         else:
             msg = " ERROR: Could not extract insert sizes from sample "+ sample
             logging.error(msg)
-
+            sys.exit()
 
 # def calculate_hts_metrics():
 
@@ -281,11 +281,11 @@ def extract_coverage_metrics():
             logging.info(msg)
             logging.info(bashCommand)
 
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, error = process.communicate()
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
             
-            if not error.decode('UTF-8'):
+            if not error:
                 msg = " INFO: Coverage metrics extraction ended OK"
                 print (msg)
                 logging.error(msg)
@@ -399,11 +399,11 @@ def remove_duplicates():
         logging.info(msg)
         logging.info(bashCommand)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
         #check if everything is ok
-        if not error.decode('UTF-8'):
+        if not error:
             if re.search(r'MarkDuplicates done.', output.decode('UTF-8')):
                 #rm dup ok
                 msg = " INFO: RM duplicated process ended OK for sample " + sample
@@ -449,7 +449,6 @@ def do_generate_list_file():
         p.defaults['BUNDLE_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.docker_env['GATK'], \
         p.analysis_env['PANEL_NAME'], p.analysis_env['PANEL_LIST_NAME'], p.aux_env['GENOME_DICT_NAME']))
 
-
     if not os.path.isfile(p.analysis_env['PANEL_LIST']):
 
         msg = " INFO: Generating list for the gene panel "+ p.analysis_env['PANEL_NAME']
@@ -457,12 +456,12 @@ def do_generate_list_file():
         logging.info(msg)
         logging.info(bashCommand)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
 
-        if not error.decode('UTF-8'):
-            if re.search(r'BedToIntervalList done.', output.decode('UTF-8')):
+        if not error:
+            if re.search(r'BedToIntervalList done.', output):
                 msg = " INFO: list file generation for " + p.analysis_env['PANEL_NAME'] + "ended OK."
                 print (msg)
                 logging.info(msg)
@@ -524,10 +523,9 @@ def map_fastq():
       p.logging.info(msg)
       p.logging.info(bashCommand)
     
-      process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-      
-      output, error = process.communicate()
+      p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output = p1.stdout.decode('UTF-8')
+      error  = p1.stderr.decode('UTF-8')
     else:
         msg = " INFO: Skipping mapping for sample " + sample + " BAM file is already available"
         print (msg)
@@ -546,10 +544,11 @@ def index_bam(bam):
         print (msg)
         logging.info(bashCommand)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
-        if not error.decode('UTF-8') and not output.decode('UTF-8'):
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
+        
+        if not error and not output:
             msg = " INFO: Bam indexing for " + bam + " ended OK"
             logging.info(msg)
         else:

@@ -39,8 +39,7 @@ def main(args):
 
     # Map fastq files, rmdup, bam qc
     m.do_all()
-    for sample in p.lab_data:
-        print("sample" + sample + " APCODE" + p.lab_data[sample]['AP_CODE'])
+
     # Perform var calling
     v.do_var_call()
 

@@ -48,11 +48,11 @@ def do_cnvkit():
     logging.info(msg)
     logging.info(bashCommand)
 
-    process = subprocess.Popen(bashCommand,#.split(),
-      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = process.communicate()
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
 
-    if not error.decode('UTF-8'):
+    if not error:
       msg = " INFO: Access regions successfully created"
       print(msg)
       logging.info(msg)
@@ -72,11 +72,11 @@ def do_cnvkit():
     logging.info(msg)
     logging.info(bashCommand)
 
-    process = subprocess.Popen(bashCommand,#.split(),
-      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = process.communicate()
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
       
-    if not error.decode('UTF-8'):
+    if not error:
       msg = " INFO: target regions successfully created"
       print(msg)
       logging.info(msg)    
@@ -95,11 +95,11 @@ def do_cnvkit():
     logging.info(msg)     
     logging.info(bashCommand)
 
-    process = subprocess.Popen(bashCommand,#.split(),
-      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output, error = process.communicate()
+    p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output = p1.stdout.decode('UTF-8')
+    error  = p1.stderr.decode('UTF-8')
       
-    if not error.decode('UTF-8'):
+    if not error:
       msg = " INFO: off-target regions successfully created"
       print(msg)
       logging.info(msg)       
@@ -142,11 +142,11 @@ def do_cnvkit():
         logging.info(msg)
         logging.info(bashCommand)
 
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
           
-        if not error.decode('UTF-8'):
+        if not error:
           msg = " INFO: Coverage was extracted for sample " + sample
         else:
           msg = " ERROR: Could not create bin regions files"
@@ -164,16 +164,16 @@ def do_cnvkit():
       bam, antitarget_bed, anticoverage_file)
 
       if not os.path.isfile(anticoverage_file):
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
 
         msg = " INFO: Extracting off-target coverage for sample " + sample
         print(msg)
         logging.info(msg)
         logging.info(bashCommand)
 
-        if not error.decode('UTF-8'):
+        if not error:
           pass
         else:
           msg = " ERROR: Could not create bin regions files"
@@ -201,16 +201,16 @@ def do_cnvkit():
       coverage_file, coverage_file, p.aux_env['NORMALS_REF_CNA'], ratio_file)
 
       if not os.path.isfile(ratio_file):
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
         
         msg = " INFO: Fixing (normalizing) sample " + sample
         print(msg)
         logging.info(msg)
         logging.info(bashCommand)
 
-        if not error.decode('UTF-8'):
+        if not error:
           msg = " INFO: Fix (normalization) on sample " + sample + " ended successfully"
           print(msg)
           logging.info(msg)
@@ -257,11 +257,12 @@ def do_cnvkit():
         print(msg)
         logging.info(msg)
         logging.info(bashCommand)
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
           
-        if not error.decode('UTF-8'):
+        if not error:
           msg = " INFO: Segmentation of sample " + sample + " ended successfully"
           print (msg)
           logging.info(msg)
@@ -316,11 +317,11 @@ def do_cnvkit():
         logging.info(msg)
         logging.info(bashCommand)
         
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
           
-        if not error.decode('UTF-8'):
+        if not error:
           msg = " INFO: Calling CNAs on sample ended successfully" + sample
           print(msg)
           logging.info(msg)        
@@ -342,11 +343,11 @@ def do_cnvkit():
         logging.info(msg)
         logging.info(bashCommand)
         
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
           
-        if not error.decode('UTF-8'):
+        if not error:
           msg = " INFO: Exporting CNA calls to vcf for sample " +sample + " ended successfully"
           print(msg)
           logging.info(msg)        
@@ -370,9 +371,9 @@ def do_cnvkit():
         bashCommand = ('python3 {} scatter {} -s {} -c {} -g {} --y-min -2 --segment-color red --by-bin -o {}').format(p.system_env['CNVKIT'], \
           ratio_file, call_file, chrom, gene, plot)
         if not os.path.isfile(plot):
-          process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-          output, error = process.communicate()
+          p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          output = p1.stdout.decode('UTF-8')
+          error  = p1.stderr.decode('UTF-8')
 
 def plot_scatter(cnr_file, cns_file, sample, outdir):
 
@@ -403,9 +404,9 @@ def plot_scatter(cnr_file, cns_file, sample, outdir):
   bashCommand = ('bedtools intersect -a {} -b {} -wa -wb | {}  > {}').format(tmp_cnr, \
     tmp_cns, awk, intersect_file)
 
-  process = subprocess.Popen(bashCommand,#.split(),
-    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  output, error = process.communicate()
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
 
   os.remove(tmp_cns)
   os.remove(tmp_cnr)
@@ -448,9 +449,9 @@ def plot_scatter(cnr_file, cns_file, sample, outdir):
   f.close()
 
   bashCommand = ('Rscript {} ').format(rscript)
-  process = subprocess.Popen(bashCommand,#.split(),
-    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  output, error = process.communicate()
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
 
   os.remove(intersect_file)
 
@@ -465,9 +466,9 @@ def do_pureCN(vcf, segfile, ratiofile, sample):
  summary_purecn = outdir + "/" + sample + ".csv"
 
  if not os.path.isfile(summary_purecn):
-  process = subprocess.Popen(bashCommand,#.split(),
-    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-  output, error = process.communicate()
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
 
  purity = ""
  with open(summary_purecn) as f:
@@ -505,12 +506,11 @@ def do_freebayes():
             bashCommand = ('{} -f {}  {} >  {}').format(p.system_env['FREEBAYES'], \
               p.aux_env['GENOME_FASTA'], p.sample_env[sample]['READY_BAM'],p.sample_env[sample]['FREEBAYES_VCF'] )
             logging.info(bashCommand)
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            output, error = process.communicate()
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
 
-            if not error.decode('UTF-8'):
+            if not error:
                 msg = " INFO: Freebayes was executed successfully on " + sample
                 print (msg)
                 logging.info(msg)
@@ -562,12 +562,11 @@ def do_manta():
              p.system_env['MANTA_CONFIG'], p.sample_env[sample]['READY_BAM'], \
              p.aux_env['GENOME_FASTA'], p.sample_env[sample]['VCF_FOLDER'] )
             logging.info(bashCommand)
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            output, error = process.communicate()
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
 
-            if not error.decode('UTF-8'):
+            if not error:
                 msg = " INFO: Manta config was created successfully for sample " + sample
                 print (msg)
                 logging.info(msg)
@@ -584,12 +583,11 @@ def do_manta():
             logging.info(msg)
             logging.info(bashCommand)
 
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
-            output, error = process.communicate()
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
 
-            if not error.decode('UTF-8'):
+            if not error:
                 msg = " INFO: Manta was executed successfully for sample " + sample
                 print (msg)
                 logging.info(msg)
@@ -652,11 +650,11 @@ def do_mutect2():
             logging.info(msg)
             logging.info(bashCommand)
 
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, error = process.communicate()
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
 
-            if not error.decode('UTF-8'):
+            if not error:
                 if re.search(r'Mutect2 done.', output.decode('UTF-8')):
                     msg = " INFO: Mutect2 varcall ended OK for sample " + sample
                     print (msg)
@@ -685,10 +683,11 @@ def do_mutect2():
             logging.info(msg)
             logging.info(bashCommand)
 
-            process = subprocess.Popen(bashCommand,#.split(),
-                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output, error = process.communicate()
-            if not error.decode('UTF-8'):
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
+            
+            if not error:
                 if re.search(r'FilterMutectCalls done.', output.decode('UTF-8')):
                     msg = " INFO: FilterMutectCalls varcall ended OK for sample " + sample
                     print (msg)

@@ -224,10 +224,10 @@ def create_somatic_report():
           print(bashCommand)
           logging.info(bashCommand)
           
-          process = subprocess.Popen(bashCommand,#.split(),
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-          output, error = process.communicate()
-          if not error.decode('UTF-8') and not output.decode('UTF-8'):
+          p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+          output = p1.stdout.decode('UTF-8')
+          error  = p1.stderr.decode('UTF-8')
+          if not error and not output:
             msg = " INFO: Report generation for " + sample + " ended OK"
             print(msg)
             logging.info(msg)
@@ -399,7 +399,8 @@ def create_somatic_report():
                 allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,
                 therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
                 db.session.add(therapeutic_r)
-                db.session.commit()           
+                db.session.commit()
+
               # Filling Other clinical variants  
               if go_other == True:
                 other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
@@ -447,7 +448,6 @@ def create_somatic_report():
                 var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
                 gene = var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] + " FUSION"
               if gene != '.' and fusion_out == True:
-
                 if gene == '.':
                   gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
                 results_list.append(gene)
@@ -662,11 +662,11 @@ def create_somatic_report():
         print(bashCommand)
         logging.info(bashCommand)
         
-        process = subprocess.Popen(bashCommand,#.split(),
-          shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output, error = process.communicate()
+        p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = p1.stdout.decode('UTF-8')
+        error  = p1.stderr.decode('UTF-8')
        # sys.exit()
-        if not error.decode('UTF-8') and not output.decode('UTF-8'):
+        if not error and not output:
           msg = " INFO: Report generation for" + sample + " ended OK"
           print(msg)
           logging.info(msg)

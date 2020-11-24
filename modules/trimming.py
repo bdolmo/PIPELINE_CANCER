@@ -95,10 +95,18 @@ def trim_fastqs():
       p.logging.info(msg)
       p.logging.info(bashCommand)
 
-      process = subprocess.Popen(bashCommand, shell=True, stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE)
-      
-      output, error = process.communicate()
+      p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      output = p1.stdout.decode('UTF-8')
+      error  = p1.stderr.decode('UTF-8')
+      if error:
+        msg = " ERROR: Something wrong happened with fastp trimming:"
+        print(msg)
+        p.logging.error(error)
+        sys.exit()
+      else:
+        msg = " INFO: FASTQ Trimming ended successfully for sample " + sample
+        p.logging.info(msg)
+        print(msg)
     else:
       msg = " INFO: Skipping trimming of sample " +  sample_name 
       print(msg)
