@@ -202,7 +202,7 @@ def convert_vcf_2_json(vcf):
                 ref = tmp[3]
                 ident_list.append(ref)
                 alt = tmp[4]
-                ident_list.append(qual)
+                ident_list.append(alt)
                 qual= tmp[5]
                 filter = tmp[6]
                 info = tmp[7]

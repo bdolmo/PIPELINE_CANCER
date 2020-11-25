@@ -46,6 +46,7 @@ def main(args):
     # Perform vcf annotation
     a.do_annotation()
 
+    # Create clinical report 
     r.do_report()
 
 
@@ -65,6 +66,12 @@ def parse_arguments():
         help="Output directory", dest='output_dir')
     parser.add_argument("-i", "--input_dir", required=True, type=str,
         help="Input directory", dest='input_dir')
+    parser.add_argument("--db_dir", type=str, required=True,
+        help="Database directory harbouring sqlite files", dest='db_dir')
+    parser.add_argument("--ann_dir", type=str, required=True,
+        help="Annotation resources directory", dest='ann_dir')
+    parser.add_argument("--ref_dir", type=str, required=True,
+        help="Genome reference resource directory", dest='ref_dir')
     parser.add_argument("--sample_data", type=str,
         help="Sample data docx", dest='sample_data')
     parser.add_argument("--lab_data", type=str,
@@ -72,8 +79,7 @@ def parse_arguments():
     parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
         help="Report language", dest='language')
     parser.add_argument("--min-fusion-size", type=int, default=50000,
-        help="Minimum fusion size in bp to be reported", dest='min_fusion_size')
-
+        help="Minimum fusion size in bp to be reported", dest='min_fusion_size')        
     # Now subparsers
     subparsers = parser.add_subparsers(help='sub-command help', dest='subparser_name')
     parser_mapping = subparsers.add_parser('mapping', help='mapping pipeline')

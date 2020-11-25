@@ -360,12 +360,12 @@ def do_cnvkit():
         print (msg)
         logging.info(msg)        
 
-
+      # Produce genome-wide copy number profile  
       plot_scatter( ratio_file, call_file, sample, p.sample_env[sample]['CNV_FOLDER'])
 
-      for gene in p.cna_plot_env:
+      for gene in p.cna_env:
         plot = p.sample_env[sample]['CNV_FOLDER'] + "/" + gene + ".png"
-        chrom = p.cna_plot_env[gene]['chromosome']
+        chrom = p.cna_env[gene]['chromosome']
         if not 'chr' in chrom:
           chrom = 'chr' + chrom
         bashCommand = ('python3 {} scatter {} -s {} -c {} -g {} --y-min -2 --segment-color red --by-bin -o {}').format(p.system_env['CNVKIT'], \
@@ -374,7 +374,10 @@ def do_cnvkit():
           p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
           output = p1.stdout.decode('UTF-8')
           error  = p1.stderr.decode('UTF-8')
-
+          if error:
+            msg = " ERROR: Could not plot CNA on gene " + gene + " for sample " + sample
+            print (msg)
+            logging.error(msg)
 def plot_scatter(cnr_file, cns_file, sample, outdir):
 
   tmp_cnr = outdir + "/" + "tmpcnr.bed"
@@ -518,17 +521,6 @@ def do_freebayes():
                 msg = " ERROR: Something happeend when using Freebayes on " + sample
                 print (msg)
                 logging.error(msg)
-
-def do_cna():
-
-    for sample in p.sample_env:
-        p.sample_env[sample]['CNA_FOLDER'] = \
-            p.sample_env[sample]['VCF_FOLDER'] + "/" "CNA_FOLDER"
-
-        cna_folder_path = Path(p.sample_env[sample]['CNA_FOLDER'])
-        if not cna_folder_path.is_dir():
-            os.mkdir(cna_folder_path)
-
 def do_manta():
 
     for sample in p.sample_env:
@@ -638,10 +630,10 @@ def do_mutect2():
             '-O /vcf_data/{} -L /panel_data/{} -R /bundle/{} --genotype-germline-sites --germline-resource /gnomad_data/{}'
             ' -max-mnp-distance 0 --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],
             p.sample_env[sample]['BAM_FOLDER'], p.sample_env[sample]['VCF_FOLDER'], \
-            p.defaults['BUNDLE_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.defaults['GNOMAD_FOLDER'], \
+            p.aux_env['GENOME_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.aux_env['GNOMAD_FOLDER'], \
             p.docker_env['GATK'], p.sample_env[sample]['READY_BAM_NAME'], 
             p.sample_env[sample]['MUTECT2_VCF_NAME'],p.analysis_env['PANEL_LIST_NAME'], \
-            p.aux_env['GENOME_NAME'], p.analysis_env['GNOMAD_AF_VCF_NAME'], p.analysis_env['THREADS']
+            p.aux_env['GENOME_NAME'], p.aux_env['GNOMAD_AF_VCF_NAME'], p.analysis_env['THREADS']
             ))
 
         if not os.path.isfile(p.sample_env[sample]['MUTECT2_VCF']):
@@ -673,7 +665,7 @@ def do_mutect2():
             bashCommand = ('{} run -v {}:/vcf_data/ -v {}:/bundle/ '
                 '-it {} gatk FilterMutectCalls -R /bundle/{} '
                 '-V /vcf_data/{} -O /vcf_data/{}'.format(p.system_env['DOCKER'],
-                p.sample_env[sample]['VCF_FOLDER'], p.defaults['BUNDLE_FOLDER'],
+                p.sample_env[sample]['VCF_FOLDER'], p.aux_env['GENOME_FOLDER'],
                 p.docker_env['GATK'],  p.aux_env['GENOME_NAME'], \
                 p.sample_env[sample]['MUTECT2_VCF_NAME'], \
                 filtered_vcf_name
@@ -686,7 +678,7 @@ def do_mutect2():
             p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output = p1.stdout.decode('UTF-8')
             error  = p1.stderr.decode('UTF-8')
-            
+
             if not error:
                 if re.search(r'FilterMutectCalls done.', output.decode('UTF-8')):
                     msg = " INFO: FilterMutectCalls varcall ended OK for sample " + sample

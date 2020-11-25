@@ -42,6 +42,7 @@ def create_summary_qc():
     print (msg)
     logging.info(msg)
 
+    # Setting summary qc tsv 
     p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
         "/" + "summary_qc.tsv"
 
@@ -81,6 +82,7 @@ def extract_mapping_metrics():
     p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
         "/" + "summary_qc.tsv"
 
+    # If summary qc already exists 
     if os.path.isfile(p.analysis_env['SUMMARY_QC']):
         msg = " INFO: Skipping mapping metric extraction"
         print (msg)
@@ -329,6 +331,7 @@ def extract_coverage_metrics():
                             lost_exons_dict[field]+=1
                         i+=1
                 total_rois+=1
+
         p.analysis_env['ROI_NUMBER'] = str(total_rois)
         if not 'CALL_RATE' in p.sample_env[sample]:
             p.sample_env[sample]['CALL_RATE'] = {}
@@ -446,7 +449,7 @@ def do_generate_list_file():
     bashCommand = ('{} run -v {}:/bundle/ -v {}:/panels/ '
         '-it {} gatk BedToIntervalList -I /panels/{} -O /panels/{} '
         '-SD /bundle/{} --SORT --UNIQUE'.format(p.system_env['DOCKER'],
-        p.defaults['BUNDLE_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.docker_env['GATK'], \
+        p.aux_env['GENOME_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.docker_env['GATK'], \
         p.analysis_env['PANEL_NAME'], p.analysis_env['PANEL_LIST_NAME'], p.aux_env['GENOME_DICT_NAME']))
 
     if not os.path.isfile(p.analysis_env['PANEL_LIST']):
@@ -547,7 +550,7 @@ def index_bam(bam):
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')
         error  = p1.stderr.decode('UTF-8')
-        
+
         if not error and not output:
             msg = " INFO: Bam indexing for " + bam + " ended OK"
             logging.info(msg)

@@ -743,25 +743,24 @@ def do_vep():
         p.sample_env[sample]['VEP_VCF_NAME'] = \
             os.path.basename(p.sample_env[sample]['READY_SNV_VCF_NAME']).replace(".vcf", ".vep.vcf")
 
-        vep_output_vcf = p.defaults['VEP_DATA_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
+        vep_output_vcf = p.aux_env['VEP_FOLDER_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
 
-        bashCommand = ('{} run -t -i -v {}:/opt/vep/.vep ensemblorg/ensembl-vep'
+        bashCommand = ('{} run -t -i -v {}:/opt/vep/.vep {}'
         ' perl vep --cache --offline --dir_cache /opt/vep/.vep/ --dir_plugins /opt/vep/.vep/Plugins/'
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
         ' --af_1kg --af_gnomad '
         ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b'
         ' --symbol --force_overwrite --fork {} --canonical '
-        .format(p.system_env['DOCKER'], p.defaults['VEP_DATA'], p.sample_env[sample]['READY_SNV_VCF_NAME'],\
+        .format(p.system_env['DOCKER'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'], p.sample_env[sample]['READY_SNV_VCF_NAME'],\
         p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS']))
 
         if not os.path.isfile(p.sample_env[sample]['VEP_VCF']):
 
             # First, copy vcf to vep input dir
-            shutil.copy2(p.sample_env[sample]['READY_SNV_VCF'], p.defaults['VEP_DATA_INPUT']+"/"+p.sample_env[sample]['READY_SNV_VCF_NAME'])
+            shutil.copy2(p.sample_env[sample]['READY_SNV_VCF'], p.aux_env['VEP_FOLDER_INPUT']+"/"+p.sample_env[sample]['READY_SNV_VCF_NAME'])
 
             msg = " INFO: Annotating sample " + sample + " with VEP"
             print (msg)
-            print (bashCommand)
             logging.info(msg)
             logging.info(bashCommand)
 
@@ -794,7 +793,7 @@ def load_cgi_data():
   '''
   cgi_dict = defaultdict(dict)
 
-  with open (p.analysis_env['CGI_BIOMARKERS'], 'r') as f:
+  with open (p.aux_env['CGI_BIOMARKERS'], 'r') as f:
     for line in f:
       line = line.rstrip("\n")
       tmp = line.split("\t")
@@ -988,7 +987,7 @@ def annotate_known_fusions():
         o = open(fusions_vcf, 'w')
 
         bashCommand = ('{} pairtopair -a {} -b {} | sort -V | uniq > {}')\
-        .format(p.system_env['BEDTOOLS'], fusions_bed, p.analysis_env['CHIMERKB_BED'], intersect_file)
+        .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['CHIMERKB_BED'], intersect_file)
             
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')

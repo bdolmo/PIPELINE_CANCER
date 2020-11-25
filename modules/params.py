@@ -18,9 +18,7 @@ import pandas as pd
 global sample_env 
 sample_env = defaultdict(dict)
 
-
 def set_analysis_env(args):
-
 
     global analysis_env 
     #analysis_env = defaultdict(dict)
@@ -37,12 +35,24 @@ def set_analysis_env(args):
         'VARIANT_CLASS'  : args.var_class,
         'THREADS'        : args.threads,
         'ANALYSIS_DATE'  : dt_string,
+        'DB_DIR'         : os.path.abspath(args.db_dir),
+        'ANN_DIR'        : os.path.abspath(args.ann_dir),
+        'REF_DIR'        : os.path.abspath(args.ref_dir),
         'LANGUAGE'       : args.language,
         'MIN_FUSION_SIZE': args.min_fusion_size
     }
+
     analysis_env['OUTPUT_NAME'] = os.path.basename(analysis_env['OUTPUT_DIR'])
     analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" \
         + os.path.basename(args.panel).replace(".bed", "")
+
+    # Define log file for the analysis
+    global logging
+    log_file = os.path.abspath(analysis_env['OUTPUT_DIR']) + "/" \
+        + analysis_env['OUTPUT_NAME'] + ".pipeline.log"
+    logging.basicConfig(filename=log_file, filemode='w', 
+        format='PID:%(process)d\t%(asctime)s\t%(message)s')
+    logging.getLogger().setLevel(logging.INFO)
 
     if not os.path.isdir(analysis_env['PANEL_WORKDIR']):
         os.mkdir(analysis_env['PANEL_WORKDIR'])
@@ -59,34 +69,26 @@ def set_analysis_env(args):
     if os.path.isfile(args.lab_data):
         analysis_env['LAB_DATA'] = os.path.abspath(args.lab_data)
 
-    # Default annotation files for each genome version
-    if analysis_env['VARIANT_CLASS'] == "somatic":
-        if analysis_env['GENOME_VERSION'] == "hg19":
-            analysis_env['CHIMERKB_BED'] = defaults['CHIMERKB_FOLDER'] + "/" \
-                + "chimerKB_hg19_fusions.bed"
-            analysis_env['CHIMERKB_BED_NAME'] = "chimerKB_hg19_fusions.bed"
-            analysis_env['CGI_BIOMARKERS'] = defaults['CGI_FOLDER'] + "/" \
-                + "cgi_biomarkers_latest" + "/" + "cgi_biomarkers_per_variant.tsv"
-            analysis_env['CGI_BIOMARKERS_NAME'] = "cgi_biomarkers_per_variant.tsv"
-            analysis_env['GNOMAD_AF_VCF'] = defaults['GNOMAD_FOLDER'] + "/" \
-                + "somatic-b37_af-only-gnomad.raw.sites.vcf"
-            analysis_env['GNOMAD_AF_VCF_NAME'] = "somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz"
-    if analysis_env['LANGUAGE'] == "cat":
-        defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat"
-
     # Creating output directory
     output_path = Path(analysis_env['OUTPUT_DIR'])
     if not output_path.is_dir():
         os.mkdir(analysis_env['OUTPUT_DIR'])
 
-    print(analysis_env['OUTPUT_NAME'])
-
-    global logging
-    log_file = os.path.abspath(analysis_env['OUTPUT_DIR']) + "/" + analysis_env['OUTPUT_NAME'] + ".pipeline.log"
-    print(log_file)
-    logging.basicConfig(filename=log_file, filemode='w', 
-        format='PID:%(process)d\t%(asctime)s\t%(message)s')
-    logging.getLogger().setLevel(logging.INFO)
+    if not os.path.isdir(analysis_env['DB_DIR'] ):
+        msg = " ERROR: Missing input database directory (--db_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
+    if not os.path.isdir(analysis_env['ANN_DIR'] ):
+        msg = " ERROR: Missing input annotation directory (--ann_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
+    if not os.path.isdir(analysis_env['REF_DIR'] ):
+        msg = " ERROR: Missing input reference directory (--ref_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
 
     # Checking existance of input
     input_path = Path(analysis_env['INPUT_DIR'])
@@ -148,10 +150,11 @@ def set_analysis_env(args):
                     cell_idx+=1
             row_idx += 1
     else:
-        msg = " WARNING: sample data (.docx) file was not found"
+        msg = " ERROR: sample data (.docx) file was not found"
         print (msg)
         logging.error(msg)
 
+    # Load lab data, internal ids and relationship with external ids
     global lab_data
     lab_data = defaultdict(dict)
     if os.path.isfile(analysis_env['LAB_DATA']):
@@ -177,8 +180,10 @@ def set_analysis_env(args):
                 lab_data[lab_id]['PETITION_DATE'] = '.'
             if lab_data[lab_id]['AP_CODE'] == lab_id:
                 lab_data[lab_id]['AP_CODE'] = '.'
-    for sample in lab_data:
-        print ("mostra " + sample + " " + lab_data[sample]['AP_CODE'] + " " + lab_data[sample]['PURITY'])
+    else:
+        msg = " ERROR: lab data (.xlsx) file was not found"
+        print (msg)
+        logging.error(msg)
 
 def set_defaults(main_dir):
     ''' 
@@ -189,25 +194,21 @@ def set_defaults(main_dir):
         # Folder with all binaries needed
         'BIN_FOLDER'    : main_dir +  "/BIN_FOLDER",
         # Folder with ancillary files
-        'BUNDLE_FOLDER' : main_dir + "/BUNDLE_FOLDER",
+       # 'BUNDLE_FOLDER' : main_dir + "/BUNDLE_FOLDER",
         # Folder with ancillary files
         'PANEL_FOLDER'  : main_dir + "/PANEL_FOLDER",
         # Folder with annotation files
-        'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
+        # 'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
         # chimerKB folder
-        'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
+        # 'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
         # gnomAD folder
-        'GNOMAD_FOLDER' : main_dir + "/ANNOTATION_FOLDER/gnomAD",
+        # 'GNOMAD_FOLDER' : main_dir + "/ANNOTATION_FOLDER/gnomAD",
         # CGI folder
-        'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
+        # 'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
         # Setting JASPER directories
         'JASPERREPORT_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/MyReports",
         'JDBC_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/JDBC/",
-
         'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
-        'VEP_DATA'        :  main_dir + "/VEP_DATA",
-        'VEP_DATA_INPUT'  :  main_dir + "/VEP_DATA/input",
-        'VEP_DATA_OUTPUT' :  main_dir + "/VEP_DATA/output"
     }
     # Check all folders are present
     for folder in defaults:
@@ -222,24 +223,44 @@ def set_defaults(main_dir):
 
 def get_panel_configuration(main_dir):
     ''' 
-        Set ancillary files (gnome fasta , etc)
-    '''    
+        Set panel configuration if present
+    '''
+
+    # Loading panel defined transcript id's    
     global roi_env 
     roi_env = defaultdict(dict)
     roi_env = s.load_panel_transcripts(analysis_env['PANEL_NAME'])
+    if not roi_env:
+        msg = " WARNING: Unable to load transcript info for panel " + analysis_env['PANEL_NAME']
+        print(msg)
+        logging.error(msg)
 
+    # Loading panel defined biomarkers
     global biomarker_env
     biomarker_env = defaultdict(dict)
     biomarker_env = s.load_panel_biomarkers(analysis_env['PANEL_NAME'])
+    if not roi_env:
+        msg = " WARNING: Unable to load biomarker info for panel " + analysis_env['PANEL_NAME']
+        print(msg)
+        logging.error(msg)
 
+    # Loading panel defined disclaimers
     global disclaimers_env
     disclaimers_env = defaultdict(dict)
     disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'], analysis_env['LANGUAGE'])
+    if not roi_env:
+        msg = " WARNING: Unable to load disclaimers info for panel " + analysis_env['PANEL_NAME']
+        print(msg)
+        logging.error(msg)
 
-    global cna_plot_env
-    cna_plot_env = defaultdict(dict)
-    cna_plot_env = s.load_cna(analysis_env['PANEL_NAME'])
-    print(str(cna_plot_env))
+    # Loading panel defined genes for CNA analysis
+    global cna_env
+    cna_env = defaultdict(dict)
+    cna_env = s.load_cna(analysis_env['PANEL_NAME'])
+    if not roi_env:
+        msg = " WARNING: Unable to load CNA genes for panel " + analysis_env['PANEL_NAME']
+        print(msg)
+        logging.error(msg)
 
 def set_auxfiles_env():
     ''' 
@@ -248,22 +269,141 @@ def set_auxfiles_env():
     global aux_env 
     aux_env = defaultdict(dict)
     if analysis_env['GENOME_VERSION'] == 'hg19':
-        defaults['BUNDLE_FOLDER'] = defaults['BUNDLE_FOLDER'] + "/hg19/"
-        aux_env['GENOME_FASTA']     =  defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.fasta"
-        aux_env['GENOME_NAME']      = "ucsc.hg19.fasta"
-        aux_env['GENOME_DICT']      = defaults['BUNDLE_FOLDER'] + "/ucsc.hg19.dict"
-        aux_env['GENOME_DICT_NAME'] = "ucsc.hg19.dict"
-        aux_env['GENE_LIST']        = defaults['BUNDLE_FOLDER'] + "/genelist.hg19.bed.gz"
+
+        # Setting genome folder and checking that it exists 
+        aux_env['GENOME_FOLDER']    = analysis_env['REF_DIR'] + "/hg19"
+        if not os.path.isdir(aux_env['GENOME_FOLDER'] ):
+            msg = " ERROR: Missing genome folder " + aux_env['GENOME_FOLDER']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+
+        # Setting genome fasta file and checking that it exists 
+        aux_env['GENOME_FASTA']     = aux_env['GENOME_FOLDER'] + "/ucsc.hg19.fasta"
+        if not os.path.isfile(aux_env['GENOME_FASTA'] ):
+            msg = " ERROR: Missing FASTA genome " + aux_env['GENOME_FASTA']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+        aux_env['GENOME_NAME']      = os.path.basename(aux_env['GENOME_FASTA'])
+
+        # Setting genome fasta dictionary and checking that it exists 
+        aux_env['GENOME_DICT']      = aux_env['GENOME_FOLDER'] + "/ucsc.hg19.dict"
+        if not os.path.isfile(aux_env['GENOME_DICT'] ):
+            msg = " ERROR: Missing FASTA dict " + aux_env['GENOME_DICT']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+        aux_env['GENOME_DICT_NAME'] = os.path.basename(aux_env['GENOME_DICT'])
+
+        # Setting gene list and checking that it exists 
+        aux_env['GENE_LIST']        = aux_env['GENOME_FOLDER'] + "/genelist.hg19.bed.gz"
+        if not os.path.isfile(aux_env['GENE_LIST'] ):
+            msg = " ERROR: Missing gene list bed file " + aux_env['GENE_LIST']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
         aux_env['GENE_LIST_NAME']   = "genelist.hg19.bed.gz"
+
+        # Setting normals reference and checking that it exists 
         aux_env['NORMALS_REF_CNA']  = defaults['PANEL_FOLDER'] + "/" +  analysis_env['PANEL_NAME'].replace(".bed", "")\
           + "/" + analysis_env['PANEL_NAME'].replace(".bed", ".cnn")
-        aux_env['NORMALS_REF_CNA_NAME']  = analysis_env['PANEL_NAME'].replace(".bed", "cnn")
-    if analysis_env['LANGUAGE'] == "cat": 
+        if not os.path.isfile(aux_env['NORMALS_REF_CNA'] ):
+            msg = " ERROR: Missing normals reference (.cnn) " + aux_env['NORMALS_REF_CNA']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+        aux_env['NORMALS_REF_CNA_NAME']  = os.path.basename(aux_env['NORMALS_REF_CNA'])
+
+        # Annotation files
+        if analysis_env['VARIANT_CLASS'] == "somatic":
+
+            # Setting VEP and checking that it exists 
+            aux_env['VEP_FOLDER'] = analysis_env['ANN_DIR'] + "/VEP"
+            if not os.path.isdir(aux_env['VEP_FOLDER']):
+                msg = " ERROR: Missing VEP directory " + aux_env['VEP_FOLDER']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            
+            # Where input vcfs will be placed
+            aux_env['VEP_FOLDER_INPUT'] = aux_env['VEP_FOLDER'] + "/input"
+            if not os.path.isdir(aux_env['VEP_FOLDER_INPUT']):
+                msg = " ERROR: Missing VEP input directory " + aux_env['VEP_FOLDER_INPUT']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+
+            # Where output (annotated) vcfs will be placed
+            aux_env['VEP_FOLDER_OUTPUT'] = aux_env['VEP_FOLDER'] + "/output"
+            if not os.path.isdir(aux_env['VEP_FOLDER_OUTPUT']):
+                msg = " ERROR: Missing VEP output directory " + aux_env['VEP_FOLDER_OUTPUT']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+
+            # Setting chimerKB and checking that everything exists 
+            aux_env['CHIMERKB_FOLDER'] = analysis_env['ANN_DIR'] + "/chimerKB"
+            if not os.path.isdir(aux_env['CHIMERKB_FOLDER']):
+                msg = " ERROR: Missing chimerKB directory " + aux_env['CHIMERKB_FOLDER']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['CHIMERKB_BED'] = aux_env['CHIMERKB_FOLDER'] + "/" \
+                + "chimerKB_hg19_fusions.bed"
+            if not os.path.isfile(aux_env['CHIMERKB_BED']):
+                msg = " ERROR: Missing chimerKB directory " + aux_env['CHIMERKB_FOLDER']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['CHIMERKB_BED_NAME'] = os.path.basename(aux_env['CHIMERKB_BED'])
+
+            # Setting CGI and checking that everything exists 
+            aux_env['CGI_FOLDER'] = analysis_env['ANN_DIR'] + "/CGI"
+            if not os.path.isdir(aux_env['CGI_FOLDER']):
+                msg = " ERROR: Missing CGI directory " + aux_env['CGI_FOLDER']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['CGI_BIOMARKERS'] = aux_env['CGI_FOLDER'] + "/" \
+                + "cgi_biomarkers_latest" + "/" + "cgi_biomarkers_per_variant.tsv"
+            if not os.path.isfile(aux_env['CGI_BIOMARKERS']):
+                msg = " ERROR: Missing CGI biomarker file " + aux_env['CGI_BIOMARKERS']
+                print (msg)
+                logging.error(msg)
+                sys.exit()                
+            aux_env['CGI_BIOMARKERS_NAME'] = os.path.basename(aux_env['CGI_BIOMARKERS'])
+
+            # Setting CGI and checking that everything exists 
+            aux_env['GNOMAD_FOLDER'] = analysis_env['ANN_DIR'] + "/gnomAD"
+            if not os.path.isdir(aux_env['GNOMAD_FOLDER']):
+                msg = " ERROR: Missing gnomAD directory: " + aux_env['GNOMAD_FOLDER']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+
+            # Setting gnomAD and checking that everything exists 
+            aux_env['GNOMAD_AF_VCF'] = aux_env['GNOMAD_FOLDER'] + "/somatic-b37_af-only-gnomad.raw.sites.vcf"
+            if not os.path.isfile(aux_env['GNOMAD_AF_VCF']):
+                msg = " ERROR: Missing gnomAD VCF: " + aux_env['GNOMAD_AF_VCF']
+                print (msg)
+                logging.error(msg)
+                sys.exit()            
+            aux_env['GNOMAD_AF_VCF_NAME'] = os.path.basename(aux_env['GNOMAD_AF_VCF'])
+
+    # Setting jrxlm files depending on language
+    if analysis_env['LANGUAGE'] == "cat":
+        defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat/"
         aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
             +"/JASPERREPORTS/MyReports/cat/LungCancer_Report_v1_cat.jrxml"
-    if analysis_env['LANGUAGE'] == "en": 
+    if analysis_env['LANGUAGE'] == "en":
+        defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/en/"
         aux_env['REPORT_JRXML'] = defaults['BIN_FOLDER'] \
             +"/JASPERREPORTS/MyReports/en/LungCancer_Report_v1_en.jrxml"
+    if not os.path.isfile(aux_env['REPORT_JRXML'] ):
+        msg = " WARNING: Missing jrxml file " + aux_env['REPORT_JRXML']
+        print (msg)
+        logging.error(msg)
 
 def set_system_env():
     ''' 
@@ -308,16 +448,15 @@ def set_system_env():
     gatkimage   = 'broadinstitute/gatk:4.1.3.0'
     picardimage = 'broadinstitute/picard'
     cnvkitimage = 'etal/cnvkit'
+    vepimage    = 'ensemblorg/ensembl-vep'
     #vepimage    = 'ensembl/vep:latest
 
     docker_env = {
         'GATK'   : gatkimage,
         'PICARD' : picardimage,
-        'CNVKIT' : cnvkitimage
+        'CNVKIT' : cnvkitimage,
+        'VEP'    : vepimage
     }
 
     for image in docker_env:
         u.check_docker_images(system_env['DOCKER'], docker_env[image])
-
-    # Now check all images are available
-    # Now check that every binary can be executed

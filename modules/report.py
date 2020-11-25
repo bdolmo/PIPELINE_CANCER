@@ -383,13 +383,13 @@ def create_somatic_report():
               else:
                 diseases_str = '.'
               if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
-                if gene in p.cna_plot_env:
-                  if VAF >= int(p.cna_plot_env[gene]['min_cn']):
+                if gene in p.cna_env:
+                  if VAF >= int(p.cna_env[gene]['min_cn']):
                     go_therapeutic = True
 
               elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:             
-                if gene in p.cna_plot_env:
-                  if VAF >= int(p.cna_plot_env[gene]['min_cn']): 
+                if gene in p.cna_env:
+                  if VAF >= int(p.cna_env[gene]['min_cn']): 
                     go_other = True               
 
               # Filling therapeutic table  
