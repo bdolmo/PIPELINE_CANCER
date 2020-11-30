@@ -628,7 +628,7 @@ def do_mutect2():
         bashCommand = ('{} run -v {}:/bam_data/ -v {}:/vcf_data/ -v {}:/bundle/ '
             '-v {}:/panel_data/ -v {}:/gnomad_data/ -it {} gatk Mutect2 -I /bam_data/{} '
             '-O /vcf_data/{} -L /panel_data/{} -R /bundle/{} --genotype-germline-sites --germline-resource /gnomad_data/{}'
-            ' -max-mnp-distance 0 --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],
+            ' --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],
             p.sample_env[sample]['BAM_FOLDER'], p.sample_env[sample]['VCF_FOLDER'], \
             p.aux_env['GENOME_FOLDER'], p.analysis_env['PANEL_WORKDIR'], p.aux_env['GNOMAD_FOLDER'], \
             p.docker_env['GATK'], p.sample_env[sample]['READY_BAM_NAME'], 
@@ -647,7 +647,7 @@ def do_mutect2():
             error  = p1.stderr.decode('UTF-8')
 
             if not error:
-                if re.search(r'Mutect2 done.', output.decode('UTF-8')):
+                if re.search(r'Mutect2 done.', output):
                     msg = " INFO: Mutect2 varcall ended OK for sample " + sample
                     print (msg)
                     logging.info(msg)
@@ -680,7 +680,7 @@ def do_mutect2():
             error  = p1.stderr.decode('UTF-8')
 
             if not error:
-                if re.search(r'FilterMutectCalls done.', output.decode('UTF-8')):
+                if re.search(r'FilterMutectCalls done.', output):
                     msg = " INFO: FilterMutectCalls varcall ended OK for sample " + sample
                     print (msg)
                     logging.info(msg)

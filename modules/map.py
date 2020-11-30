@@ -64,7 +64,11 @@ def create_summary_qc():
             info.append("76")
             info.append(p.analysis_env['PANEL_NAME'])
             info.append(str(p.analysis_env['ROI_NUMBER']))
-            info.append(str(u.num_to_human(p.sample_env[sample]['TOTAL_READS'])))
+            if p.sample_env[sample]['TOTAL_READS'] != ".":
+                info.append(str(u.num_to_human(p.sample_env[sample]['TOTAL_READS'])))
+            else:
+                info.append(p.sample_env[sample]['TOTAL_READS'])
+
             for threshold in p.sample_env[sample]['CALL_RATE']:
                 if threshold in header:
                     info.append(str(p.sample_env[sample]['CALL_RATE'][threshold]))
@@ -95,9 +99,9 @@ def extract_mapping_metrics():
                 if 'Lab ID' in line:
                     continue
                 else:
-                    p.sample_env[sample]['TOTAL_READS'] = tmp[5] 
+                    p.sample_env[sample]['TOTAL_READS']   = tmp[5] 
                     p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12] 
-                    p.sample_env[sample]['ROI_PERCENTAGE'] = tmp[13] 
+                    p.sample_env[sample]['ROI_PERCENTAGE']= tmp[13] 
                     p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14] 
         return
         
@@ -124,6 +128,8 @@ def extract_mapping_metrics():
             print(msg)
             p.logging.error(error)
             sys.exit()
+        else:
+            p.sample_env[sample]['TOTAL_READS'] = output
 
         # Getting total number of on-target reads
         bashCommand = ('{} view -c {} -L {}').format(p.system_env['SAMTOOLS'], \
@@ -407,7 +413,7 @@ def remove_duplicates():
         error  = p1.stderr.decode('UTF-8')
         #check if everything is ok
         if not error:
-            if re.search(r'MarkDuplicates done.', output.decode('UTF-8')):
+            if re.search(r'MarkDuplicates done.', output):
                 #rm dup ok
                 msg = " INFO: RM duplicated process ended OK for sample " + sample
                 print (msg)
@@ -477,7 +483,7 @@ def do_generate_list_file():
             print (msg)
             logging.error(msg)
     else:
-        msg = " INFO: Skipping list file generation for panel " + p.analysis_env['PANEL_NAME'] + " . File is already available"
+        msg = " INFO: Skipping list file generation for panel " + p.analysis_env['PANEL_NAME']
         print (msg)
         logging.info(msg)
 

@@ -610,13 +610,22 @@ def create_somatic_report():
             go_therapeutic = False
             go_other       = False
             go_rare        = False
-            if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
+            if significance_str != ".":
+              print(significance_str)
+
+
+
+            if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str \
+              or 'Outcome' in significance_str:
               if max_af == '.':
                 go_therapeutic = True
+                print("go therapy")
               else:
                 if float(max_af) < 0.01:
+                  print("go therapy")
                   go_therapeutic = True
             elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str and 'pathogenic' in clin_sig:
+              print("go other")
               go_other = True
             else:
               if max_af == '.' :

@@ -99,12 +99,17 @@ def trim_fastqs():
       output = p1.stdout.decode('UTF-8')
       error  = p1.stderr.decode('UTF-8')
       if error:
-        msg = " ERROR: Something wrong happened with fastp trimming:"
-        print(msg)
-        p.logging.error(error)
-        sys.exit()
+        if re.search("error", error):
+          msg = " ERROR: Something wrong happened with fastp trimming:"
+          print(msg)
+          p.logging.error(error)
+          sys.exit()
+        else:
+          msg = " INFO: FASTQ Trimming ended successfully for sample " + sample_name
+          p.logging.info(msg)
+          print(msg)          
       else:
-        msg = " INFO: FASTQ Trimming ended successfully for sample " + sample
+        msg = " INFO: FASTQ Trimming ended successfully for sample " + sample_name
         p.logging.info(msg)
         print(msg)
     else:

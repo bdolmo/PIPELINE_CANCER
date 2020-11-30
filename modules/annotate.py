@@ -444,7 +444,7 @@ class Civic:
         if 'splice' in conseq:
           var = "EXON "  + str(exon) + " SKIPPING MUTATION"
           candidate_var_list.append(var)
-        if variant == "SNV" or variant == "MNV":
+        if vartype == "SNV" or vartype == "MNV":
           candidate_var_list.append(variant[:-1])
           candidate_var_list.append(variant[1:])
           candidate_var_list.append(variant[1:-1])    
@@ -680,6 +680,8 @@ def do_civic():
                                 enst_id = transcript_list[vep_dict['Feature']]
                                 hgvs_p = transcript_list[vep_dict['HGVSp']]
                                 exon = re.search("\d+", transcript_list[vep_dict['EXON']])
+                                if not exon:
+                                  exon = re.search("\d+", transcript_list[vep_dict['INTRON']])                                
                                 if exon is not None:
                                   exon = exon.group(0)
                                 else:
@@ -704,6 +706,11 @@ def do_civic():
                                       if aa in p_code:
                                         p_code = p_code.replace(aa, u.aa_dict[aa])
                                     variant = p_code
+                                else:
+                                  if 'splice' in consequence:
+                                    variant = "SKIPPING MUTATION"
+                                if variant != '.':
+
                                   civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
                                   civic_annotation = ','.join(civic_ev_list)
                                   if len(civic_ev_list)>0:

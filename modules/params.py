@@ -127,7 +127,7 @@ def set_analysis_env(args):
                         is_date = True
                        # break
                         continue
-                    if cell.text.startswith('NOM'):
+                    if cell.text.startswith('HC'):
                         is_date = False
                         is_sample= True
                         break
@@ -137,10 +137,10 @@ def set_analysis_env(args):
                             petition_date = cell.text
                             is_date = False
                     if is_sample:
-                        if cell_idx == 0:
+                        if cell_idx == 1:
                             sample = cell.text
                             sample_data[sample]['PETITION_DATE'] = petition_date
-                        if cell_idx == 1:
+                        if cell_idx == 2:
                             purity = re.search('^\d+%', cell.text)
                             if purity:
                                 purity = purity.group(0)
@@ -153,6 +153,9 @@ def set_analysis_env(args):
         msg = " ERROR: sample data (.docx) file was not found"
         print (msg)
         logging.error(msg)
+
+    for sample in sample_data:
+        print (sample + " " +  sample_data[sample]['PURITY'])
 
     # Load lab data, internal ids and relationship with external ids
     global lab_data
@@ -383,7 +386,7 @@ def set_auxfiles_env():
                 sys.exit()
 
             # Setting gnomAD and checking that everything exists 
-            aux_env['GNOMAD_AF_VCF'] = aux_env['GNOMAD_FOLDER'] + "/somatic-b37_af-only-gnomad.raw.sites.vcf"
+            aux_env['GNOMAD_AF_VCF'] = aux_env['GNOMAD_FOLDER'] + "/somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz"
             if not os.path.isfile(aux_env['GNOMAD_AF_VCF']):
                 msg = " ERROR: Missing gnomAD VCF: " + aux_env['GNOMAD_AF_VCF']
                 print (msg)

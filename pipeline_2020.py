@@ -53,44 +53,72 @@ def main(args):
 def parse_arguments():
     '''parsing input arguments
     '''
-    parser = argparse.ArgumentParser(description="Pipeline for NGS analysis v.1.0")
-    parser.add_argument("--panel", type=str, required=True,
+    parent_parser = argparse.ArgumentParser(description="Pipeline for NGS analysis v.1.0")
+    parent_parser.add_argument("--panel", type=str, required=True,
         help="panel to analyze options today [genes]", dest='panel')
-    parser.add_argument("-r", "--reference", required=True, type=str, choices=['hg19', 'hg38'], 
+    parent_parser.add_argument("-r", "--reference", required=True, type=str, choices=['hg19', 'hg38'], 
         default='hg19', help="Genome reference to do mapping var calling and annotation",  dest='reference')
-    parser.add_argument("-t", "--threads", type=int, default=4,
+    parent_parser.add_argument("-t", "--threads", type=int, default=4,
         help="Number of CPU threads to operate", dest='threads')
-    parser.add_argument("--var_class", required=True, type=str, choices=['somatic', 'germline'],
+    parent_parser.add_argument("--var_class", required=True, type=str, choices=['somatic', 'germline'],
         default='somatic', help="Perform somatic or germline variant analysis", dest='var_class')
-    parser.add_argument("-o", "--output_dir", required=True, type=str,
+    parent_parser.add_argument("-o", "--output_dir", required=True, type=str,
         help="Output directory", dest='output_dir')
-    parser.add_argument("-i", "--input_dir", required=True, type=str,
+    parent_parser.add_argument("-i", "--input_dir", required=True, type=str,
         help="Input directory", dest='input_dir')
-    parser.add_argument("--db_dir", type=str, required=True,
+    parent_parser.add_argument("--db_dir", type=str, required=True,
         help="Database directory harbouring sqlite files", dest='db_dir')
-    parser.add_argument("--ann_dir", type=str, required=True,
+    parent_parser.add_argument("--ann_dir", type=str, required=True,
         help="Annotation resources directory", dest='ann_dir')
-    parser.add_argument("--ref_dir", type=str, required=True,
+    parent_parser.add_argument("--ref_dir", type=str, required=True,
         help="Genome reference resource directory", dest='ref_dir')
-    parser.add_argument("--sample_data", type=str,
+    parent_parser.add_argument("--sample_data", type=str,
         help="Sample data docx", dest='sample_data')
-    parser.add_argument("--lab_data", type=str,
+    parent_parser.add_argument("--lab_data", type=str,
         help="Lab data xlsx", dest='lab_data')
-    parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
+    parent_parser.add_argument("--lang", type=str, choices=['cat', 'en', 'esp'], default='cat',
         help="Report language", dest='language')
-    parser.add_argument("--min-fusion-size", type=int, default=50000,
-        help="Minimum fusion size in bp to be reported", dest='min_fusion_size')        
+    parent_parser.add_argument("--min-fusion-size", type=int, default=50000,
+        help="Minimum fusion size in bp to be reported", dest='min_fusion_size')
+  
     # Now subparsers
-    subparsers = parser.add_subparsers(help='sub-command help', dest='subparser_name')
-    parser_mapping = subparsers.add_parser('mapping', help='mapping pipeline')
-    parser_mapping.add_argument("--rm_dup", action='store_true',
+    subparsers = parent_parser.add_subparsers(title="sub-commands")
+    parser_map = subparsers.add_parser('map', parents=[parent_parser],
+        add_help=False, description="Map raw FASTQ files", help='Mapping pipeline')
+    parser_map.add_argument("--rm_dup", action='store_true',
         help="Remove duplicates in bam. Default = True")
-    parser_mapping.add_argument('--mapper', choices=['bwa'], default='bwa',
+    parser_map.add_argument('--mapper', choices=['bwa'], default='bwa',
         help="Choose a short-read mapper. Default = bwa")
-    parser_mapping.add_argument('--qc_analysis', default=True,
+    parser_map.add_argument('--qc_analysis', default=True,
         help="Perform QC analysis. Default = True")
 
-    arguments = parser.parse_args()
+    parser_call = subparsers.add_parser('call', parents=[parent_parser],
+        add_help=False, description="Call variants command", help='Calling pipeline')
+    parser_call.add_argument("--rm_dup", action='store_true',
+        help="Remove duplicates in bam. Default = True")
+    parser_call.add_argument('--mapper', choices=['bwa'], default='bwa',
+        help="Choose a short-read mapper. Default = bwa")
+    parser_call.add_argument('--qc_analysis', default=True,
+        help="Perform QC analysis. Default = True")
+
+    parser_annotate = subparsers.add_parser('annotate', parents=[parent_parser],
+        add_help=False, description="Anotate variants command", help='Variant annotatione pipeline')
+    parser_annotate.add_argument("--rm_dup", action='store_true',
+        help="Remove duplicates in bam. Default = True")
+    parser_annotate.add_argument('--mapper', choices=['bwa'], default='bwa',
+        help="Choose a short-read mapper. Default = bwa")
+    parser_annotate.add_argument('--qc_analysis', default=True,
+        help="Perform QC analysis. Default = True")
+
+    parser_report = subparsers.add_parser('report', parents=[parent_parser],
+        add_help=False, description="Anotate variants command", help='Reporting pipeline')
+    parser_report.add_argument("--rm_dup", action='store_true',
+        help="Remove duplicates in bam. Default = True")
+    parser_report.add_argument('--mapper', choices=['bwa'], default='bwa',
+        help="Choose a short-read mapper. Default = bwa")
+    parser_report.add_argument('--qc_analysis', default=True,
+        help="Perform QC analysis. Default = True")
+    arguments = parent_parser.parse_args()
     return arguments
 
 
