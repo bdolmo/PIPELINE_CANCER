@@ -26,10 +26,10 @@ def do_all():
     # Removing duplicates
     remove_duplicates()
 
-    # Get coverage metrics
+    # Get coverage metrics, call rate, lost exons, etc
     extract_coverage_metrics()
 
-    # Get mapping metrics
+    # Get mapping metrics, %duplicates, etc
     extract_mapping_metrics()
 
     # Gather all metrics and create a summary qc
@@ -47,12 +47,12 @@ def create_summary_qc():
         "/" + "summary_qc.tsv"
 
     if os.path.isfile(p.analysis_env['SUMMARY_QC']):
-        msg = " INFO: Skipping summary QC joining"
+        msg = " INFO: Skipping summary QC creation"
         print (msg)
         logging.info(msg)
         return
 
-    header = ['Fic ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup']
+    header = ['Ext ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup','Mean_Isize', 'SD_Isize']
 
     with open(p.analysis_env['SUMMARY_QC'], 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter='\t')
@@ -78,7 +78,9 @@ def create_summary_qc():
             info.append(str(p.sample_env[sample]['MEAN_COVERAGE']))
             info.append(str(p.sample_env[sample]['ROI_PERCENTAGE']))
             info.append(str(p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE']))
-           
+            info.append(str(p.sample_env[sample]['MEAN_INSERT_SIZE']))
+            info.append(str(p.sample_env[sample]['SD_INSERT_SIZE']))
+          
             tsv_writer.writerow(info)
 
 def extract_mapping_metrics():
@@ -102,16 +104,19 @@ def extract_mapping_metrics():
                     p.sample_env[sample]['TOTAL_READS']   = tmp[5] 
                     p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12] 
                     p.sample_env[sample]['ROI_PERCENTAGE']= tmp[13] 
-                    p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14] 
+                    p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14]
+                    p.sample_env[sample]['ON_TARGET_READS']  = "."
+                    p.sample_env[sample]['MEAN_INSERT_SIZE'] = tmp[15]
+                    p.sample_env[sample]['SD_INSERT_SIZE']   = tmp[16]
         return
         
     for sample in p.sample_env:
 
-        p.sample_env[sample]['TOTAL_READS']        = "."
-        p.sample_env[sample]['ON_TARGET_READS']    = "."
-        p.sample_env[sample]['ROI_PERCENTAGE']     = "."
-        p.sample_env[sample]['MEAN_INSERT_SIZE']   = "."
-        p.sample_env[sample]['SD_INSERT_SIZE']     = "."
+        p.sample_env[sample]['TOTAL_READS']       = "."
+        p.sample_env[sample]['ON_TARGET_READS']   = "."
+        p.sample_env[sample]['ROI_PERCENTAGE']    = "."
+        p.sample_env[sample]['MEAN_INSERT_SIZE']  = "."
+        p.sample_env[sample]['SD_INSERT_SIZE']    = "."
   
         # Getting total number of reads
         bashCommand = ('{} view -c {}').format(p.system_env['SAMTOOLS'], \
@@ -185,7 +190,6 @@ def extract_mapping_metrics():
             #print(mean_isize+ " "+ sd_isize)
             p.sample_env[sample]['MEAN_INSERT_SIZE'] = str(mean_isize)
             p.sample_env[sample]['SD_INSERT_SIZE']   = str(sd_isize)
-
         else:
             msg = " ERROR: Could not extract insert sizes from sample "+ sample
             logging.error(msg)
@@ -284,7 +288,7 @@ def extract_coverage_metrics():
                 .format(p.system_env['MOSDEPTH'], p.analysis_env['PANEL'],  \
                 p.sample_env[sample]['QC_FOLDER'] + "/" + sample, p.sample_env[sample]['READY_BAM'])
 
-            msg = " INFO: Extracting coverage metrics of sample " + sample
+            msg = " INFO: Extracting coverage metrics for sample " + sample
             print (msg)
             logging.info(msg)
             logging.info(bashCommand)
@@ -305,7 +309,6 @@ def extract_coverage_metrics():
             msg = " INFO: Skipping coverage metrics analysis"
             print (msg)
             logging.info(msg)
-
         # Now getting call_rate and lost_exons from thresholds file
         call_rate_dict = defaultdict(dict)
         lost_exons_dict= defaultdict(dict)
@@ -349,6 +352,10 @@ def extract_coverage_metrics():
             if not field in p.sample_env[sample]['LOST_EXONS']:
                 p.sample_env[sample]['LOST_EXONS'][field] = 0
             p.sample_env[sample]['LOST_EXONS'][field] = lost_exons_dict[field]
+
+            #print("callrate " + p.sample_env[sample]['CALL_RATE'][field])
+            #print("lostexons" + p.sample_env[sample]['LOST_EXONS'][field])
+
         # Now get the mean coverage
         p.sample_env[sample]['MOSDEPTH_SUMMARY'] =  \
             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".mosdepth.summary.txt"

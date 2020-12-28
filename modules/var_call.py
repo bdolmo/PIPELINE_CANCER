@@ -294,16 +294,17 @@ def do_cnvkit():
      # purity = 0.9
       # print(purity)
 
+      # We observed weird correction results from tumour purity above 90% 
       purity = 1.00
-      if sample in p.lab_data:
-        purity = p.lab_data[sample]['PURITY']
-        purity = purity.replace("%", "")
-        if purity == "." or purity == 0:
-          purity = 1
-        purity = str(float(purity)/100)
-        msg = " INFO: " + sample + " purity: " + purity
-        print(msg)
-        logging.info(msg)
+      # if sample in p.lab_data:
+      #   purity = p.lab_data[sample]['PURITY']
+      #   purity = purity.replace("%", "")
+      #   if purity == "." or purity == 0:
+      #     purity = 1
+      #   purity = str(float(purity)/100)
+      #   msg = " INFO: " + sample + " purity: " + purity
+      #   print(msg)
+      #   logging.info(msg)
 
       # # Call CNVs
       call_file = p.sample_env[sample]['CNV_FOLDER'] + "/" +  sample + ".calls.cns"
@@ -378,6 +379,7 @@ def do_cnvkit():
             msg = " ERROR: Could not plot CNA on gene " + gene + " for sample " + sample
             print (msg)
             logging.error(msg)
+            
 def plot_scatter(cnr_file, cns_file, sample, outdir):
 
   tmp_cnr = outdir + "/" + "tmpcnr.bed"

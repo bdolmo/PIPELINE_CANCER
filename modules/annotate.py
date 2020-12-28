@@ -699,13 +699,15 @@ def do_civic():
                                   else:
                                     variant = aminoacids + protein_position
                                   if vartype == "INSERTION" or vartype == "DELETION" and hgvs_p != '.':
+
                                    # ENSP00000275493.2:p.Glu746_Ala750del
                                     tmp_p_code = hgvs_p.split(":")
-                                    p_code = tmp_p_code[1].replace("p.", "")
-                                    for aa in u.aa_dict:
-                                      if aa in p_code:
-                                        p_code = p_code.replace(aa, u.aa_dict[aa])
-                                    variant = p_code
+                                    if len(tmp_p_code) > 1:
+                                      p_code = tmp_p_code[1].replace("p.", "")
+                                      for aa in u.aa_dict:
+                                        if aa in p_code:
+                                          p_code = p_code.replace(aa, u.aa_dict[aa])
+                                      variant = p_code
                                 else:
                                   if 'splice' in consequence:
                                     variant = "SKIPPING MUTATION"

@@ -77,6 +77,7 @@ def trim_fastqs():
     trimmed_fq1 = os.path.basename(fq1).replace(".fastq.gz", ".trimmed.fastq.gz")
     trimmed_fq2 = os.path.basename(fq2).replace(".fastq.gz", ".trimmed.fastq.gz")
 
+    # Setting fastq names in the global dictionaries 
     p.sample_env[sample_name]['READY_FQ1'] = \
       p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + trimmed_fq1
     p.sample_env[sample_name]['READY_FQ2'] = \

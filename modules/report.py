@@ -7,6 +7,7 @@ import re
 import logging
 import gzip
 import csv
+import hashlib
 from collections import defaultdict
 from pathlib import Path
 from scipy import stats
@@ -209,11 +210,13 @@ def create_somatic_report():
             legal_provisions = db.Column(db.String(3000))
             def __repr__(self):
                 return '<Disclaimers %r>' % self.gene_list
+
         if os.path.isfile(sample_db) and os.path.isfile(p.sample_env[sample]['REPORT_PDF']):
           msg = " INFO: Skipping report creation for sample " + sample
           print (msg)
           logging.info(msg)
           continue
+
         if os.path.isfile(sample_db) and not os.path.isfile(p.sample_env[sample]['REPORT_PDF']):
            # Create PDF report 
           bashCommand = ('{} pr {} -r {} -f pdf -t generic --db-url jdbc:sqlite:{} --db-driver org.sqlite.JDBC -o {} --jdbc-dir {}') \
@@ -228,7 +231,7 @@ def create_somatic_report():
           output = p1.stdout.decode('UTF-8')
           error  = p1.stderr.decode('UTF-8')
           if not error and not output:
-            msg = " INFO: Report generation for " + sample + " ended OK"
+            msg = " INFO: Report generation for " + sample + " ended successfully"
             print(msg)
             logging.info(msg)
           else:
@@ -236,16 +239,43 @@ def create_somatic_report():
             print(msg)
             logging.error(msg)
           continue     
+        db.create_all()       
 
-        db.create_all()
-        
-        print(sample)
+        ext1_id = '.'
+        petition_id = '.'
+        if p.lab_data[sample]['AP_CODE']:
+          ext1_id = p.lab_data[sample]['AP_CODE']
+          petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
+        ext2_id = '.'
+        if p.lab_data[sample]['HC_CODE']:
+          ext2_id = p.lab_data[sample]['HC_CODE']
 
-        sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'], ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.', physician_name='.',
-          medical_center='.', medical_address='.', sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
+        sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'], ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.', 
+          physician_name='.', medical_center='.', medical_address='.', sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
           tumor_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], analysis_date= p.analysis_env['ANALYSIS_DATE'])
         db.session.add(sample_r)
         db.session.commit()
+
+        sample_found = s.SampleTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+            .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+        if not sample_found:
+          Sample_db = s.SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+            ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', diagnosis='.', 
+            physician_name='.', medical_center='.', medical_address='.', sample_type='.',
+            extraction_date=p.lab_data[sample]['PETITION_DATE'], analysis_date=p.analysis_env['ANALYSIS_DATE'], 
+            tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
+            subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'], software="varMut", software_version="0.9.0",
+            bam=p.sample_env[sample]['READY_BAM'],merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
+            report_pdf=p.sample_env[sample]['REPORT_PDF'] )
+
+          s.db.session.add(Sample_db)
+          s.db.session.commit()
+          result = s.SampleTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+            .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+          sample_id = result.id
+        else:
+          sample_id = sample_found.id
 
         disclaimer_r = Disclaimers(gene_list=p.disclaimers_env['GENES'], lab_methodology=p.disclaimers_env['METHODOLOGY'], 
           analysis=p.disclaimers_env['ANALYSIS'], lab_confirmation=p.disclaimers_env['LAB_CONFIRMATION'], 
@@ -253,6 +283,7 @@ def create_somatic_report():
         db.session.add(disclaimer_r)
         db.session.commit()
 
+        # filling biomarker database  
         idx = 0
         for biomarker in p.biomarker_env:
           biomarker_r = Biomarkers(gene=p.sample_env[sample]['BIOMARKER'][idx]['GENE'],
@@ -272,22 +303,23 @@ def create_somatic_report():
         db.session.add(summary_r)
         db.session.commit()
 
-        report_header = [] 
-        report_header.append("Lab_ID")
-        report_header.append("Ext_ID")
-        report_header.append("Gene")
-        report_header.append("HGVSp")
-        report_header.append("HGVSg")
-        report_header.append("HGVSc")
-        report_header.append("Exon")
-        report_header.append("ENST_ID")
-        report_header.append("VAF")
-        report_header.append("Identifiers")
-        report_header.append("MAX_AF")
-        report_header.append("MAX_AF_POP")
-        report_header.append("Drugs")
-        report_header.append("Clinical_trials")
-        o.write('\t'.join(report_header)+"\n")
+        # report_header = [] 
+        # report_header.append("Lab_ID")
+        # report_header.append("Ext_ID")
+        # report_header.append("Gene")
+        # report_header.append("HGVSp")
+        # report_header.append("HGVSg")
+        # report_header.append("HGVSc")
+        # report_header.append("Exon")
+        # report_header.append("ENST_ID")
+        # report_header.append("VAF")
+        # report_header.append("Identifiers")
+        # report_header.append("MAX_AF")
+        # report_header.append("MAX_AF_POP")
+        # report_header.append("Drugs")
+        # report_header.append("Clinical_trials")
+        # o.write('\t'.join(report_header)+"\n")
+
         var_dict = defaultdict(dict)
         with open(p.sample_env[sample]['READY_MERGED_JSON']) as f:
             var_dict = json.load(f)
@@ -298,23 +330,43 @@ def create_somatic_report():
           results_list.append(lab_id)
           ext_id = "999999"
           results_list.append(ext_id)
+
           go_therapeutic = False
           go_other = False
-          go_rare = False
-          gene = '.'
-          p_code = '.'
-          g_code = '.'
-          c_code = '.'
-          depth  = '.'
-          exon = '.'
+          go_rare  = False
+          go_common= False
+          chromosome = var_dict['variants'][variant]['CHROM']
+          pos     = var_dict['variants'][variant]['POS']
+          ref     = var_dict['variants'][variant]['REF'] 
+          alt     = var_dict['variants'][variant]['ALT'] 
+          p_code  = '.'
+          g_code  = '.'
+          c_code  = '.'
+          gene    = '.'
+          depth   = '.'
+          exon    = '.'
           enst_id = '.'
-          clin_sig = '.'
-          rs_id = '.'
-          max_af = '.'
-          max_af_pop = '.'
-          drugs = '.'
-          clin_trials = '.'
-          variant_type = '.'         
+          clin_sig= '.'
+          rs_id   = '.'
+          max_af  = '.'
+          max_af_pop   = '.'
+          drugs        = '.'
+          clin_trials  = '.'
+          variant_type = '.'
+          isoform      = '.'
+          classification = '.'
+          svlen = '.'              
+
+          ann_dict = defaultdict(dict)
+          for field in var_dict['variants'][variant]:
+            ann_dict[field] = var_dict['variants'][variant][field] 
+          m = hashlib.md5()
+          ann_json_str = json.dumps(ann_dict)
+          m.update(ann_json_str.encode('UTF-8'))
+          ann_key = m.hexdigest()
+          
+          var_json_str = json.dumps(var_dict['variants'][variant])
+
           if 'SVTYPE' in var_dict['variants'][variant]['INFO']:
             if 'CNA_GENES' in var_dict['variants'][variant]['INFO']:
               gene  = var_dict['variants'][variant]['INFO']['CNA_GENES'] 
@@ -322,17 +374,22 @@ def create_somatic_report():
                 VAF = int(var_dict['variants'][variant]['CN'])
               else:
                 GT = var_dict['variants'][variant]['GT']
-                VAF = int(GT[0] )
+                VAF = int(GT[0])
               svtype = var_dict['variants'][variant]['INFO']['SVTYPE']
+
+              # Setting CNA type
               if svtype == "DUP":
                 variant_type = "Amplification"
               elif svtype == "DEL":
                 variant_type = "Loss"
-              drugs_list         = []
-              clin_trials_list   = []
-              ev_direction_list  = []
-              diseases_list      = []
-              ev_significance_list=[] 
+
+              # Filling evidence info from CIViC
+              drugs_list          = []
+              clin_trials_list    = []
+              ev_direction_list   = []
+              diseases_list       = []
+              ev_significance_list= []
+
               if 'CIVIC' in var_dict['variants'][variant]['INFO']:
                 for ev_id in var_dict['variants'][variant]['INFO']['CIVIC']:
                   if 'EV_DRUGS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]:
@@ -382,11 +439,12 @@ def create_somatic_report():
                 diseases_str = diseases_str.replace("_", " ")
               else:
                 diseases_str = '.'
+
+              # Now classifying each variant into their corresponding clinical class
               if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
                 if gene in p.cna_env:
                   if VAF >= int(p.cna_env[gene]['min_cn']):
                     go_therapeutic = True
-
               elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:             
                 if gene in p.cna_env:
                   if VAF >= int(p.cna_env[gene]['min_cn']): 
@@ -394,23 +452,50 @@ def create_somatic_report():
 
               # Filling therapeutic table  
               if go_therapeutic == True:
+                classification = "Therapeutic"
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
                 hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
                 allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,
-                therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+                therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str)
                 db.session.add(therapeutic_r)
                 db.session.commit()
 
+                result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                    .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+                if not result:
+
+                  therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                  ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
+                  depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                  s.db.session.add(therapeutic_db)
+                  s.db.session.commit()
+
               # Filling Other clinical variants  
               if go_other == True:
+                classification = "Other clinical"
                 other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
                 hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
                 allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                 clinical_trials=clintrials_str,tumor_type=diseases_str)
                 db.session.add(other_r)
                 db.session.commit()
+
+                result = s.OtherVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                  .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+                if not result:
+                  other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                  ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
+                  depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                  s.db.session.add(other_db)
+                  s.db.session.commit()
             else:
-              svlen = '.'
+              variant_type = "SV"
               if 'SVLEN' in var_dict['variants'][variant]['INFO']:
                 svlen = abs(int(var_dict['variants'][variant]['INFO']['SVLEN']))
                 if svlen < p.analysis_env['MIN_FUSION_SIZE']:
@@ -434,15 +519,23 @@ def create_somatic_report():
               if (pe_alt > 0 and sr_alt > 0):
                 fusion_out = True
               depth = '.'
+              read_support = 0
               if sr_alt+sr_ref > 0:
+                read_support += sr_alt
                 depth = str(sr_alt+sr_ref)
                 VAF = str(round((sr_alt/(sr_alt+sr_ref)),3))
               elif pe_ref+pe_alt >0:
+                read_support += pe_alt
                 depth = str(pe_alt+pe_ref)
                 VAF = str(round((pe_alt/(pe_alt+pe_ref)),3))
               else:
                 depth = "0"
                 VAF = "0"
+
+              # Filter SVs with leass than 3 reads
+              if read_support < 3:
+                continue 
+
               gene = '.'
               if var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != '.' and \
                 var_dict['variants'][variant]['INFO']['FUSION']['PARTNERS'] != "" :
@@ -475,13 +568,26 @@ def create_somatic_report():
                 clin_trials = '.'
                 results_list.append(clin_trials)
                 o.write('\t'.join(results_list)+ "\n")
-                variant_type = "SV"
                 print("SV " + p_code)
+
+                classification = "Therapeutic"
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
                 hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
                 max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
                 db.session.add(therapeutic_r)
                 db.session.commit() 
+
+                result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                  .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+                if not result:
+                  therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                  ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
+                  depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
+                  therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str)
+                  s.db.session.add(therapeutic_db)
+                  s.db.session.commit()
           else:
             variant_type = '.'
             ref = var_dict['variants'][variant]['REF']
@@ -500,6 +606,13 @@ def create_somatic_report():
             gene   = var_dict['variants'][variant]['INFO']['CSQ']['SYMBOL']
             results_list.append(gene)
             p_code = var_dict['variants'][variant]['INFO']['CSQ']['HGVSp']
+            AD = var_dict['variants'][variant]['AD']
+            read_support = "."
+            if AD:
+              ad_list = AD.split(",")
+              read_support = ad_list[1] 
+
+            # replace weird symbols (coming from VEP) for synonymous changes
             p_code = p_code.replace('%3D', '=')
             if p_code:
               tmp_p_code = p_code.split(":")
@@ -518,7 +631,7 @@ def create_somatic_report():
             results_list.append(exon)
             enst_id= var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             results_list.append(enst_id)
-
+            isoform     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
             c_list = [] 
             conseq_list = consequence.split("&")
@@ -542,6 +655,7 @@ def create_somatic_report():
             results_list.append(max_af)
             max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF_POPS']
             max_af_pop = max_af_pop.replace('&', ',')
+
             if max_af != '.':
               if float(max_af) == 0:
                 max_af_pop = '.'
@@ -579,8 +693,6 @@ def create_somatic_report():
                   disease_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DISEASE'].split('&')
                   for disease in disease_result:
                     if disease != '.':
-                     # if disease == "Cancer":
-                       # continue
                       disease = disease.replace("_", " ")                   
                       diseases_list.append(disease)
             if drugs_list :
@@ -610,56 +722,140 @@ def create_somatic_report():
             go_therapeutic = False
             go_other       = False
             go_rare        = False
+            go_common      = False
             if significance_str != ".":
               print(significance_str)
+            clinsig_list = clin_sig.split("&")
 
-
-
-            if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str \
+            # Selecting actionable variants from CIViC 
+            if drugs_str != '.' and 'Supports' in direction_str \
+              and 'Sensitivity/Response' in significance_str \
               or 'Outcome' in significance_str:
               if max_af == '.':
                 go_therapeutic = True
-                print("go therapy")
+                classification = "Therapeutic"
               else:
                 if float(max_af) < 0.01:
-                  print("go therapy")
                   go_therapeutic = True
-            elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str and 'pathogenic' in clin_sig:
-              print("go other")
-              go_other = True
-            else:
-              if max_af == '.' :
-                go_rare = True
+                  classification = "Therapeutic"
+
+            # Selecting pathogenic variants from ClinVar 
+            elif not 'Sensitivity/Response' in significance_str:
+              for interpretation in clinsig_list:
+                if interpretation.endswith('pathogenic'):
+                  go_other = True
+                  classification = "Other clinical"
+
+              # Selecting rare variants without clinical evidence
               else:
-                if float(max_af) < 0.01:
+                if max_af == '.' :
                   go_rare = True
+                  classification = "Rare"
+                else:
+                  if float(max_af) < 0.01:
+                    go_rare = True
+                    classification = "Rare"
+                  if float(max_af) >= 0.01:
+                    go_common = True
+                    classification = "Common"
 
             # Filling therapeutic table  
             if go_therapeutic == True:
+
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
               therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
-              db.session.commit()           
+              db.session.commit()
+
+              result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+              if not result:
+                therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
+                depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
+                therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str)
+                s.db.session.add(therapeutic_db)
+                s.db.session.commit()
+
             # Filling Other clinical variants  
             if go_other == True:
+
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(other_r)
               db.session.commit()
+
+              result = s.OtherVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+
+              if not result:
+                other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
+                depth=depth, allele_frequency=str(VAF),read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                s.db.session.add(other_db)
+                s.db.session.commit()
+
             # Filling Rare variants  
             if go_rare == True:
+
               rare_v = RareVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)  
               db.session.add(rare_v)
-              db.session.commit()  
+              db.session.commit()
+
+              result = s.RareVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME'])\
+                .filter_by(gene=gene).filter_by(enst_id=enst_id).filter_by(hgvsg=g_code).first()
+
+              if not result:
+                rare_db = s.RareVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
+                depth=depth, allele_frequency=str(VAF), read_support=read_support, max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                s.db.session.add(rare_db)
+                s.db.session.commit()
+
             if 'pathogenic' in clin_sig:
               o.write('\t'.join(results_list)+ "\n")
+        
+          var_id = ""
+
+          # Checking that the variant has been detected previously
+          var = s.Variants.query.filter_by(chromosome=chromosome).filter_by(pos=pos)\
+            .filter_by(ref=ref).filter_by(alt=alt).filter_by(var_type=variant_type).first()
+          if not var:
+            count = 1
+
+            new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+            var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene, 
+            isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code,count=count)
+            s.db.session.add(new_variant)
+            var_id = new_variant.id
+          else:
+            if not sample_id:
+              var.count = var.count+1
+            var_id = var.id
+
+          found_sample_var =  s.SampleVariants.query.filter_by(var_id=var_id).first()
+          if not found_sample_var:
+          # Recording sample variants
+            sample_var = s.SampleVariants(sample_id=sample_id, var_id=var_id, ann_id=1, 
+            lab_confirmation="None", confirmation_technique="None", classification=classification,
+            ann_json=ann_json_str, ann_key=ann_key)       
+            s.db.session.add(sample_var)
+            s.db.session.commit()
+
         o.close()
 
         # Create PDF report 
@@ -674,7 +870,7 @@ def create_somatic_report():
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')
         error  = p1.stderr.decode('UTF-8')
-       # sys.exit()
+
         if not error and not output:
           msg = " INFO: Report generation for" + sample + " ended OK"
           print(msg)

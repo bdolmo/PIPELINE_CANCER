@@ -25,6 +25,11 @@ def main(args):
     # Setting analysis variables
     p.set_analysis_env(args)
 
+    # Setting analysis variables
+    s.init()
+
+    p.set_labdata_env()
+
     # Get panel configuration from db
     p.get_panel_configuration(main_dir)
 
@@ -49,6 +54,8 @@ def main(args):
     # Create clinical report 
     r.do_report()
 
+    s.update_sample_db()
+    s.update_summary_db()
 
 def parse_arguments():
     '''parsing input arguments
@@ -80,7 +87,10 @@ def parse_arguments():
         help="Report language", dest='language')
     parent_parser.add_argument("--min-fusion-size", type=int, default=50000,
         help="Minimum fusion size in bp to be reported", dest='min_fusion_size')
-  
+    parent_parser.add_argument("--user_id", type=str, 
+        help="User id for database linking", dest='user_id')
+
+
     # Now subparsers
     subparsers = parent_parser.add_subparsers(title="sub-commands")
     parser_map = subparsers.add_parser('map', parents=[parent_parser],
