@@ -291,7 +291,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="376" y="1" width="69" height="74" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9"/>
+				<reportElement x="376" y="0" width="69" height="76" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>

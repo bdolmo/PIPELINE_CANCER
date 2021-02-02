@@ -27,7 +27,7 @@ def do_annotation():
     # Variant effect Predict annotation
     do_vep()
 
-    # Select VEP-matching transcripts with our panel 
+    # Select VEP-matching transcripts with our panel-defined transcripts
     filter_transcripts()
 
     if p.analysis_env['VARIANT_CLASS'] == "somatic":
@@ -506,14 +506,22 @@ class Civic:
         ev_clintrials  =  self.evidence_dict[chosen_var_id][ev_id]['clinical_trials']
 
         ev_info = []
-        ev_info.append(ev_id)
-        ev_info.append(ev_direction)
-        ev_info.append(ev_level)
-        ev_info.append(ev_significance)
-        ev_info.append(ev_drugs)
-        ev_info.append(ev_disease)
-        ev_info.append(ev_pmid)
-        ev_info.append(ev_clintrials)
+        if ev_id is not None:
+          ev_info.append(ev_id)
+        if ev_direction is not None:
+          ev_info.append(ev_direction)
+        if ev_level is not None:
+          ev_info.append(ev_level)
+        if ev_significance is not None:
+          ev_info.append(ev_significance)
+        if ev_drugs is not None:
+          ev_info.append(ev_drugs)
+        if ev_disease is not None:
+          ev_info.append(ev_disease)
+        if ev_pmid is not None:
+          ev_info.append(ev_pmid)
+        if ev_clintrials is not None:
+          ev_info.append(ev_clintrials)
         ev_str = '|'.join(ev_info)
         if num <= 20:
           ev_list.append(ev_str)
@@ -744,6 +752,17 @@ def do_vep():
     VEP annotation of vcf files
     '''
 
+    dbnsfp_dict = {
+      "sift" : "SIFT_score,SIFT_pred",
+      "polyphen2" : "Polyphen2_HDIV_score,Polyphen2_HDIV_pred",
+      "mutationtaster2" : "MutationTaster_score,MutationTaster_pred",
+      "provean" : "PROVEAN_score,PROVEAN_pred",
+      "fathmm"  : "FATHMM_score,FATHMM_pred",
+      "revel"   : "REVEL_score",
+      "mutpred" : "MutPred_score",
+    } 
+
+
     for sample in p.sample_env:
 
         p.sample_env[sample]['VEP_VCF'] = \
@@ -752,16 +771,60 @@ def do_vep():
         p.sample_env[sample]['VEP_VCF_NAME'] = \
             os.path.basename(p.sample_env[sample]['READY_SNV_VCF_NAME']).replace(".vcf", ".vep.vcf")
 
-        vep_output_vcf = p.aux_env['VEP_FOLDER_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
+        dbnsfp_ann    = ''
+        gnomad_ann    = ''
+        ncer_ann      = ''
+        cadd_ann      = ''
+        spliceai_ann  = ''
+        maxent_ann    = ''
+        phylop_ann    = ''
+        phastcons_ann = ''
 
-        bashCommand = ('{} run -t -i -v {}:/opt/vep/.vep {}'
+        # Missense predictors will conform dbnsf_ann 
+        if p.analysis_env['MISSENSE_PREDICTORS']:
+          missense_list = p.analysis_env['MISSENSE_PREDICTORS'].split(',')
+          tmp = [] 
+          for predictor in missense_list:
+            tmp.append(dbnsfp_dict[predictor])
+          dbnsfp_ann = " --plugin dbNSFP,/anndir/dbNSFP/" + \
+            p.aux_env['DBNSFP_FILENAME'] + "," + ','.join(tmp)
+        # Setting splicing predictors 
+        if p.analysis_env['SPLICING_PREDICTORS']:
+          splicing_list = p.analysis_env['SPLICING_PREDICTORS'].split(',')
+          for predictor in splicing_list:
+            if predictor == "maxentscan":
+              maxent_ann = " --plugin MaxEntScan,/anndir/MaxEntScan"
+            if predictor == "spliceai":
+              spliceai_ann = " --plugin SpliceAI,snv=/anndir/spliceAI/" + \
+                p.aux_env['SPLICEAI_SNV_FILENAME'] + ",indel=/anndir/spliceAI/" + \
+                p.aux_env['SPLICEAI_INDEL_FILENAME']
+        # Setting genomewide predictors 
+        if p.analysis_env['GENOMEWIDE_PREDICTORS']:
+          pass
+        
+        # Setting conservation scores
+        if p.analysis_env['CONSERVATION_SCORES']:
+          cons_list = p.analysis_env['CONSERVATION_SCORES'].split(',')
+          for conservation in cons_list:
+            if conservation == 'phastcons':
+              phastcons_ann = ' --custom /anndir/Conservation/' + p.aux_env['PHASTCONS_FILENAME'] + ",Phastcons" + ',bigwig,overlap'
+            if conservation == 'phylop':
+              phylop_ann = ' --custom /anndir/Conservation/' + p.aux_env['PHYLOP_FILENAME'] + ",PhyloP" + ',bigwig,overlap'
+
+       # --plugin Conservation,/path/to/bigwigfile.bw
+       # --plugin SpliceAI,snv=/path/to/spliceai_scores.raw.snv.hg38.vcf.gz,indel=/path/to/spliceai_scores.raw.indel.hg38.vcf.gz
+       # --plugin MaxEntScan,/path/to/maxentscan/fordownload,SWA,NCSS
+        vep_output_vcf = p.aux_env['VEP_FOLDER_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
+        dbnsfp_fields = ',Ensembl_transcriptid,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_flag,gnomAD_genomes_POPMAX_AF,GERP++_RS,phyloP100way_vertebrate'
+        bashCommand = ('{} run -t -i -v {}:/genomedir/ -v {}:/anndir/ -v {}:/opt/vep/.vep {}'
         ' perl vep --cache --offline --dir_cache /opt/vep/.vep/ --dir_plugins /opt/vep/.vep/Plugins/'
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
-        ' --af_1kg --af_gnomad '
-        ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b'
-        ' --symbol --force_overwrite --fork {} --canonical '
-        .format(p.system_env['DOCKER'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'], p.sample_env[sample]['READY_SNV_VCF_NAME'],\
-        p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS']))
+        ' --af_1kg --af_gnomad --cache_version 101  --canonical '
+        ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b --symbol --force_overwrite --fork {}'
+        ' {} {} {} {} {} --fasta /genomedir/{} '
+        .format(p.system_env['DOCKER'], p.aux_env['GENOME_FOLDER'], p.analysis_env['ANN_DIR'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'],\
+        p.sample_env[sample]['READY_SNV_VCF_NAME'], p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS'],\
+        dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, p.aux_env['GENOME_NAME'] ))
 
         if not os.path.isfile(p.sample_env[sample]['VEP_VCF']):
 

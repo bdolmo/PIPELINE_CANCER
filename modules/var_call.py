@@ -184,7 +184,7 @@ def do_cnvkit():
         print (msg)
         logging.error(msg)
 
-  # Segment and calling
+  # Segmentation and calling
   for sample in p.sample_env:
 
       coverage_str = ' '.join(coverage_list)
@@ -327,9 +327,10 @@ def do_cnvkit():
           print(msg)
           logging.info(msg)        
         else:
-          msg = " ERROR: Could not call CNA on sample " + sample
-          print (msg)
-          logging.error(msg)
+          if re.search('error', error):
+            msg = " ERROR: Could not call CNA on sample " + sample
+            print (msg)
+            logging.error(msg)
       else:
         msg = " INFO: Skipping CNA calling of sample " + sample
         print (msg)
@@ -353,16 +354,17 @@ def do_cnvkit():
           print(msg)
           logging.info(msg)        
         else:
-          msg = " ERROR: Could not export CNA on sample " + sample
-          print (msg)
-          logging.error(msg)
+          if re.search('error', error):
+            msg = " ERROR: Could not export CNA on sample " + sample
+            print (msg)
+            logging.error(msg)
       else:
         msg = " INFO: Skipping CNA exporting to vcf for sample " + sample
         print (msg)
         logging.info(msg)        
 
       # Produce genome-wide copy number profile  
-      plot_scatter( ratio_file, call_file, sample, p.sample_env[sample]['CNV_FOLDER'])
+      plot_cna_scatter( ratio_file, call_file, sample, p.sample_env[sample]['CNV_FOLDER'])
 
       for gene in p.cna_env:
         plot = p.sample_env[sample]['CNV_FOLDER'] + "/" + gene + ".png"
@@ -371,16 +373,19 @@ def do_cnvkit():
           chrom = 'chr' + chrom
         bashCommand = ('python3 {} scatter {} -s {} -c {} -g {} --y-min -2 --segment-color red --by-bin -o {}').format(p.system_env['CNVKIT'], \
           ratio_file, call_file, chrom, gene, plot)
+        logging.info(bashCommand)
+
         if not os.path.isfile(plot):
           p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
           output = p1.stdout.decode('UTF-8')
           error  = p1.stderr.decode('UTF-8')
           if error:
-            msg = " ERROR: Could not plot CNA on gene " + gene + " for sample " + sample
-            print (msg)
-            logging.error(msg)
+            if re.search('error', error):
+              msg = " ERROR: Could not plot CNA on gene " + gene + " for sample " + sample
+              print (msg)
+              logging.error(msg)
             
-def plot_scatter(cnr_file, cns_file, sample, outdir):
+def plot_cna_scatter(cnr_file, cns_file, sample, outdir):
 
   tmp_cnr = outdir + "/" + "tmpcnr.bed"
   r = open(tmp_cnr, "w")
@@ -586,9 +591,12 @@ def do_manta():
                 print (msg)
                 logging.info(msg)
             else:
-                msg = " ERROR: Manta could not be executed for sample " + sample
-                print (msg)
-                logging.error(msg)
+                if re.search(r'Manta workflow successfully completed', output):
+                  pass
+                else:
+                  msg = " ERROR: Manta could not be executed for sample " + sample
+                  print (msg)
+                  logging.error(msg)
 
         if not os.path.isfile(p.sample_env[sample]['MANTA_VCF']):
             input = gzip.GzipFile(p.sample_env[sample]['MANTA_TUMOR'], 'rb')

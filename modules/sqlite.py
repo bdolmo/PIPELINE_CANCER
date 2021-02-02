@@ -212,7 +212,7 @@ class Petition(db.Model):
     __tablename__ = 'PETITIONS' 
     Id             = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     Petition_id    = db.Column(db.String(20))
-    User_id        = db.Column(db.String(20))
+    #User_id        = db.Column(db.String(20))
     Date           = db.Column(db.String(20))
     AP_code        = db.Column(db.String(20))
     HC_code        = db.Column(db.String(20))
@@ -223,10 +223,10 @@ class Petition(db.Model):
     Medical_doctor = db.Column(db.String(50))
     Billing_unit   = db.Column(db.String(50))
 
-    def __init__(self, Petition_id, User_id, Date, AP_code, HC_code, Tumour_pct, Volume, Conc_nanodrop, 
+    def __init__(self, Petition_id,  Date, AP_code, HC_code, Tumour_pct, Volume, Conc_nanodrop, 
         Ratio_nanodrop, Medical_doctor, Billing_unit):
         self.Petition_id = Petition_id
-        self.User_id  = User_id
+        #self.User_id  = User_id
         self.Date   = Date
         self.AP_code= AP_code
         self.HC_code  = HC_code

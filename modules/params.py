@@ -14,6 +14,7 @@ from modules import utils as u
 from modules import sqlite as s
 from datetime import datetime
 import pandas as pd
+import openpyxl
 
 global sample_env 
 sample_env = defaultdict(dict)
@@ -40,6 +41,7 @@ def set_labdata_env():
             logging.info(msg)
             print(msg)
             for petition in all_petitions:
+                print(petition.AP_code)
                 sample_data[petition.AP_code] = defaultdict(dict)
                 sample_data[petition.AP_code]['PETITION_ID'] = petition.Petition_id
                 sample_data[petition.AP_code]['AP_CODE'] = petition.AP_code
@@ -56,7 +58,7 @@ def set_labdata_env():
             logging.info(msg)
             print(msg)
 
-    elif analysis_env['SAMPLE_DATA']:
+    elif 'SAMPLE_DATA' in analysis_env:
 
         doc = docx.Document(analysis_env['SAMPLE_DATA'])
 
@@ -230,13 +232,13 @@ def set_labdata_env():
                     cell_idx+=1
                 row_idx += 1
 
-    if os.path.isfile(analysis_env['LAB_DATA']):
+    if 'LAB_DATA' in analysis_env:
 
         msg = " INFO: Loading lab data from " + analysis_env['LAB_DATA']
         logging.info(msg)
         print(msg)
 
-        lab_df = pd.read_excel(analysis_env['LAB_DATA'], skiprows=10)
+        lab_df = pd.read_excel(analysis_env['LAB_DATA'],engine='openpyxl',skiprows=10)
         for index,row in lab_df.iterrows():
             lab_id  = str(row['#SAMPLE IDIBGI ID'])
             if lab_id == "nan":
@@ -270,8 +272,8 @@ def set_analysis_env(args):
     analysis_env = {
         'INPUT_DIR'      : os.path.abspath(args.input_dir),
         'OUTPUT_DIR'     : os.path.abspath(args.output_dir),
-        'PANEL'          : os.path.abspath(args.panel),
         'ROI_NUMBER'     : '.',
+        'SEQUENCING'     : args.sequencing,
         'GENOME_VERSION' : args.reference,
         'VARIANT_CLASS'  : args.var_class,
         'THREADS'        : args.threads,
@@ -282,12 +284,12 @@ def set_analysis_env(args):
         'LANGUAGE'       : args.language,
         'MIN_FUSION_SIZE': args.min_fusion_size
     }
-    tmp_panel = os.path.basename(args.panel).split("\.")
-    panel_name = tmp_panel[0] 
-    analysis_env['PANEL_NAME'] = panel_name
+
+    # Creating output directory
+    output_path = Path(analysis_env['OUTPUT_DIR'])
+    if not output_path.is_dir():
+        os.mkdir(analysis_env['OUTPUT_DIR'])
     analysis_env['OUTPUT_NAME'] = os.path.basename(analysis_env['OUTPUT_DIR'])
-    analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" \
-        + os.path.basename(args.panel).replace(".bed", "")
 
     # Define log file for the analysis
     global logging
@@ -297,48 +299,6 @@ def set_analysis_env(args):
         format='PID:%(process)d\t%(asctime)s\t%(message)s')
     logging.getLogger().setLevel(logging.INFO)
 
-    if not os.path.isdir(analysis_env['PANEL_WORKDIR']):
-        os.mkdir(analysis_env['PANEL_WORKDIR'])
-
-    if 'user_id' in args:
-        analysis_env['USER_ID'] = args.user_id
-    else:
-        analysis_env['USER_ID'] = "."
-
-    analysis_env['PANEL_LIST'] = analysis_env['PANEL_WORKDIR'] + "/" \
-        + os.path.basename(args.panel).replace(".bed", ".list")
-    analysis_env['PANEL_LIST_NAME']  = \
-        os.path.basename(analysis_env['PANEL_LIST'].replace(".bed", ".list"))
-
-    if args.sample_data:
-        if os.path.isfile(args.sample_data) :
-            analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
-        else:
-            analysis_env['SAMPLE_DATA'] = "."
-    if os.path.isfile(args.lab_data):
-        analysis_env['LAB_DATA'] = os.path.abspath(args.lab_data)
-
-    # Creating output directory
-    output_path = Path(analysis_env['OUTPUT_DIR'])
-    if not output_path.is_dir():
-        os.mkdir(analysis_env['OUTPUT_DIR'])
-
-    if not os.path.isdir(analysis_env['DB_DIR'] ):
-        msg = " ERROR: Missing input database directory (--db_dir)"
-        print (msg)
-        logging.info(msg)
-        sys.exit()
-    if not os.path.isdir(analysis_env['ANN_DIR'] ):
-        msg = " ERROR: Missing input annotation directory (--ann_dir)"
-        print (msg)
-        logging.info(msg)
-        sys.exit()
-    if not os.path.isdir(analysis_env['REF_DIR'] ):
-        msg = " ERROR: Missing input reference directory (--ref_dir)"
-        print (msg)
-        logging.info(msg)
-        sys.exit()
-
     # Checking existance of input
     input_path = Path(analysis_env['INPUT_DIR'])
     if not input_path.is_dir():
@@ -346,7 +306,106 @@ def set_analysis_env(args):
         print (msg)
         logging.error(msg)
         sys.exit()
+    if args.sequencing == "targeted":
+        if args.panel:
+            tmp_panel = os.path.basename(args.panel).split("\.")
+            panel_name = tmp_panel[0]
+            analysis_env['PANEL'] = args.panel
+            print(analysis_env['PANEL'])
+            analysis_env['PANEL_NAME'] = panel_name
+            analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" \
+                + os.path.basename(args.panel).replace(".bed", "")
+            if not os.path.isdir(analysis_env['PANEL_WORKDIR']):
+                os.mkdir(analysis_env['PANEL_WORKDIR'])
+            analysis_env['PANEL_LIST'] = analysis_env['PANEL_WORKDIR'] + "/" \
+                + os.path.basename(args.panel).replace(".bed", ".list")
+            analysis_env['PANEL_LIST_NAME']  = \
+                os.path.basename(analysis_env['PANEL_LIST'].replace(".bed", ".list"))
+        else:
+            msg = "ERROR: It is required a gene panel (--panel) for targeted sequencing analysis"
+            print (msg)
+            logging.error(msg)
+            sys.exit()           
 
+    # Define user_id if you want to link with database information 
+    if args.user_id:
+        analysis_env['USER_ID'] = args.user_id
+    else:
+        analysis_env['USER_ID'] = "."
+
+    if args.sample_data:
+        if os.path.isfile(args.sample_data) :
+            analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
+        else:
+            analysis_env['SAMPLE_DATA'] = "."
+    if args.lab_data:
+        if os.path.isfile(args.lab_data):
+            analysis_env['LAB_DATA'] = os.path.abspath(args.lab_data)
+
+    # Check existance of the database directory 
+    if not os.path.isdir(analysis_env['DB_DIR'] ):
+        msg = " ERROR: Missing input database directory (--db_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
+    # Check existance of the annotation directory 
+    if not os.path.isdir(analysis_env['ANN_DIR'] ):
+        msg = " ERROR: Missing input annotation directory (--ann_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
+    # Check existance of the reference directory 
+    if not os.path.isdir(analysis_env['REF_DIR'] ):
+        msg = " ERROR: Missing input reference directory (--ref_dir)"
+        print (msg)
+        logging.info(msg)
+        sys.exit()
+
+    # Check input missense predictors
+    if args.missense_predictors:
+        valid_predictors = ['sift','polyphen2','mutationtaster2','provean','fathmm','revel','mutpred']  
+        input_list = args.missense_predictors.split(",")
+        for predictor in input_list:
+            if predictor not in valid_predictors:
+                msg = " ERROR: Input missense predictor " + predictor + " is not valid"
+                print (msg)
+                logging.info(msg)
+                sys.exit()
+        analysis_env['MISSENSE_PREDICTORS'] = args.missense_predictors
+
+    # Check input missense predictors
+    if args.genomewide_predictors:
+        valid_predictors = ['cadd','ncer']  
+        input_list = args.genomewide_predictors.split(",")
+        for predictor in input_list:
+            if predictor not in valid_predictors:
+                msg = " ERROR: Input genomewide predictor " + predictor + " is not valid"
+                print (msg)
+                logging.info(msg)
+                sys.exit()
+        analysis_env['GENOMEWIDE_PREDICTORS'] = args.genomewide_predictors
+
+    # Check input missense predictors
+    if args.splicing_predictors:
+        valid_predictors = ['spliceai','maxentscan','dbscsnv']  
+        input_list = args.splicing_predictors.split(",")
+        for predictor in input_list:
+            if predictor not in valid_predictors:
+                msg = " ERROR: Input splicing predictor " + predictor + " is not valid"
+                print (msg)
+                logging.info(msg)
+                sys.exit()
+        analysis_env['SPLICING_PREDICTORS'] = args.splicing_predictors
+    if args.conservation:
+        valid_conservation = ['phastcons', 'phylop', 'gerp'] 
+        input_list = args.conservation.split(",")
+        for predictor in input_list:
+            if predictor not in valid_conservation:
+                msg = " ERROR: Input conservation score " + predictor + " is not valid"
+                print (msg)
+                logging.info(msg)
+                sys.exit()
+        analysis_env['CONSERVATION_SCORES'] = args.conservation
 
 def set_defaults(main_dir):
     ''' 
@@ -357,21 +416,11 @@ def set_defaults(main_dir):
         # Folder with all binaries needed
         'BIN_FOLDER'    : main_dir +  "/BIN_FOLDER",
         # Folder with ancillary files
-       # 'BUNDLE_FOLDER' : main_dir + "/BUNDLE_FOLDER",
-        # Folder with ancillary files
-        'PANEL_FOLDER'  : main_dir + "/PANEL_FOLDER",
-        # Folder with annotation files
-        # 'ANNOTATION_FOLDER' : main_dir + "/ANNOTATION_FOLDER",
-        # chimerKB folder
-        # 'CHIMERKB_FOLDER' : main_dir + "/ANNOTATION_FOLDER/chimerKB",
-        # gnomAD folder
-        # 'GNOMAD_FOLDER' : main_dir + "/ANNOTATION_FOLDER/gnomAD",
-        # CGI folder
-        # 'CGI_FOLDER' : main_dir + "/ANNOTATION_FOLDER/Cancer_Genome_Interpreter",
+        'PANEL_FOLDER'  : main_dir + "/PANEL_FOLDER", 
         # Setting JASPER directories
         'JASPERREPORT_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/MyReports",
         'JDBC_FOLDER' : main_dir +  "/BIN_FOLDER/JASPERREPORTS/JDBC/",
-        'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
+        #'SQLITE_DB_FOLDER' : main_dir + "/SQLITE_DB_FOLDER",
     }
     # Check all folders are present
     for folder in defaults:
@@ -569,6 +618,58 @@ def set_auxfiles_env():
                 sys.exit()            
             aux_env['GNOMAD_AF_VCF_NAME'] = os.path.basename(aux_env['GNOMAD_AF_VCF'])
 
+            # Setting dbNSFP
+            aux_env['DBNSFP_FOLDER'] = analysis_env['ANN_DIR'] + "/dbNSFP"
+            aux_env['DBNSFP'] = aux_env['DBNSFP_FOLDER'] + "/dbNSFP4.1a_hg19.gz"
+            aux_env['DBNSFP_FILENAME'] = os.path.basename(aux_env['DBNSFP'])
+            if not os.path.isfile(aux_env['DBNSFP']):
+                msg = " ERROR: Missing " + aux_env['DBNSFP']
+                print (msg)
+                logging.error(msg)
+                sys.exit()  
+
+            # Setting SpliceAI
+            aux_env['SPLICEAI_FOLDER'] =  analysis_env['ANN_DIR'] + "/spliceAI"
+            if not os.path.isdir(aux_env['SPLICEAI_FOLDER']):
+                msg = " ERROR: Missing SpliceAI folder at " + analysis_env['ANN_DIR']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['SPLICEAI_SNV']  =  aux_env['SPLICEAI_FOLDER'] + "/spliceai_scores.raw.snv.hg19.vcf.gz"
+            if not os.path.isfile(aux_env['SPLICEAI_SNV']):
+                msg = " ERROR: Missing " + aux_env['SPLICEAI_SNV']
+                print (msg)
+                logging.error(msg)
+                sys.exit()  
+            aux_env['SPLICEAI_SNV_FILENAME'] = os.path.basename(aux_env['SPLICEAI_SNV'])
+        
+            aux_env['SPLICEAI_INDEL']=  aux_env['SPLICEAI_FOLDER'] + "/spliceai_scores.raw.indel.hg19.vcf.gz"
+            if not os.path.isfile(aux_env['SPLICEAI_INDEL']):
+                msg = " ERROR: Missing " + aux_env['SPLICEAI_INDEL']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['SPLICEAI_INDEL_FILENAME'] = os.path.basename(aux_env['SPLICEAI_INDEL'])
+
+            # Setting MaxEntScan
+            aux_env['MAXENT_FOLDER'] =  analysis_env['ANN_DIR'] + "/MaxEntScan"
+            if not os.path.isdir(aux_env['MAXENT_FOLDER']):
+                msg = " ERROR: Missing MaxEntScan folder at " + analysis_env['ANN_DIR']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            # Setting MaxEntScan
+            aux_env['CONSERVATION_FOLDER'] =  analysis_env['ANN_DIR'] + "/Conservation"
+            if not os.path.isdir(aux_env['CONSERVATION_FOLDER']):
+                msg = " ERROR: Missing Conservation folder at " + analysis_env['ANN_DIR']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['PHASTCONS'] = aux_env['CONSERVATION_FOLDER'] + "/" + "hg19.100way.phastCons.bw"
+            aux_env['PHASTCONS_FILENAME'] = os.path.basename(aux_env['PHASTCONS'])
+            aux_env['PHYLOP'] = aux_env['CONSERVATION_FOLDER'] + "/" + "hg19.100way.phyloP100way.bw"
+            aux_env['PHYLOP_FILENAME'] = os.path.basename(aux_env['PHYLOP'])
+
     # Setting jrxlm files depending on language
     if analysis_env['LANGUAGE'] == "cat":
         defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat/"
@@ -590,7 +691,7 @@ def set_system_env():
     global system_env 
     system_env = defaultdict(dict)
     system_env = {
-        'DOCKER' : '/usr/bin/docker',
+        'DOCKER'   : u.get_bin_path('docker'),
         'BCFTOOLS' : defaults['BIN_FOLDER'] +  "/bcftools",
         'SAMTOOLS' : defaults['BIN_FOLDER'] +  "/samtools",
         'BEDTOOLS' : defaults['BIN_FOLDER'] +  "/bedtools",

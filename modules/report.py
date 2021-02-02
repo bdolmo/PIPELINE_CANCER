@@ -245,6 +245,7 @@ def create_somatic_report():
         petition_id = '.'
         if p.lab_data[sample]['AP_CODE']:
           ext1_id = p.lab_data[sample]['AP_CODE']
+          print(ext1_id)
           petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
         ext2_id = '.'
         if p.lab_data[sample]['HC_CODE']:
@@ -656,10 +657,6 @@ def create_somatic_report():
             max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF_POPS']
             max_af_pop = max_af_pop.replace('&', ',')
 
-            if max_af != '.':
-              if float(max_af) == 0:
-                max_af_pop = '.'
-
             results_list.append(max_af_pop)
             drugs_list         = []
             clin_trials_list   = []
@@ -758,6 +755,14 @@ def create_somatic_report():
                   if float(max_af) >= 0.01:
                     go_common = True
                     classification = "Common"
+
+            # VAF might have multiple values if coming from an INDEL
+            VAF_list = VAF.split(",")
+            if len(VAF_list) > 1:
+              VAF = VAF_list[0]   
+
+            if float(VAF) < 0.02:
+              continue
 
             # Filling therapeutic table  
             if go_therapeutic == True:

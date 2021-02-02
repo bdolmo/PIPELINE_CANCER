@@ -17,6 +17,31 @@ from pathlib import Path
 import subprocess
 from modules import params as p
 
+
+def get_bin_path(program):
+  '''Get the PATH of a program
+  '''
+  path = ""
+  bashCommand = ('which {}').format(program)
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
+  if not error:
+    if output:
+      path = output.rstrip('\n')
+      print(path)
+      return path
+    else:
+      msg = " ERROR: Unable to find the PATH of " + program
+      logging.error(msg)
+      print (msg)
+      sys.exit()
+  else:
+    msg = " ERROR: Unable to find the PATH of " + program
+    logging.error(msg)
+    print (msg)
+    sys.exit()
+
 def num_to_human(num):
 
   num = int(num)
