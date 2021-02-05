@@ -121,6 +121,7 @@ def create_somatic_report():
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))
             allele_frequency = db.Column(db.String(120))
+            read_support = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
             therapies = db.Column(db.String(240))
@@ -143,6 +144,7 @@ def create_somatic_report():
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))
             allele_frequency = db.Column(db.String(120))
+            read_support = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
             therapies = db.Column(db.String(240))
@@ -165,6 +167,7 @@ def create_somatic_report():
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))           
             allele_frequency = db.Column(db.String(120))
+            read_support = db.Column(db.String(120))
             max_af = db.Column(db.String(120))
             max_af_pop = db.Column(db.String(120))
             therapies = db.Column(db.String(240))
@@ -652,9 +655,16 @@ def create_somatic_report():
             rs_id  = var_dict['variants'][variant]['INFO']['CSQ']['Existing_variation']
             rs_id = rs_id.replace('&', ',')
             results_list.append(rs_id)
-            max_af = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF']
+
+            if 'GNOMAD_AF_popmax' in var_dict['variants'][variant]['INFO']['CSQ']:
+              max_af = var_dict['variants'][variant]['INFO']['CSQ']['GNOMAD_AF_popmax']
+            else:
+              max_af = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF']
             results_list.append(max_af)
-            max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF_POPS']
+            if 'GNOMAD_popmax' in var_dict['variants'][variant]['INFO']['CSQ']:
+              max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['GNOMAD_popmax']
+            else: 
+              max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF_POPS']
             max_af_pop = max_af_pop.replace('&', ',')
 
             results_list.append(max_af_pop)
@@ -769,7 +779,7 @@ def create_somatic_report():
 
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
-              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,
+              allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,
               therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
               db.session.commit()
@@ -791,7 +801,7 @@ def create_somatic_report():
 
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
-              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+              allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(other_r)
               db.session.commit()
@@ -813,7 +823,7 @@ def create_somatic_report():
 
               rare_v = RareVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
-              allele_frequency=VAF,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
+              allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)  
               db.session.add(rare_v)
               db.session.commit()

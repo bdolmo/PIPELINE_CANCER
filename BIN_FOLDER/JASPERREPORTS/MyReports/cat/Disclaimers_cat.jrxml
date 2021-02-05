@@ -53,43 +53,57 @@ FROM  DISCLAIMERS]]>
 				<textFieldExpression><![CDATA[$F{gene_list}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="38" y="143" width="490" height="157" isPrintInFirstWholeBand="true" uuid="2466e3cc-8a0d-4844-869a-c36de54cc6b9"/>
+				<reportElement isPrintRepeatedValues="false" x="38" y="147" width="490" height="157" isPrintInFirstWholeBand="true" uuid="2466e3cc-8a0d-4844-869a-c36de54cc6b9"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{lab_methodology}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement isPrintRepeatedValues="false" mode="Opaque" x="37" y="-16" width="248" height="16" isPrintInFirstWholeBand="true" uuid="0e366a7d-a887-4f1b-b4cb-72a460c8fc8e"/>
-				<textElement>
-					<font size="11" isBold="true"/>
-				</textElement>
-				<text><![CDATA[DISCLAIMERS]]></text>
-			</staticText>
-			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="37" y="18" width="103" height="16" isPrintInFirstWholeBand="true" forecolor="#000000" uuid="de095af6-267f-446e-8725-8083a761a773"/>
-				<textElement>
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Gens analitzats]]></text>
-			</staticText>
-			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="38" y="128" width="120" height="16" isPrintInFirstWholeBand="true" uuid="9f022a6f-5b21-4c7e-96ba-c780c95d1b66"/>
-				<textElement>
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Metodologia]]></text>
-			</staticText>
-			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="39" y="305" width="60" height="16" isPrintInFirstWholeBand="true" uuid="57744133-4c73-40df-b7db-ea6e3ae88be9"/>
-				<textElement>
-					<font size="10" isBold="true"/>
-				</textElement>
-				<text><![CDATA[Anàlisi]]></text>
-			</staticText>
 			<textField>
-				<reportElement isPrintRepeatedValues="false" x="38" y="321" width="490" height="236" isPrintInFirstWholeBand="true" uuid="cf74b447-e039-48d4-bcb0-827dc7191082"/>
+				<reportElement isPrintRepeatedValues="false" x="38" y="327" width="490" height="236" isPrintInFirstWholeBand="true" uuid="cf74b447-e039-48d4-bcb0-827dc7191082"/>
 				<textElement textAlignment="Justified"/>
 				<textFieldExpression><![CDATA[$F{analysis}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="50" y="20" width="280" height="15" forecolor="#34529E" uuid="35c98b92-19a1-457c-8e9f-a1b4317234d9"/>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[GENS ANALITZATS]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="21" width="13" height="13" uuid="c67bc0b8-9f6c-4807-880f-b29d3f9842cd">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="50" y="131" width="280" height="15" forecolor="#34529E" uuid="2a4a3203-d8ea-4abe-ae75-7fb748d27b13"/>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[METODOLOGIA]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="132" width="13" height="13" uuid="34cf7ae1-8b2d-46ac-9271-26bf145509a2">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="50" y="312" width="280" height="15" forecolor="#34529E" uuid="867bbb2c-6ae6-4526-a26e-c3cfcdce55ad"/>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[ANÀLISI]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="313" width="13" height="13" uuid="e2d93265-fab2-4415-917f-b7a455ace84a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
 		</band>
 	</detail>
 </jasperReport>

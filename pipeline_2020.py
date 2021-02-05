@@ -123,9 +123,9 @@ def parse_arguments():
         help="Annotate with CIViC")
     parser_all.add_argument('--cgi', default=True,
         help="Annotate with Cancer Genome Interpreter (CGI)")
-    parser_all.add_argument('--gnomad', default=True,
+    parser_all.add_argument('--gnomad', dest='gnomad', default=True,
         help="Annotate gnomAD frequencies")  
-    parser_all.add_argument('--1kg', default=True,
+    parser_all.add_argument('--1kg', dest='thousand_genomes', default=True,
         help="Annotate 1000Genomes frequencies")  
 
     # predictors

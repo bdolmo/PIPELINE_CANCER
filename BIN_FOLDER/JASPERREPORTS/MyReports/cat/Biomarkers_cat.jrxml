@@ -5,7 +5,7 @@
 		<![CDATA[IEJJT01BUktFUlMgIEFTICw3MCw4NCxmZmVhNzI5ZC05OTU3LTRlODAtOTRhOC0wZmU1YjQwOGI0
 MTA7]]>
 	</property>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT  BIOMARKERS .gene,
 	 BIOMARKERS .variant,
@@ -40,33 +40,33 @@ FROM  BIOMARKERS]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="BIOMARKERS"/>
 	</field>
 	<columnHeader>
-		<band height="20">
+		<band height="28">
 			<staticText>
-				<reportElement mode="Opaque" x="76" y="-2" width="60" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="1ee3014e-611b-4baf-b735-dc67a4d68e32"/>
+				<reportElement mode="Opaque" x="76" y="4" width="60" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="1ee3014e-611b-4baf-b735-dc67a4d68e32"/>
 				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ GENE]]></text>
+				<text><![CDATA[ GEN]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="137" y="-2" width="87" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="5adc7179-86e6-42c7-a993-596c03b9465b"/>
+				<reportElement mode="Opaque" x="137" y="4" width="87" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="5adc7179-86e6-42c7-a993-596c03b9465b"/>
 				<textElement verticalAlignment="Middle"/>
 				<text><![CDATA[ VARIANT]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="410" y="-2" width="68" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="8052951e-3b04-41fc-8a88-3432ebc37781"/>
+				<reportElement mode="Opaque" x="370" y="4" width="108" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="8052951e-3b04-41fc-8a88-3432ebc37781"/>
 				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Depth]]></text>
+				<text><![CDATA[ Profunditat]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="279" y="-2" width="130" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="51cb51c9-06dc-4b03-ba71-3c06ecdfc8b7">
+				<reportElement mode="Opaque" x="279" y="4" width="90" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="51cb51c9-06dc-4b03-ba71-3c06ecdfc8b7">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Variant Allele Frequency]]></text>
+				<text><![CDATA[ VAF]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="225" y="-2" width="53" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="ce6bcce6-9e0d-4751-a7c4-e50cba9d3f5f"/>
+				<reportElement mode="Opaque" x="225" y="4" width="53" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="ce6bcce6-9e0d-4751-a7c4-e50cba9d3f5f"/>
 				<textElement verticalAlignment="Middle"/>
-				<text><![CDATA[ Exon]]></text>
+				<text><![CDATA[ Exó]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="77" y="-17" width="413" height="19" uuid="9fe397b1-a56d-4e84-99a9-7013fb9e5e6a"/>
@@ -78,7 +78,11 @@ FROM  BIOMARKERS]]>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="15" splitType="Stretch">
+		<band height="17" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<rectangle>
+				<reportElement mode="Opaque" x="76" y="-3" width="401" height="15" forecolor="#F0F4F8" backcolor="#F0F4F8" uuid="d51d258c-e66d-489a-86ae-536318b5b8fb"/>
+			</rectangle>
 			<textField>
 				<reportElement x="79" y="-5" width="58" height="17" uuid="a40d9442-e74d-487f-9cf6-de4c6fae480f"/>
 				<textElement verticalAlignment="Middle">
@@ -101,25 +105,26 @@ FROM  BIOMARKERS]]>
 				<textFieldExpression><![CDATA[$F{exon}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="281" y="-5" width="128" height="17" uuid="fa6bc1a3-49ea-4533-ae1b-b96bd49e9e3f"/>
+				<reportElement x="281" y="-5" width="88" height="17" uuid="fa6bc1a3-49ea-4533-ae1b-b96bd49e9e3f"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{allele_fraction}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="410" y="-5" width="68" height="17" uuid="706394a0-4e84-4693-8eb6-420fd698d3ad"/>
+				<reportElement x="370" y="-5" width="108" height="17" uuid="706394a0-4e84-4693-8eb6-420fd698d3ad"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sequencing_depth}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement mode="Opaque" x="76" y="12" width="384" height="1" forecolor="#F0F0F0" uuid="6cc5b745-9a86-4814-a5c8-5c7a179f1175">
+				<reportElement mode="Opaque" x="76" y="14" width="401" height="1" forecolor="#E3E3E3" uuid="6cc5b745-9a86-4814-a5c8-5c7a179f1175">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<graphicElement>
-					<pen lineWidth="0.5"/>
+					<pen lineWidth="0.5" lineColor="#D9D9D9"/>
 				</graphicElement>
 			</line>
 		</band>

@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LungCancer_Report_v1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="27e71b7b-825f-44e7-a876-57d68c7febbe">
-	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter "/>
+	<property name="com.jaspersoft.studio.data.sql.tables">
+		<![CDATA[IFNBTVBMRV9JTkZPUk1BVElPTiAgLDE1LDE1LDEyZTQ4MjhkLThkMDktNDEzZS05MjE3LWQ3Nzcy
+ZmJkMzNhNDs=]]>
+	</property>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT  SAMPLE_INFORMATION .lab_id,
-	 SAMPLE_INFORMATION .ext1_id
+	 SAMPLE_INFORMATION .ext1_id,
+	 SAMPLE_INFORMATION .ext2_id,
+	 SAMPLE_INFORMATION .sample_type,
+	 SAMPLE_INFORMATION .extraction_date,
+	 SAMPLE_INFORMATION .tumor_purity,
+	 SAMPLE_INFORMATION .panel,
+	 SAMPLE_INFORMATION .analysis_date
 FROM  SAMPLE_INFORMATION]]>
 	</queryString>
 	<field name="lab_id" class="java.lang.Object">
@@ -14,40 +23,346 @@ FROM  SAMPLE_INFORMATION]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="SAMPLE_INFORMATION"/>
 	</field>
 	<field name="ext1_id" class="java.lang.String"/>
-	<title>
-		<band height="27">
-			<subreport>
-				<reportElement x="-20" y="-18" width="595" height="40" uuid="78e8e39a-6397-47be-b8da-82e6180ea54e"/>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["header.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
-	</title>
+	<field name="ext2_id" class="java.lang.String"/>
+	<field name="sample_type" class="java.lang.String"/>
+	<field name="extraction_date" class="java.lang.String"/>
+	<field name="tumor_purity" class="java.lang.String"/>
+	<field name="panel" class="java.lang.String"/>
+	<field name="analysis_date" class="java.lang.String"/>
 	<pageHeader>
-		<band height="42">
-			<subreport>
-				<reportElement x="-20" y="-5" width="595" height="40" isRemoveLineWhenBlank="true" uuid="de679d2e-0083-474c-b749-5f17f047ab05"/>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["Sample_information_cat.jasper"]]></subreportExpression>
-			</subreport>
+		<band height="95">
+			<rectangle>
+				<reportElement mode="Opaque" x="36" y="52" width="477" height="40" forecolor="#DCE7FC" backcolor="#FAFBFD" uuid="fb24712e-2942-4a75-9192-c1b79c6e3408"/>
+			</rectangle>
+			<textField>
+				<reportElement x="93" y="66" width="77" height="13" forecolor="#34529E" uuid="e3e60baf-4157-4b39-aa77-8f82ddcbdbaa">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lab_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="89" y="79" width="81" height="11" forecolor="#34529E" uuid="eb57fe6f-9187-4533-a5c4-186603078b9f"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ext1_id}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="260" y="54" width="88" height="13" forecolor="#34529E" uuid="23a2a543-7554-4430-a1a7-7d51f1adff00"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sample_type}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="256" y="67" width="126" height="11" forecolor="#34529E" uuid="a4d5fecc-b6b1-4786-867b-c5a59e59c379">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{extraction_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="255" y="78" width="76" height="14" forecolor="#34529E" uuid="2552a683-029a-495a-8f42-a0b409e5e260"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[CONCATENATE($F{tumor_purity},"%")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="408" y="53" width="106" height="14" forecolor="#34529E" uuid="5deb0914-3935-469a-8944-a50cee6b87a3">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{analysis_date}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="374" y="67" width="136" height="11" forecolor="#34529E" uuid="581937cf-aa28-4234-b06f-c0cd35d7e91c">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{panel}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="66" width="51" height="13" forecolor="#34529E" uuid="40595996-2027-4166-966f-0d74d3eb2acc"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Codi Lab:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="48" y="79" width="42" height="11" forecolor="#34529E" uuid="db2ec093-bad2-4aa9-89ed-d71c0db080e8"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Codi AP:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="181" y="55" width="89" height="11" forecolor="#34529E" uuid="62c634d5-e06f-4170-8937-ee60b9986e02"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tipus de mostra:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="181" y="66" width="88" height="13" forecolor="#34529E" uuid="dd0c0d9f-c925-4fc9-8348-1b7b6bd5b660">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Data de rebuda:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="181" y="79" width="88" height="11" forecolor="#34529E" uuid="2b3aaf34-c1a5-4786-b0c9-da0bb8635e16"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Puresa tumoral:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="341" y="54" width="79" height="13" forecolor="#34529E" uuid="903ec922-9007-4829-8906-c0c5a235bd66">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Data d'anàlisi:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="341" y="67" width="34" height="11" forecolor="#34529E" uuid="aeb89ac0-434a-470f-84bb-2d8c6b429bdd">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Panell:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="109" y="55" width="61" height="11" forecolor="#34529E" uuid="c48f8d09-b092-48f6-9f05-af0e619ee70d"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{ext2_id}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="48" y="55" width="65" height="11" forecolor="#34529E" uuid="ecd305dd-7217-4528-a82b-3696aecf9118"/>
+				<textElement verticalAlignment="Middle">
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Codi pacient:]]></text>
+			</staticText>
+			<image>
+				<reportElement x="36" y="1" width="100" height="40" uuid="3615eadd-0efb-4567-98ba-c0c407fe8bb2"/>
+				<imageExpression><![CDATA["logo_ugmp.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="434" y="4" width="80" height="11" forecolor="#34529E" uuid="f4363241-19e4-41f4-9e0d-a76bf556d689">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="7" isBold="true"/>
+				</textElement>
+				<text><![CDATA[IDIBGI]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="154" y="8" width="246" height="32" forecolor="#34529E" uuid="d2a3da1e-43b8-461c-98d8-0572683aa176"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="16" isBold="true"/>
+				</textElement>
+				<text><![CDATA[INFORME GENÈTIC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="12" width="114" height="9" forecolor="#34529E" uuid="03421a38-f2c3-42fd-bbc9-bc1e0418b25f"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Edifici M2, Parc Hospitalari ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="20" width="114" height="11" forecolor="#34529E" uuid="ca3cc2c8-8ff7-45ff-a2ee-ee0cef562343"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[17190-Salt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="400" y="27" width="114" height="12" forecolor="#34529E" uuid="3d571649-85af-4a44-8398-b0a121f8bdfe"/>
+				<textElement textAlignment="Right" verticalAlignment="Top">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tel. 872.98.70.87 ext. 63.]]></text>
+			</staticText>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="80">
+		<band height="55">
+			<staticText>
+				<reportElement x="36" y="13" width="476" height="29" forecolor="#34529E" uuid="68e2b139-65b2-4e09-9f1f-073a32bb7d22"/>
+				<textElement textAlignment="Justified">
+					<font size="6" isBold="true"/>
+				</textElement>
+				<text><![CDATA[La Unitat de Genòmica i Medicina Personalitzada accepta la vostra petició d’estudi genètic assumint que el consentiment informat ha estat degudament presentat per competent de forma clara, transparent i explícita, en compliment de la disposició addicional dissetena de la LOPDGDD 3/2018,  essent acceptat per l’interessat.]]></text>
+			</staticText>
+			<line>
+				<reportElement mode="Transparent" x="36" y="7" width="478" height="1" forecolor="#34529E" backcolor="#34529E" uuid="13e87188-d622-4b6e-983c-dc0de5ec33f6">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<graphicElement>
+					<pen lineWidth="1.5" lineColor="#E4E7F2"/>
+				</graphicElement>
+			</line>
+		</band>
+		<band height="106">
+			<staticText>
+				<reportElement x="50" y="5" width="194" height="15" forecolor="#34529E" uuid="916b73a2-9d05-423e-bc62-9eef0120fcc0"/>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SERVEI GENÈTIC SOL·LICITAT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="50" y="20" width="174" height="15" forecolor="#000000" uuid="fdf0352f-89bb-48aa-b63f-a4a7a8e553f2"/>
+				<textElement textAlignment="Justified">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[GenOncology-Dx]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="5" width="13" height="13" uuid="a1ff38db-0df5-4340-8d43-3cabc6942093">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="50" y="45" width="298" height="15" forecolor="#34529E" uuid="0a41aff0-590a-4824-a18e-b366bbe9275a">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[SOSPITA CLÍNICA/DIAGNÒSTIC DE REFERÈNCIA]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="50" y="60" width="174" height="15" forecolor="#000000" uuid="463e6774-3130-4346-a3b1-30400d7010af">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Càncer de PULMÓ]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="45" width="13" height="13" uuid="a4fb714b-ae58-4b35-876b-36d4a9129e42">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement x="35" y="86" width="13" height="13" uuid="76578b17-c033-4b6a-bde4-6a45485ddcb9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="50" y="87" width="298" height="15" forecolor="#34529E" uuid="76438a54-6646-482f-8cdb-f2349aec7f99">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RESUM RESULTATS GENÈTICS]]></text>
+			</staticText>
+		</band>
+		<band height="36">
 			<subreport>
-				<reportElement isPrintRepeatedValues="false" x="-20" y="10" width="595" height="62" uuid="b5a32bb8-41bd-4461-99c1-4048082b8bbe"/>
+				<reportElement isPrintRepeatedValues="false" x="-20" y="3" width="595" height="27" uuid="b5a32bb8-41bd-4461-99c1-4048082b8bbe"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Therapeutic_variants_cat.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="86">
+		<band height="34">
 			<subreport>
-				<reportElement x="-20" y="10" width="595" height="61" uuid="8faf948c-5c06-4202-ad77-9f0ea883581f"/>
+				<reportElement x="-20" y="-9" width="595" height="35" uuid="8faf948c-5c06-4202-ad77-9f0ea883581f"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Other_variants_cat.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="67">
+		<band height="111">
+			<staticText>
+				<reportElement x="50" y="-13" width="449" height="15" forecolor="#34529E" uuid="129e2400-eb25-4168-b42f-ef1f7e6778b2">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[INTERPRETACIÓ DE RESULTATS RESPECTE A LA HISTOPATOLOGIA]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="-13" width="13" height="13" uuid="b8a4274d-0b77-44ec-bf58-d8aa1c72f9a4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="50" y="29" width="449" height="15" forecolor="#34529E" uuid="6a029b70-2fbf-4ad5-a8a5-2acf03176719">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="11" isBold="true"/>
+				</textElement>
+				<text><![CDATA[RECOMANACIONS]]></text>
+			</staticText>
+			<image>
+				<reportElement x="35" y="29" width="13" height="13" uuid="b073b530-d076-42d6-b4d9-025263477bbf">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="49" y="45" width="174" height="15" forecolor="#000000" uuid="1fa4bc06-f39a-403a-a17f-c51a51d67c5a">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[(Tumour Board)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="52" y="3" width="174" height="15" forecolor="#000000" uuid="53f4ebf1-da23-47e3-b243-d950875c4501">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Justified">
+					<font size="9" isBold="true" isItalic="true"/>
+				</textElement>
+				<text><![CDATA[(Servei d'Anatomia Patològica)]]></text>
+			</staticText>
+			<textField pattern="dd,MMMMM, yyyy">
+				<reportElement x="50" y="78" width="100" height="21" uuid="82bf0850-6691-46c1-860e-d29279398153"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="93">
 			<subreport>
 				<reportElement x="-20" y="6" width="595" height="52" isPrintInFirstWholeBand="true" uuid="d37a7398-9864-48f2-bbbc-35d2780b8653"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
@@ -57,7 +372,7 @@ FROM  SAMPLE_INFORMATION]]>
 				<reportElement x="0" y="3" width="101" height="1" uuid="2b928cd9-4d59-4c85-a33a-170031d5fa4a"/>
 			</break>
 		</band>
-		<band height="68">
+		<band height="92">
 			<subreport>
 				<reportElement x="-20" y="20" width="595" height="27" uuid="744b1bf3-0abc-4881-901f-9cc7833490e8"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
@@ -67,21 +382,21 @@ FROM  SAMPLE_INFORMATION]]>
 				<reportElement x="0" y="4" width="100" height="1" uuid="9bd7243f-be72-49a4-971e-beb4e93519d8"/>
 			</break>
 		</band>
-		<band height="100">
+		<band height="112">
 			<subreport>
 				<reportElement x="-20" y="19" width="595" height="61" uuid="2c08f92a-8c5c-4eda-8fbc-5e765b2ff6ea"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Summary_qc_cat.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="53">
+		<band height="63">
 			<subreport>
 				<reportElement x="-20" y="2" width="595" height="45" isPrintInFirstWholeBand="true" uuid="5c5d4bce-5870-4725-8c57-6f53538f3292"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Disclaimers_cat.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
-		<band height="66">
+		<band height="73">
 			<subreport>
 				<reportElement x="-20" y="5" width="595" height="55" uuid="9a837391-a0b3-48d1-9de2-9d8e5912a6d9"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
@@ -90,65 +405,53 @@ FROM  SAMPLE_INFORMATION]]>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="84" splitType="Stretch">
+		<band height="64" splitType="Stretch">
 			<textField>
-				<reportElement x="278" y="62" width="111" height="18" uuid="747f5f85-2a09-4879-b06a-aadd42856731"/>
+				<reportElement x="263" y="44" width="111" height="18" uuid="747f5f85-2a09-4879-b06a-aadd42856731"/>
 				<textElement verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
-			<image>
-				<reportElement x="32" y="37" width="60" height="37" uuid="c1857f27-dd99-4117-b5ae-2724098e994c"/>
-				<imageExpression><![CDATA["Gencardio_Diagnostics.png"]]></imageExpression>
-			</image>
 			<line>
-				<reportElement x="35" y="3" width="478" height="1" forecolor="#918E8E" uuid="75e6189f-af8c-4f49-bf77-1b25d63fcbf9">
+				<reportElement x="35" y="7" width="478" height="1" forecolor="#918E8E" uuid="75e6189f-af8c-4f49-bf77-1b25d63fcbf9">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<graphicElement>
-					<pen lineWidth="1.5" lineColor="#595959"/>
+					<pen lineWidth="1.5" lineColor="#D0D7E9"/>
 				</graphicElement>
 			</line>
 			<staticText>
-				<reportElement x="287" y="63" width="20" height="17" uuid="097963d5-19d1-4908-a167-d6e277ca884b"/>
+				<reportElement x="272" y="45" width="20" height="17" uuid="097963d5-19d1-4908-a167-d6e277ca884b"/>
 				<textElement verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
 				<text><![CDATA[/]]></text>
 			</staticText>
 			<textField evaluationTime="Report">
-				<reportElement x="294" y="65" width="100" height="15" uuid="8d045337-f377-4906-a1bd-69dbfde04177"/>
+				<reportElement x="279" y="47" width="100" height="15" uuid="8d045337-f377-4906-a1bd-69dbfde04177"/>
 				<textElement verticalAlignment="Bottom">
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<image>
-				<reportElement x="103" y="39" width="50" height="35" uuid="63d03fe4-b4e3-45b0-b66f-c6df6b538f5b"/>
+				<reportElement x="36" y="13" width="89" height="24" uuid="2ef3998c-5182-421c-9023-ad004c9926a9">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["ics.jpeg"]]></imageExpression>
+			</image>
+			<image>
+				<reportElement x="261" y="13" width="47" height="25" uuid="45f4d794-4ba9-4e2f-9a34-df37be0eac49"/>
 				<imageExpression><![CDATA["IdIBGi-logo-noticies.png"]]></imageExpression>
 			</image>
-			<staticText>
-				<reportElement x="34" y="17" width="480" height="20" uuid="bca2ca0a-42d2-4827-ae29-3bf8d01b422d"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<text><![CDATA[Centre de Genètica Cardiovascular. Institut d’Investigació Biomèdica de Girona Dr. Josep Trueta. Parc Hospitalari Martí i Julià. Edifici M2. Salt 17190 (Girona). Tel 878987087. NIE G17432592.]]></text>
-			</staticText>
 			<image>
-				<reportElement x="430" y="33" width="100" height="47" uuid="7dd495ff-c7f1-49d5-9ab4-7609dd8094f0"/>
-				<imageExpression><![CDATA["/home/bdelolmo/Escriptori/PIPELINE_CANCER/BIN_FOLDER/JASPERREPORTS/MyReports/cat/image_2020_10_14T12_57_59_614Z.png"]]></imageExpression>
+				<reportElement x="433" y="12" width="79" height="29" uuid="07c04321-fc4e-4725-a1bb-9d1624d1a13e"/>
+				<imageExpression><![CDATA["logo-ico.jpeg"]]></imageExpression>
 			</image>
-			<staticText>
-				<reportElement x="32" y="7" width="478" height="11" uuid="e2ee9282-4fd3-4d99-9a1d-839672364886"/>
-				<textElement textAlignment="Center">
-					<font size="7"/>
-				</textElement>
-				<text><![CDATA[L'activitat del laboratori està sota el sistema general de qualitat ISO9001:2015]]></text>
-			</staticText>
 		</band>
 	</pageFooter>
 </jasperReport>

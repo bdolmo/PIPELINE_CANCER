@@ -283,14 +283,14 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{max_af_pop}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement isPrintRepeatedValues="false" x="285" y="0" width="88" height="76" uuid="94a0d40a-77a4-48c1-b4fd-cf138de4c0ce"/>
 				<textElement>
 					<font size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true">
 				<reportElement x="376" y="0" width="69" height="76" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9"/>
 				<textElement>
 					<font size="8"/>

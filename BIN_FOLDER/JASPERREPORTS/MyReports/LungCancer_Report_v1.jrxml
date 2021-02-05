@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="LungCancer_Report_v1" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="27e71b7b-825f-44e7-a876-57d68c7febbe">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT  SAMPLE_INFORMATION .lab_id,
 	 SAMPLE_INFORMATION .ext_id
@@ -19,18 +19,12 @@ FROM  SAMPLE_INFORMATION]]>
 		<property name="com.jaspersoft.studio.field.tree.path" value="SAMPLE_INFORMATION"/>
 	</field>
 	<title>
-		<band height="27">
-			<subreport>
-				<reportElement x="-20" y="-13" width="595" height="40" uuid="78e8e39a-6397-47be-b8da-82e6180ea54e"/>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["header.jasper"]]></subreportExpression>
-			</subreport>
-		</band>
+		<band height="27"/>
 	</title>
 	<pageHeader>
-		<band height="42">
+		<band height="45">
 			<subreport>
-				<reportElement x="-20" y="-10" width="595" height="45" isRemoveLineWhenBlank="true" uuid="de679d2e-0083-474c-b749-5f17f047ab05"/>
+				<reportElement x="-20" y="5" width="595" height="35" isRemoveLineWhenBlank="true" uuid="de679d2e-0083-474c-b749-5f17f047ab05"/>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["Sample_information.jasper"]]></subreportExpression>
 			</subreport>

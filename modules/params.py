@@ -361,7 +361,7 @@ def set_analysis_env(args):
         logging.info(msg)
         sys.exit()
 
-    # Check input missense predictors
+    # Check out input missense predictors
     if args.missense_predictors:
         valid_predictors = ['sift','polyphen2','mutationtaster2','provean','fathmm','revel','mutpred']  
         input_list = args.missense_predictors.split(",")
@@ -373,7 +373,7 @@ def set_analysis_env(args):
                 sys.exit()
         analysis_env['MISSENSE_PREDICTORS'] = args.missense_predictors
 
-    # Check input missense predictors
+    # Check out input missense predictors
     if args.genomewide_predictors:
         valid_predictors = ['cadd','ncer']  
         input_list = args.genomewide_predictors.split(",")
@@ -385,7 +385,7 @@ def set_analysis_env(args):
                 sys.exit()
         analysis_env['GENOMEWIDE_PREDICTORS'] = args.genomewide_predictors
 
-    # Check input missense predictors
+    # Check out input missense predictors
     if args.splicing_predictors:
         valid_predictors = ['spliceai','maxentscan','dbscsnv']  
         input_list = args.splicing_predictors.split(",")
@@ -396,6 +396,8 @@ def set_analysis_env(args):
                 logging.info(msg)
                 sys.exit()
         analysis_env['SPLICING_PREDICTORS'] = args.splicing_predictors
+
+    # Check out conservation scores
     if args.conservation:
         valid_conservation = ['phastcons', 'phylop', 'gerp'] 
         input_list = args.conservation.split(",")
@@ -406,6 +408,20 @@ def set_analysis_env(args):
                 logging.info(msg)
                 sys.exit()
         analysis_env['CONSERVATION_SCORES'] = args.conservation
+
+    # Check out gnomad pop annotation
+    if args.gnomad:
+        if args.gnomad == True:
+            analysis_env['GNOMAD'] = True
+        else:
+            analysis_env['GNOMAD'] = False
+
+    # Check out 1kg pop annotation
+    if args.thousand_genomes:
+        if args.thousand_genomes == True:
+            analysis_env['1KG'] = True
+        else:
+            analysis_env['1KG'] = False
 
 def set_defaults(main_dir):
     ''' 
@@ -617,6 +633,16 @@ def set_auxfiles_env():
                 logging.error(msg)
                 sys.exit()            
             aux_env['GNOMAD_AF_VCF_NAME'] = os.path.basename(aux_env['GNOMAD_AF_VCF'])
+
+            # Setting gnomAD and checking that everything exists 
+            aux_env['GNOMAD'] = aux_env['GNOMAD_FOLDER'] + "/gnomad.genomes.r2.1.1.sites.only_af.vcf.gz"
+            if not os.path.isfile(aux_env['GNOMAD']):
+                msg = " ERROR: Missing gnomAD: " + aux_env['GNOMAD']
+                print (msg)
+                logging.error(msg)
+                sys.exit()            
+            aux_env['GNOMAD_FILENAME'] = os.path.basename(aux_env['GNOMAD'])
+
 
             # Setting dbNSFP
             aux_env['DBNSFP_FOLDER'] = analysis_env['ANN_DIR'] + "/dbNSFP"

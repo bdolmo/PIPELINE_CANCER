@@ -762,7 +762,6 @@ def do_vep():
       "mutpred" : "MutPred_score",
     } 
 
-
     for sample in p.sample_env:
 
         p.sample_env[sample]['VEP_VCF'] = \
@@ -780,7 +779,7 @@ def do_vep():
         phylop_ann    = ''
         phastcons_ann = ''
 
-        # Missense predictors will conform dbnsf_ann 
+        # Missense predictors from dbNSFP 
         if p.analysis_env['MISSENSE_PREDICTORS']:
           missense_list = p.analysis_env['MISSENSE_PREDICTORS'].split(',')
           tmp = [] 
@@ -792,8 +791,10 @@ def do_vep():
         if p.analysis_env['SPLICING_PREDICTORS']:
           splicing_list = p.analysis_env['SPLICING_PREDICTORS'].split(',')
           for predictor in splicing_list:
+            #  Including MaxEntScan
             if predictor == "maxentscan":
               maxent_ann = " --plugin MaxEntScan,/anndir/MaxEntScan"
+            #  Including SpliceAI for SNV and Indels
             if predictor == "spliceai":
               spliceai_ann = " --plugin SpliceAI,snv=/anndir/spliceAI/" + \
                 p.aux_env['SPLICEAI_SNV_FILENAME'] + ",indel=/anndir/spliceAI/" + \
@@ -801,7 +802,10 @@ def do_vep():
         # Setting genomewide predictors 
         if p.analysis_env['GENOMEWIDE_PREDICTORS']:
           pass
-        
+        if p.analysis_env['GNOMAD'] == True:
+          gnomad_fields = "AC,AN,AF,rf_tp_probability,AC_afr,AN_afr,AF_afr,AC_eas,AF_eas,AC_nfe,AN_nfe,AF_nfe,AC_fin,AN_fin,AF_fin,AC_asj,AN_asj,AF_asj,AC_oth,AN_oth,AF_oth,popmax,AC_popmax,AN_popmax,AF_popmax"
+          gnomad_ann = ' --custom /anndir/gnomAD/' + p.aux_env['GNOMAD_FILENAME'] + ",GNOMAD,vcf,exact,0" + gnomad_fields
+
         # Setting conservation scores
         if p.analysis_env['CONSERVATION_SCORES']:
           cons_list = p.analysis_env['CONSERVATION_SCORES'].split(',')
@@ -821,10 +825,10 @@ def do_vep():
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
         ' --af_1kg --af_gnomad --cache_version 101  --canonical '
         ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b --symbol --force_overwrite --fork {}'
-        ' {} {} {} {} {} --fasta /genomedir/{} '
+        ' {} {} {} {} {} {} --fasta /genomedir/{} '
         .format(p.system_env['DOCKER'], p.aux_env['GENOME_FOLDER'], p.analysis_env['ANN_DIR'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'],\
         p.sample_env[sample]['READY_SNV_VCF_NAME'], p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS'],\
-        dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, p.aux_env['GENOME_NAME'] ))
+        dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, gnomad_ann, p.aux_env['GENOME_NAME'] ))
 
         if not os.path.isfile(p.sample_env[sample]['VEP_VCF']):
 

@@ -48,19 +48,19 @@ FROM  SUMMARY_QC]]>
 	<columnHeader>
 		<band height="23">
 			<staticText>
-				<reportElement mode="Opaque" x="37" y="4" width="67" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="5f6a73ee-e1f6-4262-98f5-7a2cd4bce39f">
+				<reportElement mode="Opaque" x="51" y="4" width="67" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="5f6a73ee-e1f6-4262-98f5-7a2cd4bce39f">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
 				<text><![CDATA[Reads totals]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="105" y="4" width="58" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="73529c74-b809-49f0-a7ab-bb090232b6d2"/>
+				<reportElement mode="Opaque" x="119" y="4" width="58" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="73529c74-b809-49f0-a7ab-bb090232b6d2"/>
 				<textElement verticalAlignment="Middle"/>
 				<text><![CDATA[ Cov. mitja]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="320" y="4" width="85" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e9f5c812-b474-4696-b1fd-6a78e2dd1994">
+				<reportElement mode="Opaque" x="334" y="4" width="85" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="e9f5c812-b474-4696-b1fd-6a78e2dd1994">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -68,57 +68,67 @@ FROM  SUMMARY_QC]]>
 				<text><![CDATA[ Enriquiment (%)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="164" y="4" width="70" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="8b8adbac-4fe5-4e5f-b19d-0332659ec84e"/>
+				<reportElement mode="Opaque" x="178" y="4" width="70" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="8b8adbac-4fe5-4e5f-b19d-0332659ec84e"/>
 				<textElement textAlignment="Left" verticalAlignment="Middle"/>
 				<text><![CDATA[ Call rate 30X]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="235" y="4" width="84" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e369924f-2a1e-42fa-baa3-2aa49e5a9d67">
+				<reportElement mode="Opaque" x="249" y="4" width="84" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="e369924f-2a1e-42fa-baa3-2aa49e5a9d67">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Middle"/>
 				<text><![CDATA[ Ex. perduts 30X]]></text>
 			</staticText>
 			<staticText>
-				<reportElement mode="Opaque" x="406" y="4" width="104" height="19" forecolor="#FFFFFF" backcolor="#B0B0B0" uuid="e110bf6d-ea62-48b6-beaf-bdd5db2b034e"/>
+				<reportElement mode="Opaque" x="420" y="4" width="104" height="19" forecolor="#FFFFFF" backcolor="#4A65A8" uuid="e110bf6d-ea62-48b6-beaf-bdd5db2b034e"/>
 				<textElement verticalAlignment="Middle"/>
 				<text><![CDATA[ Read duplicats (%)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="37" y="-11" width="348" height="19" uuid="b281e5fb-ffa6-4362-a2a9-5f50967d3a5a"/>
-				<textElement>
+				<reportElement x="50" y="-9" width="280" height="15" forecolor="#34529E" uuid="d537e481-1525-4f95-9928-b33f338fd492"/>
+				<textElement textAlignment="Justified">
 					<font size="11" isBold="true"/>
 				</textElement>
 				<text><![CDATA[MÈTRIQUES DE QUALITAT DE SEQÜENCIACIÓ]]></text>
 			</staticText>
+			<image>
+				<reportElement x="35" y="-9" width="13" height="13" uuid="7dad9a24-244d-45a3-9118-92f7eae5b1ed">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<imageExpression><![CDATA["fourdot.png"]]></imageExpression>
+			</image>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="28" splitType="Stretch">
+		<band height="21" splitType="Stretch">
+			<rectangle>
+				<reportElement mode="Opaque" x="52" y="0" width="472" height="18" forecolor="#F0F4F8" backcolor="#F0F4F8" uuid="14748c3f-b278-4d14-b8ce-8c53deec8d88"/>
+			</rectangle>
 			<textField>
-				<reportElement x="38" y="1" width="66" height="16" uuid="a2fcd469-c6d5-4398-9222-fba52ce10ae2"/>
+				<reportElement x="52" y="1" width="66" height="16" uuid="a2fcd469-c6d5-4398-9222-fba52ce10ae2"/>
 				<textFieldExpression><![CDATA[$F{total_reads}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="106" y="1" width="58" height="17" uuid="9b2b4f64-9898-494d-af21-d61340a835ea"/>
+				<reportElement x="120" y="1" width="58" height="17" uuid="9b2b4f64-9898-494d-af21-d61340a835ea"/>
 				<textFieldExpression><![CDATA[$F{mean_coverage}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="164" y="1" width="69" height="17" uuid="db694be8-3b5e-4a81-9552-eb0515a63d4e"/>
+				<reportElement x="178" y="1" width="69" height="17" uuid="db694be8-3b5e-4a81-9552-eb0515a63d4e"/>
 				<textFieldExpression><![CDATA[$F{call_rate}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="237" y="1" width="80" height="17" uuid="4ed94036-5b28-44c1-ae75-a33c0fb7d9bb"/>
+				<reportElement x="251" y="1" width="80" height="17" uuid="4ed94036-5b28-44c1-ae75-a33c0fb7d9bb"/>
 				<textFieldExpression><![CDATA[$F{lost_exons}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="320" y="1" width="84" height="17" uuid="caf40a9e-4c87-4cc4-9a63-d1719cc2cd5d">
+				<reportElement x="334" y="1" width="84" height="17" uuid="caf40a9e-4c87-4cc4-9a63-d1719cc2cd5d">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textFieldExpression><![CDATA[$F{enrichment}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="406" y="1" width="104" height="17" uuid="94c2736c-226a-4133-aff4-70998c64386a"/>
+				<reportElement x="420" y="1" width="104" height="17" uuid="94c2736c-226a-4133-aff4-70998c64386a"/>
 				<textFieldExpression><![CDATA[$F{pct_read_duplicates}]]></textFieldExpression>
 			</textField>
 		</band>
