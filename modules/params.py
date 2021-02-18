@@ -642,11 +642,19 @@ def set_auxfiles_env():
                 logging.error(msg)
                 sys.exit()            
             aux_env['GNOMAD_FILENAME'] = os.path.basename(aux_env['GNOMAD'])
-
+            # Setting 1KG
+            aux_env['1KG_FOLDER'] =  analysis_env['ANN_DIR'] + "/1000Genomes"
+            if not os.path.isdir(aux_env['1KG_FOLDER']):
+                msg = " ERROR: Missing 1000Genomes folder at " + analysis_env['ANN_DIR']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['1KG'] = aux_env['1KG_FOLDER'] + "/" + "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz"
+            aux_env['1KG_FILENAME'] = os.path.basename(aux_env['1KG'])
 
             # Setting dbNSFP
             aux_env['DBNSFP_FOLDER'] = analysis_env['ANN_DIR'] + "/dbNSFP"
-            aux_env['DBNSFP'] = aux_env['DBNSFP_FOLDER'] + "/dbNSFP4.1a_hg19.gz"
+            aux_env['DBNSFP'] = aux_env['DBNSFP_FOLDER'] + "/dbNSFP4.1a_grch37.gz"
             aux_env['DBNSFP_FILENAME'] = os.path.basename(aux_env['DBNSFP'])
             if not os.path.isfile(aux_env['DBNSFP']):
                 msg = " ERROR: Missing " + aux_env['DBNSFP']
@@ -684,7 +692,7 @@ def set_auxfiles_env():
                 print (msg)
                 logging.error(msg)
                 sys.exit()
-            # Setting MaxEntScan
+            # Setting Conservation
             aux_env['CONSERVATION_FOLDER'] =  analysis_env['ANN_DIR'] + "/Conservation"
             if not os.path.isdir(aux_env['CONSERVATION_FOLDER']):
                 msg = " ERROR: Missing Conservation folder at " + analysis_env['ANN_DIR']
@@ -695,6 +703,7 @@ def set_auxfiles_env():
             aux_env['PHASTCONS_FILENAME'] = os.path.basename(aux_env['PHASTCONS'])
             aux_env['PHYLOP'] = aux_env['CONSERVATION_FOLDER'] + "/" + "hg19.100way.phyloP100way.bw"
             aux_env['PHYLOP_FILENAME'] = os.path.basename(aux_env['PHYLOP'])
+
 
     # Setting jrxlm files depending on language
     if analysis_env['LANGUAGE'] == "cat":

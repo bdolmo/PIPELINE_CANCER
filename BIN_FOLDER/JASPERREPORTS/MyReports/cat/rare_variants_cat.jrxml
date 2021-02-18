@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rare_variants" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="0e04cca7-537c-4ba8-abd5-74c544928fca">
-	<property name="com.jaspersoft.studio.data.sql.tables">
-		<![CDATA[IFJBUkVfVkFSSUFOVFMgICwxNSwxNSxiYTc0NTBhYy0zZDBmLTQ4YjQtOTI3NC02ZWEzYTI3YjZh
-NTk7]]>
-	</property>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter 1"/>
 	<subDataset name="rare_variants_table" uuid="c1817330-dc7d-4662-ba84-2ba0d7b0fdc3">
 		<property name="com.jaspersoft.studio.data.sql.tables">
 			<![CDATA[IFJBUkVfVkFSSUFOVFMgIEFTICw3MywyNiw1MzIyNThmYS00MGQzLTRjNzEtYTIzZi1iMzIzMDhl

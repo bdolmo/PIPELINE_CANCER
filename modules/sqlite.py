@@ -105,7 +105,9 @@ class SampleTable(db.Model):
     software_version =  db.Column(db.String(80))
     bam = db.Column(db.String(80))
     merged_vcf = db.Column(db.String(80))
-    report_pdf = db.Column(db.String(80))
+    report_pdf = db.Column(db.String(120))
+    report_db= db.Column(db.String(120)) 
+    sample_db_dir= db.Column(db.String(120))
 
     def __repr__(self):
         return '<Sample %r>' % self.lab_id
@@ -136,6 +138,8 @@ class TherapeuticTable(db.Model):
     clinical_trials = db.Column(db.String(240))
     tumor_type = db.Column(db.String(240))
     var_json = db.Column(db.String(5000))
+    validated_assessor = db.Column(db.String(120))
+    validated_bioinfo = db.Column(db.String(120))
 
     def __repr__(self):
         return '<TherapeuticVariants %r>' % self.gene
@@ -166,6 +170,8 @@ class OtherVariantsTable(db.Model):
     clinical_trials = db.Column(db.String(240))
     tumor_type = db.Column(db.String(240))
     var_json = db.Column(db.String(5000))
+    validated_assessor = db.Column(db.String(120))
+    validated_bioinfo = db.Column(db.String(120))
 
 class RareVariantsTable(db.Model):
     __tablename__ = 'RARE_VARIANTS'
@@ -193,6 +199,26 @@ class RareVariantsTable(db.Model):
     clinical_trials = db.Column(db.String(240))
     tumor_type = db.Column(db.String(240))
     var_json = db.Column(db.String(5000))
+    validated_assessor = db.Column(db.String(120))
+    validated_bioinfo = db.Column(db.String(120))
+
+class BiomarkerTable(db.Model):
+    __tablename__ = 'BIOMARKER_METRICS'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.String(20))
+    lab_id  = db.Column(db.String(120))
+    ext1_id = db.Column(db.String(80))
+    ext2_id = db.Column(db.String(80))
+    run_id  = db.Column(db.String(80))
+    gene = db.Column(db.String(80))
+    variant = db.Column(db.String(80))
+    exon = db.Column(db.String(80))
+    chr = db.Column(db.String(80))
+    pos = db.Column(db.String(80))
+    end = db.Column(db.String(80))
+    panel = db.Column(db.String(120))
+    vaf = db.Column(db.String(80))
+    depth = db.Column(db.String(80))
 
 class SummaryQcTable(db.Model):
     __tablename__ = 'SUMMARY_QC'

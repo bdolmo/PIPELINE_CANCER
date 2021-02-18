@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Therapeutic_variants" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" whenResourceMissingType="Empty" uuid="ed1b7c32-5c53-4964-939f-9b652637854d">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter 1"/>
 	<style name="Style1"/>
 	<subDataset name="therapeutic_table" uuid="80249774-1574-4fcd-ac47-1d3d1ecdbe41">
 		<property name="com.jaspersoft.studio.data.sql.tables">
@@ -298,7 +298,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="203" y="85" width="158" height="15" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -308,7 +308,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="363" y="85" width="142" height="15" uuid="ca214483-512d-41d2-a550-a133c449acfb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>

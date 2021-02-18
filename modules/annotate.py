@@ -531,7 +531,7 @@ class Civic:
   def loadCivic(self):
     '''load civic data in memory
     '''
-    URL = "https://civicdb.org/api/variants?count=10000"
+    URL = "https://civicdb.org/api/variants?count=3000"
     r = requests.get(url = URL) 
 
     if not r.ok:
@@ -545,7 +545,7 @@ class Civic:
       variant_name = variant['name']
       self.variants_dict[gene_name][variant_name] = variant['id']
 
-    URL = "https://civicdb.org/api/evidence_items?count=10000"
+    URL = "https://civicdb.org/api/evidence_items?count=7626"
     r = requests.get(url = URL) 
     if not r.ok:
       r.raise_for_status()
@@ -772,6 +772,7 @@ def do_vep():
 
         dbnsfp_ann    = ''
         gnomad_ann    = ''
+        thousand_ann  = ''
         ncer_ann      = ''
         cadd_ann      = ''
         spliceai_ann  = ''
@@ -805,7 +806,10 @@ def do_vep():
         if p.analysis_env['GNOMAD'] == True:
           gnomad_fields = "AC,AN,AF,rf_tp_probability,AC_afr,AN_afr,AF_afr,AC_eas,AF_eas,AC_nfe,AN_nfe,AF_nfe,AC_fin,AN_fin,AF_fin,AC_asj,AN_asj,AF_asj,AC_oth,AN_oth,AF_oth,popmax,AC_popmax,AN_popmax,AF_popmax"
           gnomad_ann = ' --custom /anndir/gnomAD/' + p.aux_env['GNOMAD_FILENAME'] + ",GNOMAD,vcf,exact,0" + gnomad_fields
-
+        if p.analysis_env['1KG'] == True:
+          thousand_fields = "AC,AN,AF,AFR_AF,AMR_AF,EUR_AF,SAS_AF,EAS_AF,OTH_AS"
+          thousand_ann = ' --custom /anndir/1000Genomes/' + p.aux_env['1KG_FILENAME'] + ",1KG,vcf,exact,0" + thousand_fields
+          
         # Setting conservation scores
         if p.analysis_env['CONSERVATION_SCORES']:
           cons_list = p.analysis_env['CONSERVATION_SCORES'].split(',')
@@ -825,10 +829,10 @@ def do_vep():
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
         ' --af_1kg --af_gnomad --cache_version 101  --canonical '
         ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b --symbol --force_overwrite --fork {}'
-        ' {} {} {} {} {} {} --fasta /genomedir/{} '
+        ' {} {} {} {} {} {} {} --fasta /genomedir/{} '
         .format(p.system_env['DOCKER'], p.aux_env['GENOME_FOLDER'], p.analysis_env['ANN_DIR'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'],\
         p.sample_env[sample]['READY_SNV_VCF_NAME'], p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS'],\
-        dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, gnomad_ann, p.aux_env['GENOME_NAME'] ))
+        dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, gnomad_ann, thousand_ann, p.aux_env['GENOME_NAME'] ))
 
         if not os.path.isfile(p.sample_env[sample]['VEP_VCF']):
 

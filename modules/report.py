@@ -271,8 +271,9 @@ def create_somatic_report():
             tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
             subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'], software="varMut", software_version="0.9.0",
             bam=p.sample_env[sample]['READY_BAM'],merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
-            report_pdf=p.sample_env[sample]['REPORT_PDF'] )
-
+            report_pdf=p.sample_env[sample]['REPORT_PDF']+".pdf",
+            report_db=sample_db, sample_db_dir=p.sample_env[sample]['REPORT_FOLDER'])
+          print("COMMITTING")
           s.db.session.add(Sample_db)
           s.db.session.commit()
           result = s.SampleTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
@@ -287,7 +288,7 @@ def create_somatic_report():
         db.session.add(disclaimer_r)
         db.session.commit()
 
-        # filling biomarker database  
+        # filling biomarker report  
         idx = 0
         for biomarker in p.biomarker_env:
           biomarker_r = Biomarkers(gene=p.sample_env[sample]['BIOMARKER'][idx]['GENE'],
@@ -297,6 +298,17 @@ def create_somatic_report():
           db.session.add(biomarker_r)
           idx+=1
         db.session.commit()
+
+        # filling biomarker database
+        idx = 0
+        for biomarker in p.biomarker_env:
+          biomarker_db = s.BiomarkerTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
+          ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], gene=p.sample_env[sample]['BIOMARKER'][idx]['GENE'],
+          variant=p.sample_env[sample]['BIOMARKER'][idx]['VARIANT'], exon=p.sample_env[sample]['BIOMARKER'][idx]['EXON'],
+          chr='.', pos='.', end='.', vaf='.', depth=p.sample_env[sample]['BIOMARKER'][idx]['MEAN_DEPTH'])
+          s.db.session.add(biomarker_db)
+          idx+=1
+        s.db.session.commit()
 
         summary_r = SummaryQc(total_reads=p.sample_env[sample]['TOTAL_READS'], 
         mean_coverage=str(p.sample_env[sample]['MEAN_COVERAGE']), 
@@ -473,7 +485,7 @@ def create_somatic_report():
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str, validated_bioinfo="no", validated_assessor="no")
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
 
@@ -495,7 +507,7 @@ def create_somatic_report():
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
                   s.db.session.add(other_db)
                   s.db.session.commit()
             else:
@@ -589,7 +601,8 @@ def create_somatic_report():
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
                   depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
-                  therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str)
+                  therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
+                  validated_bioinfo="no", validated_assessor="no")
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
           else:
@@ -656,6 +669,8 @@ def create_somatic_report():
             rs_id = rs_id.replace('&', ',')
             results_list.append(rs_id)
 
+            # Gnomad frequencies present at the Broad server do not always match VEP data
+            # We will check the presence from both sources, but preserving original GnomAD data when available
             if 'GNOMAD_AF_popmax' in var_dict['variants'][variant]['INFO']['CSQ']:
               max_af = var_dict['variants'][variant]['INFO']['CSQ']['GNOMAD_AF_popmax']
             else:
@@ -792,7 +807,8 @@ def create_somatic_report():
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
                 depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
-                therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str)
+                therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
+                validated_bioinfo="no", validated_assessor="no")
                 s.db.session.add(therapeutic_db)
                 s.db.session.commit()
 
@@ -814,7 +830,7 @@ def create_somatic_report():
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                 depth=depth, allele_frequency=str(VAF),read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
                 s.db.session.add(other_db)
                 s.db.session.commit()
 
@@ -837,7 +853,7 @@ def create_somatic_report():
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                 depth=depth, allele_frequency=str(VAF), read_support=read_support, max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str)
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
                 s.db.session.add(rare_db)
                 s.db.session.commit()
 

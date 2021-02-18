@@ -2,7 +2,7 @@
 <!-- Created with Jaspersoft Studio version 6.15.0.final using JasperReports Library version 6.15.0-dd49bfb94918336b8321d5507193f0169ead4e95  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Other_variants" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="NoDataSection" columnWidth="752" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9c3b1dfa-eeb8-4d8d-99e6-806245bea561">
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="DataAdapter1.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter 1"/>
 	<queryString language="SQL">
 		<![CDATA[SELECT  OTHER_VARIANTS .gene,
 	 OTHER_VARIANTS .enst_id,
@@ -204,7 +204,7 @@ FROM  OTHER_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="203" y="98" width="158" height="15" uuid="99cd2085-961e-445e-a4c1-b2ec62ca8085">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -214,7 +214,7 @@ FROM  OTHER_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
+			<textField textAdjust="StretchHeight">
 				<reportElement positionType="Float" x="363" y="98" width="142" height="15" uuid="e204527f-ec7d-4952-920f-36f422d0abd8">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -298,7 +298,7 @@ FROM  OTHER_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") || $F{variant_type}.equals("SV") ? "" :  "Localització/Efecte:"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="50" y="-16" width="453" height="27" forecolor="#000000" uuid="4f5e402f-69bc-46cc-ad43-69150f96b00d">
+				<reportElement x="50" y="-16" width="453" height="27" forecolor="#000000" uuid="4f5e402f-69bc-46cc-ad43-69150f96b00d">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<textElement>
@@ -321,7 +321,7 @@ FROM  OTHER_VARIANTS]]>
 				<text><![CDATA[No s'han detectat variants addicionals amb evidències de resistència al tractament/resposta adversa o altres variants d'alt impacte (stop codons, variants d'splicing i variants estructurals)]]></text>
 			</staticText>
 			<staticText>
-				<reportElement isPrintRepeatedValues="false" x="50" y="3" width="453" height="27" forecolor="#000000" uuid="26ed6094-ebfd-404c-838f-8fb0557bf643">
+				<reportElement x="50" y="3" width="453" height="27" forecolor="#000000" uuid="26ed6094-ebfd-404c-838f-8fb0557bf643">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 				</reportElement>
 				<textElement>
