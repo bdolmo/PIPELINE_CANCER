@@ -6,6 +6,7 @@ import re
 import logging
 import gzip
 import shutil
+import json
 import csv
 from collections import defaultdict
 from pathlib import Path
@@ -365,6 +366,8 @@ def do_cnvkit():
 
       # Produce genome-wide copy number profile  
       plot_cna_scatter( ratio_file, call_file, sample, p.sample_env[sample]['CNV_FOLDER'])
+      cnv_json = cnvkit_log2_json( ratio_file, p.sample_env[sample]['CNV_VCF'], sample, p.sample_env[sample]['CNV_FOLDER'])
+      p.sample_env[sample]['CNV_JSON'] = cnv_json  
 
       for gene in p.cna_env:
         plot = p.sample_env[sample]['CNV_FOLDER'] + "/" + gene + ".png"
@@ -465,6 +468,71 @@ def plot_cna_scatter(cnr_file, cns_file, sample, outdir):
 
   os.remove(intersect_file)
 
+def cnvkit_log2_json(cnr_file, cnv_vcf, sample, outdir):
+  
+  cnv_json = outdir + "/" + sample + ".cnv.json"
+  tmp_cnr = outdir + "/" + "tmpcnr.bed"
+  r = open(tmp_cnr, "w")
+  with open (cnr_file, "r") as f:
+    for line in f:
+      line = line.rstrip("\n")
+      if line.startswith("chromosome"):
+        continue
+      else:
+        r.write(line+"\n")
+  r.close()
+
+  cut = "cut -f 1,2,3,4,5,15"
+  intersect_file = outdir + "/" + "intersect.bed"
+  bashCommand = ('bedtools intersect -a {} -b {} -wao | {}  > {}').format(tmp_cnr, \
+    cnv_vcf, cut, intersect_file)
+  print(bashCommand)
+
+  p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+  output = p1.stdout.decode('UTF-8')
+  error  = p1.stderr.decode('UTF-8')
+
+  cnv_dict = defaultdict(dict)
+  count = 0
+  with open (intersect_file) as f:
+    for line in f:
+      line = line.rstrip('\n')
+      tmp  = line.split('\t')
+      if len(tmp) > 5:
+        info = tmp[5]
+      else:
+        info = '.'
+        
+      log2ratio  = tmp[4] 
+      logfold_change_call = 0
+      cnv_status = 'Diploid'
+      if info == '.':
+        pass
+      else:
+        info_list = info.split(';')
+        for field in info_list:
+          if field.startswith('FOLD_CHANGE_LOG'):
+            logfold_change_call = field.replace('FOLD_CHANGE_LOG=', '')
+          if field.startswith('SVTYPE'):
+            svtype = field.replace('SVTYPE=','')
+            if svtype == 'DEL':
+              cnv_status = "Loss"
+            elif svtype == 'DUP':
+              cnv_status = "Gain"
+      cnv_dict[count] = defaultdict(dict)
+      cnv_dict[count]['Coordinates']  = tmp[0]+ ":" + tmp[1] + "-"+ tmp[2]
+      cnv_dict[count]['Gene']         = tmp[3]
+      cnv_dict[count]['Status']       = cnv_status
+      cnv_dict[count]['roi_log2']     = log2ratio
+      cnv_dict[count]['segment_log2'] = logfold_change_call
+      count+=1
+  f.close()
+
+  with open(cnv_json, 'w') as fp:
+    json.dump(cnv_dict, fp)
+
+  return cnv_json
+
 def do_pureCN(vcf, segfile, ratiofile, sample):
 
  normaldb = "~/Escriptori/PIPELINE_CANCER/BIN_FOLDER/PureCN/extdata/NormalDB.R"
@@ -490,7 +558,6 @@ def do_pureCN(vcf, segfile, ratiofile, sample):
      else:
        purity = tmp[1]
  return purity
-
 
 
 def do_freebayes():

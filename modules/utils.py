@@ -130,7 +130,6 @@ def vcf_2_bed(vcf):
   o.close()
   return bed
 
-
 def create_vep_dict(info):
 
     vep_dict = dict()

@@ -264,6 +264,12 @@ def create_somatic_report():
             .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
 
         if not sample_found:
+
+          cnv_dict = defaultdict(dict)
+          with open(p.sample_env[sample]['CNV_JSON']) as jf:
+            cnv_dict = json.load(jf)
+          cnv_json_str = json.dumps(cnv_dict)
+
           Sample_db = s.SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
             ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', diagnosis='.', 
             physician_name='.', medical_center='.', medical_address='.', sample_type='.',
@@ -271,9 +277,10 @@ def create_somatic_report():
             tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
             subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'], software="varMut", software_version="0.9.0",
             bam=p.sample_env[sample]['READY_BAM'],merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
-            report_pdf=p.sample_env[sample]['REPORT_PDF']+".pdf",
+            report_pdf=p.sample_env[sample]['REPORT_PDF']+".pdf", cnv_json=cnv_json_str,
             report_db=sample_db, sample_db_dir=p.sample_env[sample]['REPORT_FOLDER'])
           print("COMMITTING")
+
           s.db.session.add(Sample_db)
           s.db.session.commit()
           result = s.SampleTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
@@ -477,15 +484,16 @@ def create_somatic_report():
                 db.session.commit()
 
                 result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                    .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
 
                 if not result:
-
                   therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str, validated_bioinfo="no", validated_assessor="no")
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str, validated_bioinfo="no", 
+                  validated_assessor="no")
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
 
@@ -500,14 +508,15 @@ def create_somatic_report():
                 db.session.commit()
 
                 result = s.OtherVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                  .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
-
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
                 if not result:
                   other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
+                  clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", 
+                  validated_assessor="no", classification="Other")
                   s.db.session.add(other_db)
                   s.db.session.commit()
             else:
@@ -589,20 +598,20 @@ def create_somatic_report():
                 classification = "Therapeutic"
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
                 hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
-                max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
+                max_af=max_af, max_af_pop=max_af_pop, therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str)
                 db.session.add(therapeutic_r)
                 db.session.commit() 
 
                 result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                  .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
-
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
                 if not result:
                   therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
                   depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
                   therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
-                  validated_bioinfo="no", validated_assessor="no")
+                  validated_bioinfo="no", validated_assessor="no", classification="Therapeutic")
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
           else:
@@ -765,8 +774,13 @@ def create_somatic_report():
             elif not 'Sensitivity/Response' in significance_str:
               for interpretation in clinsig_list:
                 if interpretation.endswith('pathogenic'):
-                  go_other = True
-                  classification = "Other clinical"
+                  if max_af == '.':
+                    go_other = True
+                    classification = "Other clinical"
+                  else:
+                    if float(max_af) < 0.01:
+                      go_other = True
+                      classification = "Other clinical"
 
               # Selecting rare variants without clinical evidence
               else:
@@ -800,15 +814,16 @@ def create_somatic_report():
               db.session.commit()
 
               result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
-
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
+                
               if not result:
                 therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', 
                 depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop, 
                 therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
-                validated_bioinfo="no", validated_assessor="no")
+                validated_bioinfo="no", validated_assessor="no", classification="Therapeutic")
                 s.db.session.add(therapeutic_db)
                 s.db.session.commit()
 
@@ -823,14 +838,16 @@ def create_somatic_report():
               db.session.commit()
 
               result = s.OtherVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
 
               if not result:
                 other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                 depth=depth, allele_frequency=str(VAF),read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no",
+                classification="Other")
                 s.db.session.add(other_db)
                 s.db.session.commit()
 
@@ -845,15 +862,16 @@ def create_somatic_report():
               db.session.commit()
 
               result = s.RareVariantsTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
-                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME'])\
-                .filter_by(gene=gene).filter_by(enst_id=enst_id).filter_by(hgvsg=g_code).first()
+                .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
+                .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
 
               if not result:
                 rare_db = s.RareVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 
                 depth=depth, allele_frequency=str(VAF), read_support=read_support, max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
-                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no")
+                clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no",
+                classification="Rare")
                 s.db.session.add(rare_db)
                 s.db.session.commit()
 

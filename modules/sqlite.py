@@ -11,7 +11,6 @@ import requests
 from os import path
 from collections import defaultdict
 from pprint import pprint
-import json
 from pathlib import Path
 import subprocess
 from modules import params as p
@@ -108,6 +107,7 @@ class SampleTable(db.Model):
     report_pdf = db.Column(db.String(120))
     report_db= db.Column(db.String(120)) 
     sample_db_dir= db.Column(db.String(120))
+    cnv_json   = db.Column(db.String(100000))
 
     def __repr__(self):
         return '<Sample %r>' % self.lab_id
@@ -140,6 +140,7 @@ class TherapeuticTable(db.Model):
     var_json = db.Column(db.String(5000))
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
+    classification = db.Column(db.String(120))
 
     def __repr__(self):
         return '<TherapeuticVariants %r>' % self.gene
@@ -172,6 +173,7 @@ class OtherVariantsTable(db.Model):
     var_json = db.Column(db.String(5000))
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
+    classification = db.Column(db.String(120))
 
 class RareVariantsTable(db.Model):
     __tablename__ = 'RARE_VARIANTS'
@@ -201,6 +203,7 @@ class RareVariantsTable(db.Model):
     var_json = db.Column(db.String(5000))
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
+    classification = db.Column(db.String(120))
 
 class BiomarkerTable(db.Model):
     __tablename__ = 'BIOMARKER_METRICS'
@@ -358,12 +361,10 @@ class Cna(db.Model):
 def update_sample_db():
 
     for sample in p.sample_env:
-
         result = SampleTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
             .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
 
         if not result:
-
             ext1_id = '.'
             petition_id = '.'
             if p.lab_data[sample]['AP_CODE']:
@@ -373,13 +374,20 @@ def update_sample_db():
             if p.lab_data[sample]['HC_CODE']:
                 ext2_id = p.lab_data[sample]['HC_CODE']
 
+            cnv_dict = defaultdict(dict)
+            with open(p.sample_env[sample]['CNV_JSON']) as jf:
+                cnv_dict = json.load(jf)
+            cnv_json_str = json.dumps(cnv_dict)
             Sample = SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', 
                 diagnosis='.', physician_name='.', medical_center='.', medical_address='.', sample_type='.',
                 extraction_date=p.lab_data[sample]['PETITION_DATE'], analysis_date=p.analysis_env['ANALYSIS_DATE'], 
-                tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], panel_version=p.analysis_env['PANEL_VERSION'] , 
-                subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'], software="varMut", software_version="0.9.0", bam=p.sample_env[sample]['READY_BAM'],
-                merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], report_pdf=p.sample_env[sample]['REPORT_PDF']  )
+                tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
+                panel_version=p.analysis_env['PANEL_VERSION'], subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'],
+                software="varMut", software_version="0.9.0", bam=p.sample_env[sample]['READY_BAM'], 
+                cnv_json=cnv_json_str, merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
+                report_pdf=p.sample_env[sample]['REPORT_PDF'], report_db=p.sample_env[sample]['REPORT_DB'],
+                sample_db_dir=p.sample_env[sample]['REPORT_FOLDER']  )
             
             db.session.add(Sample)
             db.session.commit()
@@ -397,13 +405,13 @@ def update_summary_db():
 
     for sample in p.sample_env:
         summary_dict = defaultdict(dict)
-        summary_dict['MEAN_COVERAGE']    = p.sample_env[sample]['MEAN_COVERAGE']
-        summary_dict['TOTAL_READS']      = p.sample_env[sample]['TOTAL_READS']
-        summary_dict['ON_TARGET_READS']  = p.sample_env[sample]['ON_TARGET_READS']
-        summary_dict['ROI_PERCENTAGE']   = p.sample_env[sample]['ROI_PERCENTAGE']
-        summary_dict['ROI_PERCENTAGE']   = p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE']
-        summary_dict['MEAN_INSERT_SIZE'] = p.sample_env[sample]['MEAN_INSERT_SIZE']
-        summary_dict['SD_INSERT_SIZE']   = p.sample_env[sample]['SD_INSERT_SIZE']
+        summary_dict['MEAN_COVERAGE']      = p.sample_env[sample]['MEAN_COVERAGE']
+        summary_dict['TOTAL_READS']        = p.sample_env[sample]['TOTAL_READS']
+        summary_dict['ON_TARGET_READS']    = p.sample_env[sample]['ON_TARGET_READS']
+        summary_dict['ROI_PERCENTAGE']     = p.sample_env[sample]['ROI_PERCENTAGE']
+        summary_dict['PCT_PCR_DUPLICATES'] = p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE']
+        summary_dict['MEAN_INSERT_SIZE']   = p.sample_env[sample]['MEAN_INSERT_SIZE']
+        summary_dict['SD_INSERT_SIZE']     = p.sample_env[sample]['SD_INSERT_SIZE']
       
         for field in p.sample_env[sample]['CALL_RATE']:
 
@@ -431,9 +439,9 @@ def update_summary_db():
             .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
 
         if not result:
-
             Summary = SummaryQcTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
-                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_DIR'],petition_id=petition_id, summary_json=summary_json_str )
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_DIR'],petition_id=petition_id, 
+                summary_json=summary_json_str )
             db.session.add(Summary)
             db.session.commit()
 
@@ -459,7 +467,6 @@ def load_cna(pname):
             cna_env[g.gene]['min_cn'] = g.min_cn
 
     return cna_env
-
 
 def load_panel_biomarkers(pname):
 

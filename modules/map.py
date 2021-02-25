@@ -52,7 +52,8 @@ def create_summary_qc():
         logging.info(msg)
         return
 
-    header = ['Ext ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X','100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup','Mean_Isize', 'SD_Isize']
+    header = ['Ext ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X',
+    '100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup','Mean_Isize', 'SD_Isize']
 
     with open(p.analysis_env['SUMMARY_QC'], 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter='\t')
