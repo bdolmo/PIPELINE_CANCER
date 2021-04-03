@@ -18,6 +18,27 @@ import subprocess
 from modules import params as p
 
 
+
+def get_input_files(input_dir, file_type):
+  '''Get all files (fastq, bam, vcf) from an input directory
+  '''
+
+  input_files = []
+  if file_type == "fastq":
+    input_files = glob.glob(p.analysis_env['INPUT_DIR'] +  "/*.fastq.gz")
+  if file_type == "bam":
+    input_files = glob.glob(p.analysis_env['INPUT_DIR'] +  "/*.bam")
+  if file_type == "vcf":
+    input_files = glob.glob(p.analysis_env['INPUT_DIR'] +  "/*.vcf")
+    if not input_files:
+      input_files = glob.glob(p.analysis_env['INPUT_DIR'] +  "/*.vcf.gz")
+  if not input_files:
+    msg = " ERROR: No input " + file_type + " files were detected"
+    print (msg)
+    p.logging.error(msg)
+    sys.exit()
+  return input_files
+
 def get_bin_path(program):
   '''Get the PATH of a program
   '''
@@ -230,6 +251,10 @@ def convert_vcf_2_json(vcf):
                 qual= tmp[5]
                 filter = tmp[6]
                 info = tmp[7]
+
+                if len(tmp) < 9:
+                  continue
+
                 format_tag = tmp[8]
                 format = tmp[9]
                 identifier = "\t".join(ident_list)

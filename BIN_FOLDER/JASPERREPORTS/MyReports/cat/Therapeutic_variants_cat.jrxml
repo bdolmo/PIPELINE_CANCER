@@ -268,11 +268,11 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss")  || $F{variant_type}.equals("SV")? "" :  $F{exon}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="265" y="35" width="66" height="11" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
+				<reportElement positionType="Float" x="265" y="35" width="127" height="11" uuid="7d0653fd-54d3-4aa9-96a2-b3e2f2a26265"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") ? CONCATENATE("Copy number:",$F{allele_frequency}.toString()) : CONCATENATE("VAF: ",$F{allele_frequency}.toString())]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{variant_type}.equals("Amplification") || $F{variant_type}.equals("Loss") ?  CONCATENATE("Copy number: ",$F{allele_frequency}.toString())  : CONCATENATE("VAF: ",$F{allele_frequency}.toString())]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement positionType="Float" isPrintRepeatedValues="false" x="392" y="21" width="95" height="12" uuid="16926d5e-0d17-487f-84cd-7517f6dcd79d"/>
@@ -298,7 +298,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight">
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="203" y="85" width="158" height="15" uuid="f18faa44-5d48-4d7a-a53b-745ec3c8d1a9">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -308,7 +308,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight">
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="363" y="85" width="142" height="15" uuid="ca214483-512d-41d2-a550-a133c449acfb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
@@ -318,7 +318,7 @@ FROM  THERAPEUTIC_VARIANTS]]>
 				<textFieldExpression><![CDATA[$F{tumor_type}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement positionType="Float" x="294" y="19" width="34" height="14" uuid="abcef12a-7a64-4ea1-996e-7170155266bc"/>
+				<reportElement positionType="Float" x="294" y="19" width="98" height="14" uuid="abcef12a-7a64-4ea1-996e-7170155266bc"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>

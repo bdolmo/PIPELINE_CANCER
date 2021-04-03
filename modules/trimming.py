@@ -83,10 +83,15 @@ def trim_fastqs():
     p.sample_env[sample_name]['READY_FQ2'] = \
       p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + trimmed_fq2
 
+    # Setting fastq names in the global dictionaries 
+    p.sample_env[sample_name]['FASTP_JSON'] = \
+      p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + "fastp.json"   
+
     # Now trimming with fastp
-    bashCommand = ('{} -i  {} -I {} -o {} -O {} -w {}') \
+    bashCommand = ('{} -i  {} -I {} -o {} -O {} -w {} -j {}') \
       .format(p.system_env['FASTP'], fq1, fq2, p.sample_env[sample_name]['READY_FQ1'], 
-      p.sample_env[sample_name]['READY_FQ2'], p.analysis_env['THREADS'] )
+      p.sample_env[sample_name]['READY_FQ2'], p.analysis_env['THREADS'], 
+      p.sample_env[sample_name]['FASTP_JSON'] )
 
     if not os.path.isfile(p.sample_env[sample_name]['READY_FQ1']) \
       and not os.path.isfile(p.sample_env[sample_name]['READY_FQ2']):

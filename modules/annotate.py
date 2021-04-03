@@ -113,8 +113,12 @@ def annotate_cnas():
       civic_fields.append("EV_DISEASE")
       civic_fields.append("EV_PMID")
       civic_fields.append("EV_CLINICAL_TRIALS")
-      civic_info_header = "##INFO=<ID=CIVIC,Number=.,Type=String,Description=\"Civic evidence. Format: " + '|'.join(civic_fields) + "\">"
+      
+      # Wrtiting CIViC header  
+      civic_info_header = "##INFO=<ID=CIVIC,Number=.,Type=String,Description=\"Civic evidence. Format: "\
+        + '|'.join(civic_fields) + "\">"
       genes_info_header = "##INFO=<ID=CNA_GENES,Number=1,Type=String,Description=\"Genes affected by a CNA\">" 
+
       seen = defaultdict(dict)
       o = open(p.sample_env[sample]['READY_CNA_VCF'], "w")
       with open(tmp_intersect) as f:

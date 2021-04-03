@@ -6,7 +6,6 @@ import gzip
 import binascii
 import os.path
 from os import path
-import argparse
 from pathlib import Path
 
 class Fastq:
@@ -22,12 +21,6 @@ class Fastq:
         self.fq1 = fq1
         self.fq2 = fq2
         self.paired = paired
-
-    #def sampleName(self):
-        
-    #def sampleNum(self):
-
-    #def readNum(self):
 
     def readLen(self):
         ''' Get read length
@@ -116,6 +109,8 @@ def most_frequent(List):
 # Recognize if fastq is gzipped
 # https://stackoverflow.com/questions/3703276/how-to-tell-if-a-file-is-gzip-compressed
 def is_gz(file):
+    '''Check if a file is gzipped
+    '''
     with open(file, 'rb') as f:
         return binascii.hexlify(f.read(2)) == b'1f8b'
 

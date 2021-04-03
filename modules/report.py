@@ -13,7 +13,6 @@ from pathlib import Path
 from scipy import stats
 import numpy as np
 import subprocess
-from civicpy import civic, exports
 import requests
 import json
 from sqlalchemy import create_engine, Column, Integer, String
@@ -31,10 +30,13 @@ from modules import trimming as t
 from modules import sqlite as s
 
 def do_report():
-
-    clinical_vcf()
+    ''' 
+      main report function
+    '''
 
     if p.analysis_env['VARIANT_CLASS'] == "somatic":
+      
+      clinical_vcf()
 
       annotate_biomarkers()
 
@@ -42,7 +44,9 @@ def do_report():
 
 
 def annotate_biomarkers():
-
+  ''' 
+    Annotate depth information to biomarker positions
+  '''
   for sample in p.sample_env:
     p.sample_env[sample]['BIOMARKER'] = defaultdict(dict)
 
@@ -55,32 +59,39 @@ def annotate_biomarkers():
       coordinate = chr + ":" \
         + p.biomarker_env[biomarker]['POS'] + "-" + p.biomarker_env[biomarker]['END'] 
 
-      mean_depth = u.mean_depth_coordinate(p.sample_env[sample]['READY_BAM'], coordinate )
+      mean_depth = u.mean_depth_coordinate(p.sample_env[sample]['READY_BAM'], coordinate)
 
       p.sample_env[sample]['BIOMARKER'][idx] = defaultdict(dict)
       p.sample_env[sample]['BIOMARKER'][idx]['COORDINATE'] = coordinate
-      p.sample_env[sample]['BIOMARKER'][idx]['GENE'] =  p.biomarker_env[biomarker]['GENE']
-      p.sample_env[sample]['BIOMARKER'][idx]['VARIANT'] =  p.biomarker_env[biomarker]['VARIANT']
-      p.sample_env[sample]['BIOMARKER'][idx]['EXON'] =  p.biomarker_env[biomarker]['EXON']
+      p.sample_env[sample]['BIOMARKER'][idx]['GENE']       =  p.biomarker_env[biomarker]['GENE']
+      p.sample_env[sample]['BIOMARKER'][idx]['VARIANT']    =  p.biomarker_env[biomarker]['VARIANT']
+      p.sample_env[sample]['BIOMARKER'][idx]['EXON']       =  p.biomarker_env[biomarker]['EXON']
       p.sample_env[sample]['BIOMARKER'][idx]['MEAN_DEPTH'] = mean_depth
       idx+=1
 
 def create_somatic_report():
-
+    ''' 
+        Create an specific report for somatic mode
+    '''
     for sample in p.sample_env:
 
-        p.sample_env[sample]['REPORT_FOLDER'] = p.sample_env[sample]['SAMPLE_FOLDER'] + "/" + "REPORT_FOLDER"
-
+        # Set and create report folder 
+        p.sample_env[sample]['REPORT_FOLDER'] = \
+          p.sample_env[sample]['SAMPLE_FOLDER'] + "/" + "REPORT_FOLDER"
         report_folder_path = Path(p.sample_env[sample]['REPORT_FOLDER'])
         if not report_folder_path.is_dir():
             os.mkdir(report_folder_path)
 
-        p.sample_env[sample]['REPORT_PDF'] = p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".report"
+        # Set report name 
+        p.sample_env[sample]['REPORT_PDF'] = \
+          p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".report"
 
+        # Set report csv 
         p.sample_env[sample]['CLINICAL_REPORT_CSV'] = \
             p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".clinical.csv"
         o =  open (p.sample_env[sample]['CLINICAL_REPORT_CSV'], "w")
 
+        # Set report database to be linked 
         sample_db = p.sample_env[sample]['REPORT_FOLDER'] + "/" + sample + ".db"  
         p.sample_env[sample]['REPORT_DB'] = sample_db
 
@@ -248,15 +259,17 @@ def create_somatic_report():
         petition_id = '.'
         if p.lab_data[sample]['AP_CODE']:
           ext1_id = p.lab_data[sample]['AP_CODE']
-          print(ext1_id)
           petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
         ext2_id = '.'
         if p.lab_data[sample]['HC_CODE']:
           ext2_id = p.lab_data[sample]['HC_CODE']
 
-        sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'], ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.', 
-          physician_name='.', medical_center='.', medical_address='.', sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
-          tumor_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], analysis_date= p.analysis_env['ANALYSIS_DATE'])
+        sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'],
+         ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.',
+          physician_name='.', medical_center='.', medical_address='.',
+          sample_type='.', extraction_date=p.lab_data[sample]['PETITION_DATE'],
+          tumor_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
+          analysis_date= p.analysis_env['ANALYSIS_DATE'])
         db.session.add(sample_r)
         db.session.commit()
 
@@ -271,15 +284,14 @@ def create_somatic_report():
           cnv_json_str = json.dumps(cnv_dict)
 
           Sample_db = s.SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
-            ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', diagnosis='.', 
-            physician_name='.', medical_center='.', medical_address='.', sample_type='.',
+            ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', 
+            diagnosis='.', physician_name='.', medical_center='.', medical_address='.', sample_type='.',
             extraction_date=p.lab_data[sample]['PETITION_DATE'], analysis_date=p.analysis_env['ANALYSIS_DATE'], 
             tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
             subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'], software="varMut", software_version="0.9.0",
             bam=p.sample_env[sample]['READY_BAM'],merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
             report_pdf=p.sample_env[sample]['REPORT_PDF']+".pdf", cnv_json=cnv_json_str,
             report_db=sample_db, sample_db_dir=p.sample_env[sample]['REPORT_FOLDER'])
-          print("COMMITTING")
 
           s.db.session.add(Sample_db)
           s.db.session.commit()
@@ -326,38 +338,21 @@ def create_somatic_report():
         db.session.add(summary_r)
         db.session.commit()
 
-        # report_header = [] 
-        # report_header.append("Lab_ID")
-        # report_header.append("Ext_ID")
-        # report_header.append("Gene")
-        # report_header.append("HGVSp")
-        # report_header.append("HGVSg")
-        # report_header.append("HGVSc")
-        # report_header.append("Exon")
-        # report_header.append("ENST_ID")
-        # report_header.append("VAF")
-        # report_header.append("Identifiers")
-        # report_header.append("MAX_AF")
-        # report_header.append("MAX_AF_POP")
-        # report_header.append("Drugs")
-        # report_header.append("Clinical_trials")
-        # o.write('\t'.join(report_header)+"\n")
-
+        # Converting merged variants json to a dictionary 
         var_dict = defaultdict(dict)
         with open(p.sample_env[sample]['READY_MERGED_JSON']) as f:
             var_dict = json.load(f)
-        
+
+        # Variant parsing and classification 
         for variant in var_dict['variants']:
-          results_list = [] 
+          
           lab_id = sample
-          results_list.append(lab_id)
           ext_id = "999999"
-          results_list.append(ext_id)
 
           go_therapeutic = False
-          go_other = False
-          go_rare  = False
-          go_common= False
+          go_other       = False
+          go_rare        = False
+          go_common      = False
           chromosome = var_dict['variants'][variant]['CHROM']
           pos     = var_dict['variants'][variant]['POS']
           ref     = var_dict['variants'][variant]['REF'] 
@@ -380,6 +375,7 @@ def create_somatic_report():
           classification = '.'
           svlen = '.'              
 
+          # Here, generate a hash from all annotation fields 
           ann_dict = defaultdict(dict)
           for field in var_dict['variants'][variant]:
             ann_dict[field] = var_dict['variants'][variant][field] 
@@ -390,17 +386,24 @@ def create_somatic_report():
           
           var_json_str = json.dumps(var_dict['variants'][variant])
 
+          # For Structural Variants (including CNV) 
           if 'SVTYPE' in var_dict['variants'][variant]['INFO']:
+
+            # For Copy-Number Alterations 
             if 'CNA_GENES' in var_dict['variants'][variant]['INFO']:
-              gene  = var_dict['variants'][variant]['INFO']['CNA_GENES'] 
+
+              # Gene list overlapping the CNA 
+              gene  = var_dict['variants'][variant]['INFO']['CNA_GENES']
+
               if 'CN' in var_dict['variants'][variant]:
+                # VAF here will be filleds with CN (Copy Number) field 
                 VAF = int(var_dict['variants'][variant]['CN'])
               else:
                 GT = var_dict['variants'][variant]['GT']
                 VAF = int(GT[0])
-              svtype = var_dict['variants'][variant]['INFO']['SVTYPE']
 
               # Setting CNA type
+              svtype = var_dict['variants'][variant]['INFO']['SVTYPE']
               if svtype == "DUP":
                 variant_type = "Amplification"
               elif svtype == "DEL":
@@ -415,26 +418,36 @@ def create_somatic_report():
 
               if 'CIVIC' in var_dict['variants'][variant]['INFO']:
                 for ev_id in var_dict['variants'][variant]['INFO']['CIVIC']:
+
+                  # Available drugs 
                   if 'EV_DRUGS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]:
                     drugs_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DRUGS'].split('&')
                     for drug in drugs_result:
                       if drug != '.':
                         drugs_list.append(drug)
+
+                  # Linked clinical trials 
                   if 'EV_CLINICAL_TRIALS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
                     clin_trials_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_CLINICAL_TRIALS'].split('&')
                     for ctrial in clin_trials_result:
                       if ctrial != '.':
                         clin_trials_list.append(ctrial)
+                  
+                  # Which direction is pointing the treatment: Supports, Does not Support
                   if 'EV_DIRECTION' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
                     direction_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DIRECTION'].split('&')
                     for direction in direction_result:
                       if direction != '.':
                         ev_direction_list.append(direction)
+
+                  # Clinical significance: Sensivity (if the drug works agains the tumour), Resistance, 
                   if 'EV_SIGNIFICANCE' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
                     significance_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_SIGNIFICANCE'].split('&')
                     for significance in significance_result:
                       if significance != '.':
-                        ev_significance_list.append(significance)                      
+                        ev_significance_list.append(significance)
+
+                  # Tumor types               
                   if 'EV_DISEASE' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id] :
                     disease_result = var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]['EV_DISEASE'].split('&')
                     for disease in disease_result:
@@ -464,10 +477,13 @@ def create_somatic_report():
                 diseases_str = '.'
 
               # Now classifying each variant into their corresponding clinical class
+              # Therapeutic variants: drugs available, Supporting direction and Sensitivity/Response clinical significance 
               if drugs_str != '.' and 'Supports' in direction_str and 'Sensitivity/Response' in significance_str:
                 if gene in p.cna_env:
+                  # But only considering CNAs with more than a minimum copies 
                   if VAF >= int(p.cna_env[gene]['min_cn']):
                     go_therapeutic = True
+              # Therapeutic variants: drugs available, but no Sensitivity/Response clinical significance 
               elif drugs_str != '.' and not 'Sensitivity/Response' in significance_str:             
                 if gene in p.cna_env:
                   if VAF >= int(p.cna_env[gene]['min_cn']): 
@@ -520,12 +536,13 @@ def create_somatic_report():
                   s.db.session.add(other_db)
                   s.db.session.commit()
             else:
+              # Now for Fusions and other forms of SV 
               variant_type = "SV"
               if 'SVLEN' in var_dict['variants'][variant]['INFO']:
                 svlen = abs(int(var_dict['variants'][variant]['INFO']['SVLEN']))
                 if svlen < p.analysis_env['MIN_FUSION_SIZE']:
                   continue 
-
+              # PR is the paired-end support 
               if 'PR' in var_dict['variants'][variant]:
                 pe_info = var_dict['variants'][variant]['PR'].split(",")
                 pe_ref = int(pe_info[0])
@@ -533,6 +550,8 @@ def create_somatic_report():
               else:
                 pe_ref = 0
                 pe_alt = 0
+
+              # SR is the split-read support 
               if 'SR' in var_dict['variants'][variant]:
                 sr_info = var_dict['variants'][variant]['SR'].split(",")
                 sr_ref = int(sr_info[0])
@@ -540,6 +559,8 @@ def create_somatic_report():
               else:
                 sr_ref = 0
                 sr_alt = 0
+              
+              # For now, considering only SVs with both PR,SR signals
               fusion_out = False
               if (pe_alt > 0 and sr_alt > 0):
                 fusion_out = True
@@ -556,7 +577,6 @@ def create_somatic_report():
               else:
                 depth = "0"
                 VAF = "0"
-
               # Filter SVs with leass than 3 reads
               if read_support < 3:
                 continue 
@@ -568,32 +588,17 @@ def create_somatic_report():
               if gene != '.' and fusion_out == True:
                 if gene == '.':
                   gene = var_dict['variants'][variant]['INFO']['EDGE_GENES']
-                results_list.append(gene)
-                p_code = '.'
-                results_list.append(p_code)
-                g_code = '.'
-                results_list.append(g_code)
-                c_code = '.'
-                results_list.append(c_code)
-                exon = '.'
-                results_list.append(exon)
+                p_code  = '.'
+                g_code  = '.'
+                c_code  = '.'
+                exon    = '.'
                 enst_id = '.'
-                results_list.append(enst_id)
-                results_list.append(VAF)
-                clin_sig = '.'
-                results_list.append(clin_sig)
+                clin_sig= '.'
                 rs_id = '.'
-                results_list.append(rs_id)
                 max_af = '.'
-                results_list.append(max_af)
                 max_af_pop = '.'
-                results_list.append(max_af_pop)
                 drugs = '.'
-                results_list.append(drugs)
                 clin_trials = '.'
-                results_list.append(clin_trials)
-                o.write('\t'.join(results_list)+ "\n")
-                print("SV " + p_code)
 
                 classification = "Therapeutic"
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
@@ -614,6 +619,8 @@ def create_somatic_report():
                   validated_bioinfo="no", validated_assessor="no", classification="Therapeutic")
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
+
+          # Now for SNVs and Indels 
           else:
             variant_type = '.'
             ref = var_dict['variants'][variant]['REF']
@@ -630,7 +637,6 @@ def create_somatic_report():
                 variant_type = "SNV"
 
             gene   = var_dict['variants'][variant]['INFO']['CSQ']['SYMBOL']
-            results_list.append(gene)
             p_code = var_dict['variants'][variant]['INFO']['CSQ']['HGVSp']
             AD = var_dict['variants'][variant]['AD']
             read_support = "."
@@ -644,19 +650,14 @@ def create_somatic_report():
               tmp_p_code = p_code.split(":")
               if len(tmp_p_code)>1:
                 p_code = tmp_p_code[1] 
-            results_list.append(p_code)
             g_code = var_dict['variants'][variant]['INFO']['CSQ']['HGVSg'] 
-            results_list.append(g_code)
             c_code = var_dict['variants'][variant]['INFO']['CSQ']['HGVSc']
             if c_code:
               tmp_c_code = c_code.split(":")
               if len(tmp_c_code)> 1:
                 c_code = tmp_c_code[1]
-            results_list.append(c_code)
             exon   = var_dict['variants'][variant]['INFO']['CSQ']['EXON']
-            results_list.append(exon)
             enst_id= var_dict['variants'][variant]['INFO']['CSQ']['Feature']
-            results_list.append(enst_id)
             isoform     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
             c_list = [] 
@@ -672,11 +673,9 @@ def create_somatic_report():
               consequence = consequence.capitalize()
             depth  = var_dict['variants'][variant]['INFO']['DP']
             VAF    = var_dict['variants'][variant]['AF']
-            results_list.append(VAF)
             clin_sig = var_dict['variants'][variant]['INFO']['CSQ']['CLIN_SIG']
             rs_id  = var_dict['variants'][variant]['INFO']['CSQ']['Existing_variation']
             rs_id = rs_id.replace('&', ',')
-            results_list.append(rs_id)
 
             # Gnomad frequencies present at the Broad server do not always match VEP data
             # We will check the presence from both sources, but preserving original GnomAD data when available
@@ -684,19 +683,18 @@ def create_somatic_report():
               max_af = var_dict['variants'][variant]['INFO']['CSQ']['GNOMAD_AF_popmax']
             else:
               max_af = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF']
-            results_list.append(max_af)
             if 'GNOMAD_popmax' in var_dict['variants'][variant]['INFO']['CSQ']:
               max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['GNOMAD_popmax']
             else: 
               max_af_pop = var_dict['variants'][variant]['INFO']['CSQ']['MAX_AF_POPS']
             max_af_pop = max_af_pop.replace('&', ',')
 
-            results_list.append(max_af_pop)
             drugs_list         = []
             clin_trials_list   = []
             ev_direction_list  = []
             diseases_list      = []
             ev_significance_list=[] 
+
             if 'CIVIC' in var_dict['variants'][variant]['INFO']:
               for ev_id in var_dict['variants'][variant]['INFO']['CIVIC']:
                 if 'EV_DRUGS' in var_dict['variants'][variant]['INFO']['CIVIC'][ev_id]:
@@ -747,8 +745,7 @@ def create_somatic_report():
               diseases_str = diseases_str.replace("_", " ")
             else:
               diseases_str = '.'
-            results_list.append(drugs_str)
-            results_list.append(clintrials_str)
+
 
             go_therapeutic = False
             go_other       = False
@@ -874,10 +871,7 @@ def create_somatic_report():
                 classification="Rare")
                 s.db.session.add(rare_db)
                 s.db.session.commit()
-
-            if 'pathogenic' in clin_sig:
-              o.write('\t'.join(results_list)+ "\n")
-        
+       
           var_id = ""
 
           # Checking that the variant has been detected previously
@@ -898,14 +892,12 @@ def create_somatic_report():
 
           found_sample_var =  s.SampleVariants.query.filter_by(var_id=var_id).first()
           if not found_sample_var:
-          # Recording sample variants
+            # Recording sample variants
             sample_var = s.SampleVariants(sample_id=sample_id, var_id=var_id, ann_id=1, 
             lab_confirmation="None", confirmation_technique="None", classification=classification,
             ann_json=ann_json_str, ann_key=ann_key)       
             s.db.session.add(sample_var)
             s.db.session.commit()
-
-        o.close()
 
         # Create PDF report 
         bashCommand = ('{} pr {} -r {} -f pdf -t generic --db-url jdbc:sqlite:{} --db-driver org.sqlite.JDBC -o {} --jdbc-dir {}') \

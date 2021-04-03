@@ -24,7 +24,133 @@ def do_var_call():
         do_mutect2()
         do_manta()
         do_cnvkit()
+    if p.analysis_env['VARIANT_CLASS'] == 'germline':
+        do_gatk_hc() 
+        #do_freebayes()
+
+def do_gatk_hc():
+
+    if p.analysis_env['ANALYSIS_MODE'] == "call": 
+      bam_list =  u.get_input_files( p.analysis_env['INPUT_DIR'], "bam")
+      for bam in bam_list:
+        sample_name = os.path.basename(bam).replace(".bam", "")
+        p.sample_env[sample_name]['READY_BAM']      = bam
+        p.sample_env[sample_name]['READY_BAM_NAME'] = os.path.basename(bam)
+        p.sample_env[sample_name]['BAM_FOLDER']     = p.analysis_env['INPUT_DIR']
+        p.sample_env[sample_name]['SAMPLE_FOLDER']  = p.analysis_env['OUTPUT_DIR']\
+          + "/" + sample_name
+        sample_path = Path(p.sample_env[sample_name]['SAMPLE_FOLDER'])
+        if not sample_path.is_dir():
+            os.mkdir(sample_path)
+
+    vcf_list = [] 
+    for sample in p.sample_env:
+
+        # Create BAM_FOLDER if not present
+        p.sample_env[sample]['VCF_FOLDER'] = \
+         p.sample_env[sample]['SAMPLE_FOLDER'] + "/" + "VCF_FOLDER"
+
+        vcf_folder_path = Path(p.sample_env[sample]['VCF_FOLDER'])
+        if not vcf_folder_path.is_dir():
+            os.mkdir(vcf_folder_path)
+
+        p.sample_env[sample]['GATK_HC_VCF'] = p.sample_env[sample]['VCF_FOLDER'] + \
+            "/" + sample + ".gatk.haplotypecaller.vcf"
+        p.sample_env[sample]['GATK_HC_VCF_NAME'] = os.path.basename(p.sample_env[sample]['GATK_HC_VCF'])
+        vcf_list.append(p.sample_env[sample]['GATK_HC_VCF'])
+
+        p.sample_env[sample]['READY_SNV_VCF']      = p.sample_env[sample]['GATK_HC_VCF']
+        p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['GATK_HC_VCF_NAME']
         
+        filtered_vcf = p.sample_env[sample]['GATK_HC_VCF'].replace(".vcf", ".filtered.vcf")
+        filtered_vcf_name = p.sample_env[sample]['GATK_HC_VCF_NAME'].replace(".vcf", ".filtered.vcf")
+
+        if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
+          bashCommand = ('{} run -v {}:/bam_data/ -v {}:/vcf_data/ -v {}:/bundle/ '
+              '-v {}:/panel_data/ -v {}:/gnomad_data/ -it {} gatk HaplotypeCaller -I /bam_data/{} '
+              '-O /vcf_data/{} -L /panel_data/{} -R /bundle/{}'
+              ' --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],
+              p.sample_env[sample]['BAM_FOLDER'], p.sample_env[sample]['VCF_FOLDER'], \
+              p.aux_env['GENOME_FOLDER'], p.analysis_env['PANEL_WORKDIR'],\
+              p.docker_env['GATK'], p.sample_env[sample]['READY_BAM_NAME'],\
+              p.sample_env[sample]['GATK_HC_VCF_NAME'],p.analysis_env['PANEL_LIST_NAME'], \
+              p.aux_env['GENOME_NAME'], p.analysis_env['THREADS']
+            ))
+        elif p.analysis_env['SEQ_APPLICATION'] == "wgs":
+          bashCommand = ('{} run -v {}:/bam_data/ -v {}:/vcf_data/ -v {}:/bundle/ '
+              ' -it {} gatk HaplotypeCaller -I /bam_data/{} '
+              '-O /vcf_data/{} -R /bundle/{} '
+              ' --native-pair-hmm-threads {}'.format(p.system_env['DOCKER'],\
+              p.sample_env[sample]['BAM_FOLDER'], p.sample_env[sample]['VCF_FOLDER'],\
+              p.aux_env['GENOME_FOLDER'], p.docker_env['GATK'],p.sample_env[sample]['READY_BAM_NAME'],\
+              p.sample_env[sample]['GATK_HC_VCF_NAME'], p.aux_env['GENOME_NAME'],p.analysis_env['THREADS']))
+
+
+        if not os.path.isfile(p.sample_env[sample]['GATK_HC_VCF']):
+            msg = " INFO: Running HaplotypeCaller for sample "+ sample
+            print(msg)
+            logging.info(msg)
+            logging.info(bashCommand)
+
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = p1.stdout.decode('UTF-8')
+            error  = p1.stderr.decode('UTF-8')
+
+            if not error:
+                if re.search(r'done.', output):
+                    msg = " INFO: HaplotypeCaller ended successfully for sample " + sample
+                    print (msg)
+                    logging.info(msg)
+                    ok = True
+                else:
+                    msg = " ERROR: Something went wrong with HaplotypeCaller for sample " + sample
+                    print (msg)
+                    logging.error(msg)
+            else:
+                msg = " ERROR: Something went wrong with HaplotypeCaller for sample " + sample
+                print (msg)
+                logging.error(msg)
+
+            # Filtering Mutect2 calls
+            # bashCommand = ('{} run -v {}:/vcf_data/ -v {}:/bundle/ '
+            #     '-it {} gatk FilterMutectCalls -R /bundle/{} '
+            #     '-V /vcf_data/{} -O /vcf_data/{}'.format(p.system_env['DOCKER'],
+            #     p.sample_env[sample]['VCF_FOLDER'], p.aux_env['GENOME_FOLDER'],
+            #     p.docker_env['GATK'],  p.aux_env['GENOME_NAME'], \
+            #     p.sample_env[sample]['MUTECT2_VCF_NAME'], \
+            #     filtered_vcf_name
+            #     ))           
+            # msg = " INFO: Running FilterMutectCalls for sample "+ sample
+            # print(msg)
+            # logging.info(msg)
+            # logging.info(bashCommand)
+
+            # p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # output = p1.stdout.decode('UTF-8')
+            # error  = p1.stderr.decode('UTF-8')
+
+            # if not error:
+            #     if re.search(r'FilterMutectCalls done.', output):
+            #         msg = " INFO: FilterMutectCalls varcall ended OK for sample " + sample
+            #         print (msg)
+            #         logging.info(msg)
+            #         ok = True
+            #     else:
+            #         msg = " ERROR: Something went wrong with FilterMutectCalls varcall for sample " + sample
+            #         print (msg)
+            #         logging.error(msg)
+            # else:
+            #     msg = " ERROR: Something went wrong with FilterMutectCalls varcall for sample " + sample
+            #     print (msg)
+            #     logging.error(msg)
+            # os.remove(p.sample_env[sample]['MUTECT2_VCF'])
+            # os.rename(filtered_vcf, p.sample_env[sample]['MUTECT2_VCF'])
+        else:
+            msg = " INFO: Skipping Mutect2 analysis for "+ sample
+            print(msg)
+            logging.info(msg)
+
+
 def do_cnvkit():
 
   # Create accessible regions
@@ -559,7 +685,6 @@ def do_pureCN(vcf, segfile, ratiofile, sample):
        purity = tmp[1]
  return purity
 
-
 def do_freebayes():
 
     for sample in p.sample_env:
@@ -595,6 +720,7 @@ def do_freebayes():
                 msg = " ERROR: Something happeend when using Freebayes on " + sample
                 print (msg)
                 logging.error(msg)
+
 def do_manta():
 
     for sample in p.sample_env:

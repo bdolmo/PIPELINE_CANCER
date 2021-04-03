@@ -35,7 +35,6 @@ def do_all():
     # Gather all metrics and create a summary qc
     create_summary_qc()
 
-
 def create_summary_qc():
 
     msg = " INFO: Creating summary QC"
@@ -310,6 +309,7 @@ def extract_coverage_metrics():
             msg = " INFO: Skipping coverage metrics analysis"
             print (msg)
             logging.info(msg)
+
         # Now getting call_rate and lost_exons from thresholds file
         call_rate_dict = defaultdict(dict)
         lost_exons_dict= defaultdict(dict)
@@ -353,9 +353,6 @@ def extract_coverage_metrics():
             if not field in p.sample_env[sample]['LOST_EXONS']:
                 p.sample_env[sample]['LOST_EXONS'][field] = 0
             p.sample_env[sample]['LOST_EXONS'][field] = lost_exons_dict[field]
-
-            #print("callrate " + p.sample_env[sample]['CALL_RATE'][field])
-            #print("lostexons" + p.sample_env[sample]['LOST_EXONS'][field])
 
         # Now get the mean coverage
         p.sample_env[sample]['MOSDEPTH_SUMMARY'] =  \
@@ -419,6 +416,7 @@ def remove_duplicates():
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')
         error  = p1.stderr.decode('UTF-8')
+        
         #check if everything is ok
         if not error:
             if re.search(r'MarkDuplicates done.', output):

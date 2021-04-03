@@ -9,7 +9,6 @@ from pathlib import Path
 import subprocess
 import docx
 import csv
-from civicpy import civic, exports
 from modules import utils as u
 from modules import sqlite as s
 from datetime import datetime
@@ -21,9 +20,10 @@ sample_env = defaultdict(dict)
 
 def set_labdata_env():
     '''
+    TEMPORARY, we need a petition manager to integrate all data from lab and external
     Lab data (docx) and sample_data (xlsx) loading.
     These two files are required to get code relationship (Lab, AP, HC codes)
-    and others  like tumour purity estimates
+    and others  like tumour purity estimates,
     '''
     # Sample data from petitions (either from DB or docx)  
     global sample_data
@@ -41,7 +41,7 @@ def set_labdata_env():
             logging.info(msg)
             print(msg)
             for petition in all_petitions:
-                print(petition.AP_code)
+                print("AP CODE: " + petition.AP_code)
                 sample_data[petition.AP_code] = defaultdict(dict)
                 sample_data[petition.AP_code]['PETITION_ID'] = petition.Petition_id
                 sample_data[petition.AP_code]['AP_CODE'] = petition.AP_code
@@ -263,13 +263,14 @@ def set_labdata_env():
         print (msg)
         logging.error(msg)
 
-def set_analysis_env(args):
+def set_analysis_env(args, mode):
 
     global analysis_env 
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
 
     analysis_env = {
+        'ANALYSIS_MODE'  : mode,
         'INPUT_DIR'      : os.path.abspath(args.input_dir),
         'OUTPUT_DIR'     : os.path.abspath(args.output_dir),
         'ROI_NUMBER'     : '.',
@@ -289,6 +290,8 @@ def set_analysis_env(args):
     output_path = Path(analysis_env['OUTPUT_DIR'])
     if not output_path.is_dir():
         os.mkdir(analysis_env['OUTPUT_DIR'])
+
+    # Setting output name (just the basename of the output dir) 
     analysis_env['OUTPUT_NAME'] = os.path.basename(analysis_env['OUTPUT_DIR'])
 
     # Define log file for the analysis
@@ -306,12 +309,14 @@ def set_analysis_env(args):
         print (msg)
         logging.error(msg)
         sys.exit()
+
+    # Setting targeted (panel, exome) analysis params     
     if args.sequencing == "targeted":
+        analysis_env['SEQ_APPLICATION'] = "targeted"
         if args.panel:
             tmp_panel = os.path.basename(args.panel).split("\.")
             panel_name = tmp_panel[0]
             analysis_env['PANEL'] = args.panel
-            print(analysis_env['PANEL'])
             analysis_env['PANEL_NAME'] = panel_name
             analysis_env['PANEL_WORKDIR'] =  defaults['PANEL_FOLDER'] +  "/" \
                 + os.path.basename(args.panel).replace(".bed", "")
@@ -325,19 +330,24 @@ def set_analysis_env(args):
             msg = "ERROR: It is required a gene panel (--panel) for targeted sequencing analysis"
             print (msg)
             logging.error(msg)
-            sys.exit()           
-
+            sys.exit()
+    else:
+        analysis_env['SEQ_APPLICATION'] = "wgs"
+        
     # Define user_id if you want to link with database information 
     if args.user_id:
         analysis_env['USER_ID'] = args.user_id
     else:
         analysis_env['USER_ID'] = "."
 
+    # Load sample data (docx), just for somatic! 
     if args.sample_data:
         if os.path.isfile(args.sample_data) :
             analysis_env['SAMPLE_DATA'] = os.path.abspath(args.sample_data)
         else:
             analysis_env['SAMPLE_DATA'] = "."
+
+    # Load lab sample data (from xlsx file) 
     if args.lab_data:
         if os.path.isfile(args.lab_data):
             analysis_env['LAB_DATA'] = os.path.abspath(args.lab_data)
@@ -348,12 +358,14 @@ def set_analysis_env(args):
         print (msg)
         logging.info(msg)
         sys.exit()
+
     # Check existance of the annotation directory 
     if not os.path.isdir(analysis_env['ANN_DIR'] ):
         msg = " ERROR: Missing input annotation directory (--ann_dir)"
         print (msg)
         logging.info(msg)
         sys.exit()
+        
     # Check existance of the reference directory 
     if not os.path.isdir(analysis_env['REF_DIR'] ):
         msg = " ERROR: Missing input reference directory (--ref_dir)"
@@ -362,7 +374,12 @@ def set_analysis_env(args):
         sys.exit()
 
     # Check out input missense predictors
-    if args.missense_predictors:
+    try:
+        getattr(args, missense_predictors)
+    except:
+        default_predictors = ['sift','polyphen2','mutationtaster2','provean','fathmm','revel','mutpred']
+        analysis_env['MISSENSE_PREDICTORS'] = ','.join(default_predictors)
+    else:
         valid_predictors = ['sift','polyphen2','mutationtaster2','provean','fathmm','revel','mutpred']  
         input_list = args.missense_predictors.split(",")
         for predictor in input_list:
@@ -374,7 +391,12 @@ def set_analysis_env(args):
         analysis_env['MISSENSE_PREDICTORS'] = args.missense_predictors
 
     # Check out input missense predictors
-    if args.genomewide_predictors:
+    try:
+        getattr(args, genomewide_predictors)
+    except:
+        default_predictors = ['cadd','ncer']  
+        analysis_env['GENOMEWIDE_PREDICTORS'] = ','.join(default_predictors)
+    else:
         valid_predictors = ['cadd','ncer']  
         input_list = args.genomewide_predictors.split(",")
         for predictor in input_list:
@@ -386,7 +408,12 @@ def set_analysis_env(args):
         analysis_env['GENOMEWIDE_PREDICTORS'] = args.genomewide_predictors
 
     # Check out input missense predictors
-    if args.splicing_predictors:
+    try:
+        getattr(args, splicing_predictors)
+    except:
+        default_predictors = ['spliceai','maxentscan','dbscsnv']  
+        analysis_env['SPLICING_PREDICTORS'] = ','.join(default_predictors)
+    else:
         valid_predictors = ['spliceai','maxentscan','dbscsnv']  
         input_list = args.splicing_predictors.split(",")
         for predictor in input_list:
@@ -398,7 +425,12 @@ def set_analysis_env(args):
         analysis_env['SPLICING_PREDICTORS'] = args.splicing_predictors
 
     # Check out conservation scores
-    if args.conservation:
+    try:
+        getattr(args, conservation)
+    except:
+        default_conservation = ['phastcons', 'phylop', 'gerp'] 
+        analysis_env['CONSERVATION_SCORES'] = ','.join(default_conservation)
+    else:
         valid_conservation = ['phastcons', 'phylop', 'gerp'] 
         input_list = args.conservation.split(",")
         for predictor in input_list:
@@ -409,15 +441,24 @@ def set_analysis_env(args):
                 sys.exit()
         analysis_env['CONSERVATION_SCORES'] = args.conservation
 
-    # Check out gnomad pop annotation
-    if args.gnomad:
+    # Check out gnomAD annotation
+    try:
+        getattr(args, gnomad)
+    except:
+        # Default 
+        analysis_env['GNOMAD'] = True
+    else:
         if args.gnomad == True:
             analysis_env['GNOMAD'] = True
         else:
             analysis_env['GNOMAD'] = False
 
-    # Check out 1kg pop annotation
-    if args.thousand_genomes:
+    # Check out 1KG Annotation
+    try:
+        getattr(args, thousand_genomes)
+    except:
+        analysis_env['1KG'] = True
+    else:
         if args.thousand_genomes == True:
             analysis_env['1KG'] = True
         else:
@@ -451,7 +492,7 @@ def set_defaults(main_dir):
 
 def get_panel_configuration(main_dir):
     ''' 
-        Set panel configuration if present
+        Set panel configuration if available
     '''
 
     # Loading panel defined transcript id's    
@@ -468,7 +509,7 @@ def get_panel_configuration(main_dir):
         logging.info(msg)
 
     # Panel version 
-    panel_info = s.Roi.query.filter_by(panel_name=analysis_env['PANEL_NAME']).first()
+    panel_info = s.Roi.query.filter_by(panel=analysis_env['PANEL_NAME']).first()
     if panel_info:
         analysis_env['PANEL_VERSION'] = panel_info.panel_version
     else: 
@@ -487,7 +528,7 @@ def get_panel_configuration(main_dir):
         print(msg)
         logging.info(msg)
 
-    # Loading panel defined disclaimers
+    # Loading panel disclaimers
     global disclaimers_env
     disclaimers_env = defaultdict(dict)
     disclaimers_env = s.load_panel_disclaimers(analysis_env['PANEL_NAME'], analysis_env['LANGUAGE'])
@@ -507,7 +548,7 @@ def get_panel_configuration(main_dir):
 
 def set_auxfiles_env():
     ''' 
-        Set ancillary files (gnome fasta , etc)
+        Set ancillary files (genome fasta , etc). Better with yaml file => Coming soon!
     '''
     global aux_env 
     aux_env = defaultdict(dict)
@@ -548,15 +589,17 @@ def set_auxfiles_env():
             sys.exit()
         aux_env['GENE_LIST_NAME']   = "genelist.hg19.bed.gz"
 
-        # Setting normals reference and checking that it exists 
-        aux_env['NORMALS_REF_CNA']  = defaults['PANEL_FOLDER'] + "/" +  analysis_env['PANEL_NAME'].replace(".bed", "")\
-          + "/" + analysis_env['PANEL_NAME'].replace(".bed", ".cnn")
-        if not os.path.isfile(aux_env['NORMALS_REF_CNA'] ):
-            msg = " ERROR: Missing normals reference (.cnn) " + aux_env['NORMALS_REF_CNA']
-            print (msg)
-            logging.error(msg)
-            sys.exit()
-        aux_env['NORMALS_REF_CNA_NAME']  = os.path.basename(aux_env['NORMALS_REF_CNA'])
+        if analysis_env['SEQ_APPLICATION'] == "targeted": 
+            # Setting normals reference and checking that it exists 
+            aux_env['NORMALS_REF_CNA']  = defaults['PANEL_FOLDER'] + "/" \
+                +  analysis_env['PANEL_NAME'].replace(".bed", "")\
+                + "/" + analysis_env['PANEL_NAME'].replace(".bed", ".cnn")
+            if not os.path.isfile(aux_env['NORMALS_REF_CNA'] ):
+                msg = " ERROR: Missing normals reference (.cnn) " + aux_env['NORMALS_REF_CNA']
+                print (msg)
+                logging.error(msg)
+                sys.exit()
+            aux_env['NORMALS_REF_CNA_NAME']  = os.path.basename(aux_env['NORMALS_REF_CNA'])
 
         # Annotation files
         if analysis_env['VARIANT_CLASS'] == "somatic":
@@ -626,7 +669,8 @@ def set_auxfiles_env():
                 sys.exit()
 
             # Setting gnomAD and checking that everything exists 
-            aux_env['GNOMAD_AF_VCF'] = aux_env['GNOMAD_FOLDER'] + "/somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz"
+            aux_env['GNOMAD_AF_VCF'] = aux_env['GNOMAD_FOLDER'] + "/" \
+                + "somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz"
             if not os.path.isfile(aux_env['GNOMAD_AF_VCF']):
                 msg = " ERROR: Missing gnomAD VCF: " + aux_env['GNOMAD_AF_VCF']
                 print (msg)
@@ -649,7 +693,8 @@ def set_auxfiles_env():
                 print (msg)
                 logging.error(msg)
                 sys.exit()
-            aux_env['1KG'] = aux_env['1KG_FOLDER'] + "/" + "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz"
+            aux_env['1KG'] = aux_env['1KG_FOLDER'] + "/" \
+                + "ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz"
             aux_env['1KG_FILENAME'] = os.path.basename(aux_env['1KG'])
 
             # Setting dbNSFP
@@ -704,7 +749,6 @@ def set_auxfiles_env():
             aux_env['PHYLOP'] = aux_env['CONSERVATION_FOLDER'] + "/" + "hg19.100way.phyloP100way.bw"
             aux_env['PHYLOP_FILENAME'] = os.path.basename(aux_env['PHYLOP'])
 
-
     # Setting jrxlm files depending on language
     if analysis_env['LANGUAGE'] == "cat":
         defaults['JASPERREPORT_FOLDER'] = defaults['JASPERREPORT_FOLDER'] + "/cat/"
@@ -721,7 +765,8 @@ def set_auxfiles_env():
 
 def set_system_env():
     ''' 
-        Set system binary parameters
+        Set system binaries and other NGS utils. 
+        would be better to be renamed ngs_utils_env?
     '''
     global system_env 
     system_env = defaultdict(dict)
@@ -756,14 +801,15 @@ def set_system_env():
             logging.error(msg)
             sys.exit()
 
+    # Now setting docker environment 
     global docker_env 
     docker_env = defaultdict(dict)
 
+    # Images 
     gatkimage   = 'broadinstitute/gatk:4.1.3.0'
     picardimage = 'broadinstitute/picard'
     cnvkitimage = 'etal/cnvkit'
     vepimage    = 'ensemblorg/ensembl-vep'
-    #vepimage    = 'ensembl/vep:latest
 
     docker_env = {
         'GATK'   : gatkimage,
@@ -771,6 +817,6 @@ def set_system_env():
         'CNVKIT' : cnvkitimage,
         'VEP'    : vepimage
     }
-
+    # Checking images are available 
     for image in docker_env:
         u.check_docker_images(system_env['DOCKER'], docker_env[image])

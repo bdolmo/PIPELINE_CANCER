@@ -204,7 +204,7 @@ FROM  OTHER_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{therapies}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight">
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="203" y="98" width="158" height="15" uuid="99cd2085-961e-445e-a4c1-b2ec62ca8085">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -214,7 +214,7 @@ FROM  OTHER_VARIANTS]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{clinical_trials}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight">
+			<textField isStretchWithOverflow="true">
 				<reportElement positionType="Float" x="363" y="98" width="142" height="15" uuid="e204527f-ec7d-4952-920f-36f422d0abd8">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>

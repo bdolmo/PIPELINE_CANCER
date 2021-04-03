@@ -17,21 +17,25 @@ from modules import report as r
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
 
-def main(args):
+def main(args, mode):
 
     # Setting default directories
     p.set_defaults(main_dir)
 
     # Setting analysis variables
-    p.set_analysis_env(args)
+    p.set_analysis_env(args, mode)
 
     # Setting analysis variables
     s.init()
 
-    p.set_labdata_env()
+    # Loading panel configuration 
+    if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
 
-    # Get panel configuration from db
-    p.get_panel_configuration(main_dir)
+        # Sample sheet IDs (TEMPORARY)
+        p.set_labdata_env()
+
+        # Get panel configuration from db
+        p.get_panel_configuration(main_dir)
 
     # Setting system binary variables
     p.set_system_env()
@@ -39,23 +43,33 @@ def main(args):
     # Setting aux files
     p.set_auxfiles_env()
 
-    # Trim fastq files
-    t.trim_fastqs()
+    if mode == "all":
 
-    # Map fastq files, rmdup, bam qc
-    m.do_all()
+        # Trim fastq files
+        t.trim_fastqs()
 
-    # Perform var calling
-    v.do_var_call()
+        # Map fastq files, rmdup, bam qc
+        m.do_all()
 
-    # Perform vcf annotation
-    a.do_annotation()
+        # Perform var calling
+        v.do_var_call()
 
-    # Create clinical report 
-    r.do_report()
+        # Perform vcf annotation
+        a.do_annotation()
 
-    s.update_sample_db()
-    s.update_summary_db()
+        # Create clinical report 
+        r.do_report()
+
+        s.update_sample_db()
+        s.update_summary_db()
+
+    if mode == "call":
+        # Perform var calling
+        v.do_var_call()
+    
+    if mode == "annotate":
+        # Perform vcf annotation
+        a.do_annotation()
 
 def parse_arguments():
     '''parsing input arguments
@@ -93,11 +107,12 @@ def parse_arguments():
         help="Genome reference resource directory", dest='ref_dir')
 
     # https://stackoverflow.com/questions/33645859/how-to-add-common-arguments-to-argparse-subcommands/33646419
-    parser = argparse.ArgumentParser(description="Pipeline for NGS analysis v.1.0")
+    parser = argparse.ArgumentParser(description="Pipeline for Germline and Somatic variant analysis")
+
     # Now subparsers
     subparsers = parser.add_subparsers(dest='command', title="sub-commands")
 
-    # All command 
+    # All command
     parser_all = subparsers.add_parser('all', parents=[parent_parser],
         add_help=False, description="Perform all steps (mapping, calling, annotation and report)"
         ,help='Perform all steps (mapping, calling, annotation and report)'
@@ -127,7 +142,6 @@ def parse_arguments():
         help="Annotate gnomAD frequencies")  
     parser_all.add_argument('--1kg', dest='thousand_genomes', default=True,
         help="Annotate 1000Genomes frequencies")  
-
     # predictors
     parser_all.add_argument('--missense_predictors', dest='missense_predictors',
         default='sift,polyphen2,mutationtaster2,provean,fathmm,revel,mutpred', type=str,
@@ -207,22 +221,23 @@ def parse_arguments():
     parser_report.add_argument('--qc_analysis', default=True,
         help="Perform QC analysis.")
     arguments = parser.parse_args()
-
+    analysis_mode = ""
     cmd_options = ['all', 'map', 'call', 'annotate', 'report']
     if  len(sys.argv) < 2:
-        print(" ERROR: Invalid subcommand option. Please choose between: all, map, call, annotate, report")
+        parser.print_help()
+        #print(" ERROR: Invalid subcommand option. " + analysis_mode + " Please choose between: all, map, call, annotate, report")
         sys.exit()
 
     else:
-        if sys.argv[1] not in cmd_options:
-            print(" ERROR: Invalid subcommand option. Please choose between: all, map, call, annotate, report")   
+        analysis_mode = sys.argv[1]
+        if analysis_mode not in cmd_options:
+            print(" ERROR: Invalid subcommand option." + analysis_mode + " Please, choose between: all, map, call, annotate, report")   
             sys.exit()
-
-    return arguments
+    return arguments, analysis_mode
 
 
 #########################################################
 if __name__ == '__main__':
-    ARGUM = parse_arguments()
-    main(ARGUM)
+    ARGUM, MODE = parse_arguments()
+    main(ARGUM, MODE)
 

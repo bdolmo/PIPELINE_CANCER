@@ -34,7 +34,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 def init():
-
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + p.analysis_env['DB_DIR'] + "/NGS.db" 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config.update(dict(
@@ -234,6 +233,7 @@ class SummaryQcTable(db.Model):
     run_id  = db.Column(db.String(80))
     petition_id  = db.Column(db.String(80))
     summary_json = db.Column(db.String(12000))
+    fastp_json   = db.Column(db.String(10000))
     def __repr__(self):
         return '<SummaryQc %r>' % self.user_id
 
@@ -296,10 +296,10 @@ class Roi(db.Model):
   enst_id = db.Column(String(50))
   gene_name = db.Column(String(50))
   genome_version = db.Column(String(50))
-  panel_name = db.Column(String(50))
+  panel = db.Column(String(50))
   panel_version = db.Column(String(50))
 
-  def __init__(self, ID, CHROMOSOME, START, END, ENSG_ID, ENST_ID, GENE_NAME, GENOME_VERSION, PANEL_NAME, PANEL_VERSION):
+  def __init__(self, ID, CHROMOSOME, START, END, ENSG_ID, ENST_ID, GENE_NAME, GENOME_VERSION, PANEL, PANEL_VERSION):
       self.id  = ID
       self.chromosome= CHROMOSOME
       self.start     = START
@@ -308,7 +308,7 @@ class Roi(db.Model):
       self.enst_id   = ENST_ID
       self.gene_name = GENE_NAME
       self.genome_version = GENOME_VERSION
-      self.panel_name = PANEL_NAME
+      self.panel = PANEL
       self.panel_version = PANEL_VERSION
 
 class Disclaimer(db.Model):
@@ -323,7 +323,8 @@ class Disclaimer(db.Model):
   legal_provisions = db.Column(String(3000))
   language = db.Column(String(3000))
 
-  def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation,technical_limitations, legal_provisions, language):
+  def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation, 
+    technical_limitations, legal_provisions, language):
       self.id  = id
       self.panel     = panel
       self.genes     = genes
@@ -346,7 +347,8 @@ class Cna(db.Model):
   panel_version = db.Column(String(50))
   dump_therapeutic = db.Column(String(50))
   min_cn = db.Column(String(50))
-  def __init__(self, id, chromosome, start, end, gene, genome_version, panel_name, panel_version, dump_therapeutic, min_cn):
+  def __init__(self, id, chromosome, start, end, gene, genome_version, 
+    panel_name, panel_version, dump_therapeutic, min_cn):
       self.id  = id
       self.chromosome= chromosome
       self.start     = start
@@ -424,24 +426,34 @@ def update_summary_db():
             else:
                 summary_dict['LOST_EXONS'][field] =  '.'
 
+        # External ID 1 (e.g AP code) 
         ext1_id = '.'
         petition_id = '.'
         if p.lab_data[sample]['AP_CODE']:
             ext1_id = p.lab_data[sample]['AP_CODE']
-            petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
+            petition_id = p.sample_data[ext1_id]['PETITION_ID']
+
+        # External ID 2 (e.g HC code) 
         ext2_id = '.'
         if p.lab_data[sample]['HC_CODE']:
             ext2_id = p.lab_data[sample]['HC_CODE']
 
+        # saving summary dict to string 
         summary_json_str = json.dumps(summary_dict)
-  
+
+        # Fastp JSON to string
+        fastp_dict = defaultdict(dict)
+        with open(p.sample_env[sample]['FASTP_JSON']) as jf:
+            fastp_dict = json.load(jf)
+        fastp_json_str = json.dumps(fastp_dict)        
+
         result = SummaryQcTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
             .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
 
         if not result:
             Summary = SummaryQcTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
-                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_DIR'],petition_id=petition_id, 
-                summary_json=summary_json_str )
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, 
+                summary_json=summary_json_str, fastp_json=fastp_json_str )
             db.session.add(Summary)
             db.session.commit()
 
@@ -509,7 +521,7 @@ def load_panel_transcripts(pname):
     pname= pname.replace(".v1", "")
 
     roi_env = defaultdict(dict)
-    roi_info = Roi.query.filter_by(panel_name=pname).all()
+    roi_info = Roi.query.filter_by(panel=pname).all()
     if roi_info:
         for roi in roi_info:
             roi_env[roi.ensg_id]   = roi.enst_id
