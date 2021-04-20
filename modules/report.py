@@ -259,10 +259,13 @@ def create_somatic_report():
         petition_id = '.'
         if p.lab_data[sample]['AP_CODE']:
           ext1_id = p.lab_data[sample]['AP_CODE']
-          petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
+          if 'PETITION_ID' in p.sample_data[ext1_id]:
+            petition_id = p.sample_data[ext1_id]['PETITION_ID']
+            
         ext2_id = '.'
-        if p.lab_data[sample]['HC_CODE']:
-          ext2_id = p.lab_data[sample]['HC_CODE']
+        if 'HC_CODE' in p.lab_data[sample]:
+          if p.lab_data[sample]['HC_CODE']:
+            ext2_id = p.lab_data[sample]['HC_CODE']
 
         sample_r = Sample(lab_id=sample, ext1_id=p.lab_data[sample]['AP_CODE'],
          ext2_id=p.lab_data[sample]['HC_CODE'], sex='.', diagnoses='.',
@@ -642,7 +645,27 @@ def create_somatic_report():
             read_support = "."
             if AD:
               ad_list = AD.split(",")
-              read_support = ad_list[1] 
+              read_support = ad_list[1]
+
+            # Ensembl IMPACT tag: LOW,MODERATE,HIGH 
+            impact = var_dict['variants'][variant]['INFO']['CSQ']['IMPACT']
+
+            # Splice AI predictions
+            spliceai_delta_score = { 
+              'DS_AG' : '.',
+              'DS_AL' : '.',
+              'DS_DG' : '.',
+              'DS_DL' : '.'
+            } 
+
+            if 'SpliceAI_pred_DS_AG' in var_dict['variants'][variant]['INFO']['CSQ']:
+              spliceai_delta_score['DS_AG'] =  var_dict['variants'][variant]['INFO']['CSQ']['SpliceAI_pred_DS_AG']
+            if 'SpliceAI_pred_DS_AL' in var_dict['variants'][variant]['INFO']['CSQ']:
+              spliceai_delta_score['DS_AL'] = var_dict['variants'][variant]['INFO']['CSQ']['SpliceAI_pred_DS_AL']           
+            if 'SpliceAI_pred_DS_DG' in var_dict['variants'][variant]['INFO']['CSQ']:
+              spliceai_delta_score['DS_DG'] = var_dict['variants'][variant]['INFO']['CSQ']['SpliceAI_pred_DS_DG']
+            if 'SpliceAI_pred_DS_DL' in var_dict['variants'][variant]['INFO']['CSQ']:
+              spliceai_delta_score['DS_DL'] = var_dict['variants'][variant]['INFO']['CSQ']['SpliceAI_pred_DS_DL']
 
             # replace weird symbols (coming from VEP) for synonymous changes
             p_code = p_code.replace('%3D', '=')
@@ -656,8 +679,8 @@ def create_somatic_report():
               tmp_c_code = c_code.split(":")
               if len(tmp_c_code)> 1:
                 c_code = tmp_c_code[1]
-            exon   = var_dict['variants'][variant]['INFO']['CSQ']['EXON']
-            enst_id= var_dict['variants'][variant]['INFO']['CSQ']['Feature']
+            exon        = var_dict['variants'][variant]['INFO']['CSQ']['EXON']
+            enst_id     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             isoform     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
             c_list = [] 
@@ -671,11 +694,10 @@ def create_somatic_report():
             else:
               consequence = consequence.replace("_", " ")
               consequence = consequence.capitalize()
-            depth  = var_dict['variants'][variant]['INFO']['DP']
+            depth  = var_dict['variants'][variant]['DP']
             VAF    = var_dict['variants'][variant]['AF']
             clin_sig = var_dict['variants'][variant]['INFO']['CSQ']['CLIN_SIG']
-            rs_id  = var_dict['variants'][variant]['INFO']['CSQ']['Existing_variation']
-            rs_id = rs_id.replace('&', ',')
+            rs_id  = var_dict['variants'][variant]['INFO']['CSQ']['Existing_variation'].replace('&', ',')
 
             # Gnomad frequencies present at the Broad server do not always match VEP data
             # We will check the presence from both sources, but preserving original GnomAD data when available
@@ -746,19 +768,17 @@ def create_somatic_report():
             else:
               diseases_str = '.'
 
-
             go_therapeutic = False
             go_other       = False
             go_rare        = False
             go_common      = False
-            if significance_str != ".":
-              print(significance_str)
+            
             clinsig_list = clin_sig.split("&")
 
             # Selecting actionable variants from CIViC 
             if drugs_str != '.' and 'Supports' in direction_str \
               and 'Sensitivity/Response' in significance_str \
-              or 'Outcome' in significance_str:
+              or 'Outcome' in significance_str or 'Function' in significance_str:
               if max_af == '.':
                 go_therapeutic = True
                 classification = "Therapeutic"
@@ -769,6 +789,7 @@ def create_somatic_report():
 
             # Selecting pathogenic variants from ClinVar 
             elif not 'Sensitivity/Response' in significance_str:
+
               for interpretation in clinsig_list:
                 if interpretation.endswith('pathogenic'):
                   if max_af == '.':
@@ -778,6 +799,17 @@ def create_somatic_report():
                     if float(max_af) < 0.01:
                       go_other = True
                       classification = "Other clinical"
+              # For splicing variants 
+              # Only report if spliceAI prediction is > 0.5
+              if "splicing" in consequence.lower():
+                for score in spliceai_delta_score:
+                  if spliceai_delta_score[score] == ".":
+                    continue
+                  if float(spliceai_delta_score[score]) > 0.5:
+                    go_other = True
+                    break
+              if impact == "HIGH":
+                go_other = True
 
               # Selecting rare variants without clinical evidence
               else:
@@ -796,12 +828,12 @@ def create_somatic_report():
             VAF_list = VAF.split(",")
             if len(VAF_list) > 1:
               VAF = VAF_list[0]   
-
             if float(VAF) < 0.02:
               continue
 
             # Filling therapeutic table  
             if go_therapeutic == True:
+              print(" INFO: Therapeutic variant: " +  gene + ":" + p_code)
 
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
@@ -813,7 +845,7 @@ def create_somatic_report():
               result = s.TherapeuticTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
                 .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).filter_by(gene=gene)\
                 .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
-                
+
               if not result:
                 therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id, 
@@ -826,6 +858,7 @@ def create_somatic_report():
 
             # Filling Other clinical variants  
             if go_other == True:
+              print(" INFO: Other variant: " +  gene + ":" + p_code)
 
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
               hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
@@ -839,6 +872,7 @@ def create_somatic_report():
                 .filter_by(enst_id=enst_id).filter_by(hgvsp=p_code).filter_by(hgvsg=g_code).filter_by(hgvsc=c_code).first()
 
               if not result:
+
                 other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id, 
                 hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, 

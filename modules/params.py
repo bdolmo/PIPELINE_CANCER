@@ -43,9 +43,18 @@ def set_labdata_env():
             for petition in all_petitions:
                 print("AP CODE: " + petition.AP_code)
                 sample_data[petition.AP_code] = defaultdict(dict)
-                sample_data[petition.AP_code]['PETITION_ID'] = petition.Petition_id
-                sample_data[petition.AP_code]['AP_CODE'] = petition.AP_code
-                sample_data[petition.AP_code]['HC_CODE'] = petition.HC_code
+                if petition.Petition_id:
+                    sample_data[petition.AP_code]['PETITION_ID'] = petition.Petition_id
+                else:
+                    sample_data[petition.AP_code]['PETITION_ID'] = "."
+                if petition.AP_code:
+                    sample_data[petition.AP_code]['AP_CODE'] = petition.Petition_id
+                else:
+                    sample_data[petition.AP_code]['AP_CODE'] = "."
+                if petition.HC_code:
+                    sample_data[petition.AP_code]['HC_CODE'] = petition.HC_code
+                else:
+                    sample_data[petition.AP_code]['HC_CODE'] = "."
                 sample_data[petition.AP_code]['PURITY']  = petition.Tumour_pct
                 sample_data[petition.AP_code]['PETITION_DATE'] = petition.Date
                 sample_data[petition.AP_code]['VOLUME'] = petition.Volume
@@ -331,9 +340,10 @@ def set_analysis_env(args, mode):
             print (msg)
             logging.error(msg)
             sys.exit()
-    else:
+    elif args.sequencing == "wgs":
         analysis_env['SEQ_APPLICATION'] = "wgs"
-        
+    elif args.sequencing == "lowpass":
+        analysis_env['SEQ_APPLICATION'] = "lowpass"        
     # Define user_id if you want to link with database information 
     if args.user_id:
         analysis_env['USER_ID'] = args.user_id
@@ -562,6 +572,14 @@ def set_auxfiles_env():
             logging.error(msg)
             sys.exit()
 
+        # Setting chromosome sizes file 
+        aux_env['CHROM_SIZES']    = aux_env['GENOME_FOLDER'] + "/hg19.txt"
+        if not os.path.isfile(aux_env['CHROM_SIZES'] ):
+            msg = " ERROR: Missing chrom sizes file " + aux_env['CHROM_SIZES']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+
         # Setting genome fasta file and checking that it exists 
         aux_env['GENOME_FASTA']     = aux_env['GENOME_FOLDER'] + "/ucsc.hg19.fasta"
         if not os.path.isfile(aux_env['GENOME_FASTA'] ):
@@ -600,6 +618,37 @@ def set_auxfiles_env():
                 logging.error(msg)
                 sys.exit()
             aux_env['NORMALS_REF_CNA_NAME']  = os.path.basename(aux_env['NORMALS_REF_CNA'])
+
+        # Setting VEP and checking that it exists 
+        aux_env['BLACKLIST_FOLDER'] = analysis_env['ANN_DIR'] + "/Blacklist"
+        if not os.path.isdir(aux_env['BLACKLIST_FOLDER']):
+            msg = " ERROR: Missing Blacklist directory " + aux_env['BLACKLIST_FOLDER']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+
+        # Noisy regions to be excluded for lowpass analysis
+        aux_env['EXCLUDE_REGIONS'] = aux_env['BLACKLIST_FOLDER'] + "/exclude.regions.hg19.bed"
+        if not os.path.isfile(aux_env['EXCLUDE_REGIONS']):
+            msg = " ERROR: Missing exclude regions " + aux_env['EXCLUDE_REGIONS']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+
+        # Mappability
+        aux_env['MAPPABILITY_FOLDER'] = analysis_env['ANN_DIR'] + "/Mappability/hg19"
+        if not os.path.isdir(aux_env['MAPPABILITY_FOLDER']):
+            msg = " ERROR: Missing mappability  MAPPABILITY_FILE " + aux_env['MAPPABILITY_FOLDER']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
+
+        aux_env['MAPPABILITY_FILE'] = aux_env['MAPPABILITY_FOLDER'] + "/wgEncodeCrgMapabilityAlign100mer.chr.bedgraph.gz"
+        if not os.path.isfile(aux_env['MAPPABILITY_FILE']):
+            msg = " ERROR: Missing mappability file " + aux_env['MAPPABILITY_FILE']
+            print (msg)
+            logging.error(msg)
+            sys.exit()
 
         # Annotation files
         if analysis_env['VARIANT_CLASS'] == "somatic":
@@ -779,6 +828,7 @@ def set_system_env():
         'FASTP'    : defaults['BIN_FOLDER'] +  "/fastp",
         'BWA'      : defaults['BIN_FOLDER'] +  "/bwa",
         'MOSDEPTH' : defaults['BIN_FOLDER'] +  "/mosdepth",
+        'MEGADEPTH': defaults['BIN_FOLDER'] +  "/megadepth",
         'MANTA_CONFIG' : defaults['BIN_FOLDER'] + '/manta-1.6.0.centos6_x86_64/bin/configManta.py',
         'PURECN'   : defaults['BIN_FOLDER'] + "/PureCN/extdata/PureCN.R",
         'CNVKIT'   : defaults['BIN_FOLDER'] + "/cnvkit/cnvkit.py",

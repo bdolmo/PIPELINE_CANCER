@@ -291,7 +291,7 @@ def add_edge_genes():
 
 def filter_transcripts():
     '''
-        Select VEP-matching transcripts with our panel
+        Select transcript id's that match our panel requirements
     '''
 
     for sample in p.sample_env:
@@ -351,7 +351,6 @@ def filter_transcripts():
                                         continue
                                 else:
                                     continue
-                            #item = tmp_transcript[tidx]
                         idx+=1
 
                     info = ';'.join(info_list)
@@ -363,7 +362,7 @@ def filter_transcripts():
         o.close()
         os.remove(p.sample_env[sample]['READY_SNV_VCF'])
         os.rename(p.sample_env[sample]['TMP_SNV_VCF'], p.sample_env[sample]['READY_SNV_VCF'])
-          # Create JSON file
+        # Create JSON file
        # u.convert_vcf_2_json(p.sample_env[sample]['CLINICAL_SNV_VCF'])
 
 def merge_vcfs():

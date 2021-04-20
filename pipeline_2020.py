@@ -14,6 +14,7 @@ from modules import var_call as v
 from modules import annotate as a
 from modules import sqlite as s
 from modules import report as r
+from modules import lowpass as l
 
 main_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -63,6 +64,13 @@ def main(args, mode):
         s.update_sample_db()
         s.update_summary_db()
 
+    if mode == "map":
+        # Trim fastq files
+        t.trim_fastqs()
+
+        # Map fastq files, rmdup, bam qc
+        m.do_all()
+
     if mode == "call":
         # Perform var calling
         v.do_var_call()
@@ -80,7 +88,7 @@ def parse_arguments():
     parent_parser.add_argument("-o", "--output_dir", required=True, type=str,
         help="Output directory", dest='output_dir')
     parent_parser.add_argument("-s", "--sequencing", type=str, required=True,
-        help="Sequencing experiment.", dest='sequencing', choices=['targeted', 'wgs'], default="targeted")
+        help="Sequencing experiment.", dest='sequencing', choices=['targeted', 'wgs', 'lowpass'], default="targeted")
     parent_parser.add_argument("-r", "--reference", required=True, type=str, choices=['hg19', 'hg38'], 
         default='hg19', help="Genome reference to do mapping var calling and annotation.",  dest='reference')
     parent_parser.add_argument("-t", "--threads", type=int, default=4,

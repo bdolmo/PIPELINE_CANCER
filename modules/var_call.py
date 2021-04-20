@@ -16,9 +16,13 @@ import subprocess
 from modules import utils as u
 from modules import params as p
 from modules import trimming as t
+from modules import lowpass as l
 
 def do_var_call():
 
+  if p.analysis_env['SEQ_APPLICATION'] == "lowpass":
+    l.do_lowpass()
+  else: 
     if p.analysis_env['VARIANT_CLASS'] == 'somatic':        
        # do_freebayes()
         do_mutect2()

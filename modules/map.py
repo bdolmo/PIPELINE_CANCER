@@ -18,22 +18,25 @@ from modules import trimming as t
 
 def do_all():
 
-    do_generate_list_file()
+    if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
+        do_generate_list_file()
 
     # Mapping phase
     map_fastq()
 
-    # Removing duplicates
-    remove_duplicates()
+    if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
 
-    # Get coverage metrics, call rate, lost exons, etc
-    extract_coverage_metrics()
+        # Removing duplicates
+        remove_duplicates()
 
-    # Get mapping metrics, %duplicates, etc
-    extract_mapping_metrics()
+        # Get coverage metrics, call rate, lost exons, etc
+        extract_coverage_metrics()
 
-    # Gather all metrics and create a summary qc
-    create_summary_qc()
+        # Get mapping metrics, %duplicates, etc
+        extract_mapping_metrics()
+
+        # Gather all metrics and create a summary qc
+        create_summary_qc()
 
 def create_summary_qc():
 

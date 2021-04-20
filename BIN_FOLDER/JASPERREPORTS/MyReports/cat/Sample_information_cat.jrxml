@@ -58,14 +58,14 @@ FROM  SAMPLE_INFORMATION]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{lab_id}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{lab_id}.toString()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="61" y="-12" width="100" height="11" forecolor="#858585" uuid="9207aa7f-26a4-4636-8b3d-a8930a8815b6"/>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{ext1_id}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{ext1_id}.toString()]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="229" y="-25" width="88" height="13" forecolor="#858585" uuid="2e0cf59f-db1e-4fb7-a8bf-a1272061a1b1"/>
@@ -190,7 +190,7 @@ FROM  SAMPLE_INFORMATION]]>
 				<textElement verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{ext2_id}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{lab_id}.toString()]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="33" y="1" width="28" height="11" forecolor="#858585" uuid="d2d531b5-f330-4705-854a-e6ab9265a122"/>

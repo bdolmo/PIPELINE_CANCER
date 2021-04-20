@@ -371,7 +371,9 @@ def update_sample_db():
             petition_id = '.'
             if p.lab_data[sample]['AP_CODE']:
                 ext1_id = p.lab_data[sample]['AP_CODE']
-                petition_id = p.sample_data[ext1_id]['PETITION_ID'] 
+                if "PETITION_ID" in p.sample_data[ext1_id]:
+                    petition_id = p.sample_data[ext1_id]['PETITION_ID']
+                   
             ext2_id = '.'
             if p.lab_data[sample]['HC_CODE']:
                 ext2_id = p.lab_data[sample]['HC_CODE']
@@ -431,7 +433,8 @@ def update_summary_db():
         petition_id = '.'
         if p.lab_data[sample]['AP_CODE']:
             ext1_id = p.lab_data[sample]['AP_CODE']
-            petition_id = p.sample_data[ext1_id]['PETITION_ID']
+            if "PETITION_ID" in p.sample_data[ext1_id]:
+                petition_id = p.sample_data[ext1_id]['PETITION_ID']
 
         # External ID 2 (e.g HC code) 
         ext2_id = '.'
