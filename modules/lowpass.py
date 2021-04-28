@@ -9,7 +9,7 @@ from collections import defaultdict
 from pathlib import Path
 import pandas as pd
 import numpy as np
-from scipy.signal import savgol_coeffs, savgol_filter
+#from scipy.signal import savgol_coeffs, savgol_filter
 import subprocess
 from natsort import natsorted, index_natsorted, order_by_index
 from modules import utils as u
@@ -19,33 +19,35 @@ import pyranges as pr
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import seaborn as sns
+from adjustText import adjust_text
 pd.options.mode.chained_assignment = None  # default='warn'
 
 class CnvPlot:
     '''Class for plotting cnvs
-    ''' 
+    '''
     def __init__(self, cnr_file, cns_file, calls, sample, output_dir):
-        # ratios  
+        # ratios
         self.cnr_file   = cnr_file
         # segments
         self.cns_file   = cns_file
         # calls
-        self.calls   = calls 
-
+        self.calls      = calls
+        # sample name
         self.sample     = sample
+        # output directory
         self.output_dir = output_dir
 
     def plot_genome(self, genomewide, by_chr):
 
         cnr_df = pd.read_csv(self.cnr_file, sep ="\t")
 
-        # Naming the genome plot 
+        # Naming the genome plot
         plot = self.output_dir + "/" + self.sample + ".genomewide.png"
 
-        # Setting chromosome color 
+        # Setting chromosome color
         palette_dict = defaultdict(dict)
-        color_list =["#4f6b76", "#b2bbc0"] 
-    
+        color_list = ["#4f6b76", "#b2bbc0"]
+
         unique_chromosomes = cnr_df['Chromosome'].unique().tolist()
         idx = 0
         for chr in unique_chromosomes:
@@ -55,7 +57,7 @@ class CnvPlot:
             idx+=1
         x_list = []
 
-        # Setting xtick divisions and labels 
+        # Setting xtick divisions and labels
         chromosomes = cnr_df['Chromosome'].tolist()
         i = 0
         xtick_list = []
@@ -66,21 +68,21 @@ class CnvPlot:
             else:
                 x_list.append("")
             i+=1
-        if genomewide == True:
 
+        if genomewide == True:
             if not os.path.isfile(plot):
                 sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
                 sns.set_theme()
                 sns.set_style('ticks')
-                fig, axes = plt.subplots(figsize=(20,7))
+                fig, axes = plt.subplots(figsize=(20, 7))
                 fig.suptitle(self.sample, fontsize=20)
                 sample_ratio = self.sample + "_ratio"
 
-                ratio_plot = sns.scatterplot(data=cnr_df, x=cnr_df.index, 
-                    y=cnr_df[sample_ratio], size=0.015, hue=cnr_df.Chromosome, 
+                ratio_plot = sns.scatterplot(data=cnr_df, x=cnr_df.index,
+                    y=cnr_df[sample_ratio], size=0.015, hue=cnr_df.Chromosome,
                     palette=palette_dict, alpha=0.4, edgecolor="none")
-                
-                # Setting y limits 
+
+                # Setting y limits
                 ratio_plot.set(ylim=(0,3))
                 ratio_plot.set_xticks(xtick_list)
                 ratio_plot.set_xticklabels(unique_chromosomes, rotation=30, size=15)
@@ -90,35 +92,43 @@ class CnvPlot:
                 ratio_plot.set_xlabel("", fontsize=20)
                 ratio_plot.set_ylabel("Ratio", fontsize=20)
 
-                # Adding vertical lines to separate chromosomes 
+                # Adding vertical lines to separate chromosomes
                 for xc in xtick_list:
                     ratio_plot.axvline(x=xc, color="black")
 
-                # Saving as png  
+                # Saving as png
                 ratio_plot.figure.savefig(plot)
                 plt.close()
 
                 return plot
 
-    def plot_cnv(self, chr, start, end, gene_list=None, add_genes=False):
+    def plot_cnv(self, chr, start, end, gene_list=None, add_genes=False, offset=None):
         '''Plot a CNV call, add gene labels (optionally)
-        '''        
-        
-        cnr_df = pd.read_csv(self.cnr_file, sep ="\t")
-        #cns_df = pd.read_csv(self.cns_file, sep = "\t")
-        if gene_list:
-            genes_df = pr.read_bed(gene_list)
+        '''
 
-        tmp_call = self.output_dir + "/" + chr + "." + start + "." + end + ".tmp.bed"
+        # Load the copy number ratio (cnr) as a dataframe
+        cnr_df = pd.read_csv(self.cnr_file, sep ="\t")
+
+        # Add flanking coordinates
+        if offset:
+            if int(start)-(offset) > 0:
+                start = int(start) - int(offset)
+                end   = int(end) + int(offset)
+            else:
+                start = 0
+        # Creating a temporal bed file for intersecting purposes
+        tmp_call = self.output_dir + "/" + chr + "." + str(start) + "." + str(end) + ".tmp.bed"
         o = open (tmp_call, 'w')
-        o.write(chr + "\t" + start + "\t" + end + "\n")
+        o.write(chr + "\t" + str(start) + "\t" + str(end) + "\n")
         o.close()
 
+        # Removing the header from the copy-number segment (cns) file
         segments_no_header = remove_bed_header(self.cns_file, 'Chromosome')
 
+        # Now, intersecting segmented values with our CNV call
         a = pybedtools.BedTool(tmp_call)
         b = pybedtools.BedTool(segments_no_header)
-        c = a.intersect(b, wo=True, stream=True)
+        c = a.intersect(b, wb=True, stream=True)
 
         calls_with_segments = tmp_call.replace(".tmp.bed", ".segments.bed")
         o = open(calls_with_segments, 'w')
@@ -129,51 +139,100 @@ class CnvPlot:
             o.write(tmp[0]+"\t"+tmp[1]+"\t"+tmp[2]+"\t"+tmp[7]+"\n")
             o.write(tmp[0]+"\t"+tmp[2]+"\t"+tmp[2]+"\t"+tmp[7]+"\n")
         o.close()
-        segment_data = pd.read_csv(calls_with_segments, sep="\t", names=['Chromosome', 'Start', 'End', 'Ratio'])
 
-        plot = self.output_dir + "/" + chr + "." + start + "." + end + ".png"
+        # Gettting gene information
+        genes_dict = defaultdict(dict)
+        if add_genes:
+            a = pybedtools.BedTool(p.aux_env['GENE_LIST'])
+            b = pybedtools.BedTool(tmp_call)
+            c = a.intersect(b, wo=True, stream=True)
+
+            for line in iter(c):
+                line = str(line)
+                line = line.rstrip()
+                tmp  = line.split('\t')
+                gene_start = tmp[1]
+                gene_end   = tmp[2]
+                gene  = tmp[3]
+                size  = int(gene_end)-int(gene_start)
+                if not gene in genes_dict:
+                    genes_dict[gene] = defaultdict(dict)
+                    genes_dict[gene]['START']= gene_start
+                    genes_dict[gene]['END']  = gene_end
+                    genes_dict[gene]['SIZE'] = int(end)-int(start)
+                else:
+                    if size > genes_dict[gene]['SIZE']:
+                        genes_dict[gene]['START'] = gene_start
+                        genes_dict[gene]['END']   = gene_end
+                        genes_dict[gene]['SIZE']  = size
+        segment_data = pd.read_csv(calls_with_segments, sep="\t",
+            names=['Chromosome', 'Start', 'End', 'Ratio'])
 
         #if not os.path.isfile(plot):
-        ratio_data   = cnr_df.loc[(cnr_df['Chromosome'] == chr) & 
-            (cnr_df['Start'] >= int(start)) & (cnr_df['End'] <= int(end))]
-        sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
-        sns.set_theme()
-        sns.set_style('ticks')
-
-        plot_title = chr + ":" + start + "-" + end
+        # Plotting stuff
+        plot = self.output_dir + "/" + chr + "." + str(start) + "." + str(end) + ".png"
         sample_ratio = self.sample + "_ratio"
-        fig, axes = plt.subplots(figsize=(20,7))
-        fig.suptitle(plot_title, fontsize=20)
-          
-        cnv_plot = sns.scatterplot(data=ratio_data, x=ratio_data.Start, 
-            y=ratio_data[sample_ratio], size=0.015, alpha=0.4, 
-            edgecolor="none")
 
-        cnv_plot = sns.lineplot(data=segment_data, x=segment_data.Start, 
-             y=segment_data.Ratio)
+        ratio_data   = cnr_df.loc[(cnr_df['Chromosome'] == chr) &
+            (cnr_df['Start'] >= int(start)) & (cnr_df['End'] <= int(end))]
+        max_ratio = max(ratio_data[sample_ratio])
+
+        if max_ratio < 2:
+            max_ratio = 2
+        else:
+            max_ratio = max_ratio+0.25
+
+        sns.set_theme(context="talk")
+        sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
+        sns.set_style('ticks')
+        plt.rcParams["font.family"] = "Arial"
+        fig, axes = plt.subplots(figsize=(15,7))
+        plot_title = chr + ":" + str(start) + "-" + str(end)
+        fig.suptitle(plot_title, fontsize=20)
+        cnv_plot = sns.lineplot(data=segment_data, x=(segment_data.Start/1000000),
+            y=segment_data.Ratio, color='red', linewidth=5)
+        cnv_plot.axhline(1, color='black', linewidth=2.5)
+        cnv_plot = sns.scatterplot(data=ratio_data, x=(ratio_data.Start/1000000),
+            y=ratio_data[sample_ratio], s=100, alpha=0.7)
+        cnv_plot.set(ylim=(0, max_ratio))
+
+        # Now add gene names
+        # for i, txt in enumerate( n ):
+        #     texts.append(ax.text(z[i], y[i], txt))
+        genes = []
+        if add_genes:
+            idx = 0
+            for gene in genes_dict:
+                if len(genes_dict.keys()) < 50:
+                    cnv_plot.text(int((genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=15)
+                    #genes.append(cnv_plot.text( (int(genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=15))
+                else:
+                    cnv_plot.text(int((genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=10)
+                idx+=1
+        # if len(genes_dict.keys()) < 50:
+        #     adjust_text(genes)
+        cnv_plot.set_xlabel("Position (Mb)", fontsize=15)
+        cnv_plot.set_ylabel("Ratio", fontsize=20)
+        cnv_plot.set_xticks(cnv_plot.get_xticks())
+        cnv_plot.set_xticklabels(cnv_plot.get_xticks(), rotation=30, size=15)
+        cnv_plot.set_yticklabels(cnv_plot.get_yticks(), size=15)
+
         cnv_plot.figure.savefig(plot)
         plt.close()
+        os.remove(calls_with_segments)
+        os.remove(segments_no_header)
+        os.remove(tmp_call)
 
-        pass
 
-# class Cnv:
-#   '''Cnv class. Input format is a pd's dataframe
-#   '''
-#   def __init__(self, df, sample, output_dir):
-#     # Defining attributes
-#     self.df         = df
-#     self.sample     = sample
-#     self.output_dir = output_dir
 
-#   def call_cnv(self, del_threshold, dup_threshold, z_score):
-#     '''Cnv class
-#     ''' 
+#p.system_env['CLASSIFYCNV']
 
 def do_lowpass():
     '''Main function for lowpass CNV analysis
     '''
 
-    if p.analysis_env['ANALYSIS_MODE'] == "call": 
+    # Gathering BAMs directly from input directory in "call" mode
+    if p.analysis_env['ANALYSIS_MODE'] == "call":
       bam_list =  u.get_input_files( p.analysis_env['INPUT_DIR'], "bam")
 
       for bam in bam_list:
@@ -197,8 +256,8 @@ def do_lowpass():
     map_dict = defaultdict(dict)
 
     if not os.path.isfile(p.analysis_env['LOWPASS_BINS']):
-        
-        # Create bin regions with a fi 
+
+        # Create bin regions with a fixed sized
         create_bins(bin_size)
 
         # Annotate GC content
@@ -215,7 +274,7 @@ def do_lowpass():
                 line = line.rstrip("\n")
                 tmp = line.split("\t")
                 coordinate = tmp[0] + "\t" + tmp[1] + "\t" + tmp[2]
-                o.write(coordinate + "\t" + str(gc_dict[coordinate]) + "\t" + str(round(map_dict[coordinate], 2)) + "\n" )   
+                o.write(coordinate + "\t" + str(gc_dict[coordinate]) + "\t" + str(round(map_dict[coordinate], 2)) + "\n" )
         f.close()
         o.close()
         os.remove(p.analysis_env['LOWPASS_BINS'])
@@ -226,13 +285,13 @@ def do_lowpass():
                 line = line.rstrip("\n")
                 tmp = line.split("\t")
                 coordinate = tmp[0] + "\t" + tmp[1] + "\t" + tmp[2]
-                gc_dict[coordinate]  = str(round(float(tmp[3] ), 2))  
-                map_dict[coordinate] = str(round(float(tmp[4] ), 2)) 
+                gc_dict[coordinate]  = str(round(float(tmp[3] ), 2))
+                map_dict[coordinate] = str(round(float(tmp[4] ), 2))
 
-    # Extract coverage and add GC-content 
+    # Extract coverage and add GC-content
     extract_coverage(gc_dict, map_dict)
 
-    # Normalization 
+    # Normalization
     for sample in p.sample_env:
         p.sample_env[sample]['NORMALIZED_COVERAGE'] = \
             p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".normalized.coverage.bed"
@@ -243,22 +302,22 @@ def do_lowpass():
         # Calculate median coverage
         median_cov = df['coverage'].median()
 
-        # Normalize by GC-content 
+        # Normalize by GC-content
         df = normalize(df, sample, median_cov, ['gc', 'map'] )
-       
-        # Export normalized coverage 
+
+        # Export normalized coverage
         df.to_csv(p.sample_env[sample]['NORMALIZED_COVERAGE'], sep="\t", mode='w', index=None)
 
-    # Plotting normalized coverage 
+    # Plotting normalized coverage
     for sample in p.sample_env:
 
         p.sample_env[sample]['NORMALIZED_COVERAGE'] = \
             p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".normalized.coverage.bed"
 
-        # Read normalized coverage as a pandas dataframe 
+        # Read normalized coverage as a pandas dataframe
         df = pd.read_csv(p.sample_env[sample]['NORMALIZED_COVERAGE'], sep="\t")
 
-        # Plotting 
+        # Plotting
         cov_plot = plot_normalization(df, sample, p.sample_env[sample]['COV_FOLDER'])
 
     # Merge sample coverages into a single file/dataframe
@@ -276,11 +335,12 @@ def do_lowpass():
     # Plotting
     for sample in p.sample_env:
 
+        # Instantiating a CnvPlot object
         cnp = CnvPlot(
-            cnr_file=p.sample_env[sample]['RATIO_FILE'], 
-            cns_file=p.sample_env[sample]['SEGMENT_FILE'], 
-            calls= p.sample_env[sample]['CALLS_FILE'], 
-            sample=sample, 
+            cnr_file=p.sample_env[sample]['RATIO_FILE'],
+            cns_file=p.sample_env[sample]['SEGMENT_FILE'],
+            calls= p.sample_env[sample]['CALLS_FILE'],
+            sample=sample,
             output_dir=p.sample_env[sample]['COV_FOLDER']
         )
 
@@ -296,34 +356,52 @@ def do_lowpass():
                 tmp = line.split('\t')
                 chr  = tmp[0]
                 start= tmp[1]
-                end  = tmp[2]   
-                cnv_plot = cnp.plot_cnv(chr=chr, start=start, end=end)
+                end  = tmp[2]
+                cnv_plot = cnp.plot_cnv(chr=chr, start=start, end=end, add_genes=True, offset=500000)
+
+
+def annotate_cnv():
+    '''Annotate CNVs using ACMG classification
+    '''
+    for sample in p.sample_env:
+
+        # Create a temporary file to feed ClassifyCNV
+        tmp_calls = (p.sample_env[sample]['CALLS_FILE'])\
+            .replace(".bed", ".tmp.bed")
+        o = open(p.sample_env[sample]['CALLS_FILE'], 'w')
+        with open(p.sample_env[sample]['CALLS_FILE']) as f:
+            for line in f:
+                line = line.rstrip('\n')
+
+
+
 
 def create_heatmap(df):
-    '''Plotting coverage normalization 
+    '''Plotting coverage normalization
     '''
 
     sample_list = []
     for sample in p.sample_env:
-        sample_list.append(sample) 
+        sample_list.append(sample)
     data = df[sample_list]
     dat_corr = data.corr()
     sns.set_context("talk")
 
     heatmap = sns.clustermap(dat_corr, metric="correlation", cmap='coolwarm')
     p.analysis_env['HEATMAP'] = \
-        p.analysis_env['OUTPUT_DIR'] + "/" + "heatmap.png"    
-      
+        p.analysis_env['OUTPUT_DIR'] + "/" + "heatmap.png"
+
     heatmap.figure.savefig(p.analysis_env['HEATMAP'])
     heatmap.close()
 
 def merge_samples_coverage():
-    '''Plotting coverage normalization 
+    '''Plotting coverage normalization
     '''
     p.analysis_env['MERGED_COVERAGES'] = \
         p.analysis_env['OUTPUT_DIR'] + "/" + "merged.normalized.coverage.bed"
 
-    merged_df = pd.read_csv(p.analysis_env['LOWPASS_BINS'], names=['Chromosome', 'Start', 'End', 'gc', 'map'], sep ="\t")
+    merged_df = pd.read_csv(p.analysis_env['LOWPASS_BINS'], names=['Chromosome',
+        'Start', 'End', 'gc', 'map'], sep ="\t")
 
     for sample in p.sample_env:
         sample_df = pd.read_csv(p.sample_env[sample]['NORMALIZED_COVERAGE'], sep ="\t")
@@ -335,8 +413,8 @@ def merge_samples_coverage():
 def calculate_ratios(cnr_df):
     '''Calculate bin ratio
     '''
-    ratio_fields = [] 
- 
+    ratio_fields = []
+
     for sample in p.sample_env:
 
         baseline_samples = []
@@ -348,7 +426,7 @@ def calculate_ratios(cnr_df):
         p.sample_env[sample]['RATIO_FILE'] \
             = p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".ratios.bed"
         p.sample_env[sample]['RATIO_PLOT'] = \
-            p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".ratios.png" 
+            p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".ratios.png"
 
         if not os.path.isfile(p.sample_env[sample]['RATIO_FILE']):
             sample_ratio = sample + "_ratio"
@@ -357,8 +435,8 @@ def calculate_ratios(cnr_df):
             median_chrx       = cnr_df[cnr_df['Chromosome'] != "chrX"][sample].median()
             median_chry       = cnr_df[cnr_df['Chromosome'] != "chrY"][sample].median()
 
-            msg = " INFO: Sample {}  median autosomes={}, median chrX={}, median chrY={}"\
-                .format(sample, median_autosomes, median_chrx, median_chry)
+            # msg = " INFO: Sample {}  median autosomes={}, median chrX={}, median chrY={}"\
+            #     .format(sample, median_autosomes, median_chrx, median_chry)
             #print (msg)
 
             cnr_df[sample_ratio] = cnr_df.apply(do_ratio_ref, baseline=baseline_samples, sample=sample, axis=1)
@@ -366,67 +444,12 @@ def calculate_ratios(cnr_df):
             # Filter low mappability and extreme gc content bins
             cnr_df = cnr_df.loc[(cnr_df['map'] >= 90) & (cnr_df['gc'] >=30) & (cnr_df['gc'] < 75 )]
 
-            # Now substract sample ratios 
+            # Now substract sample ratios
             cnr_df = cnr_df[['Chromosome','Start','End','gc','map', sample_ratio]]
 
-            # Write dataframe as bed 
+            # Write dataframe as bed
             cnr_df.to_csv(p.sample_env[sample]['RATIO_FILE'], sep="\t", mode='w', index=None)
             p.sample_env[sample]['CNR_DF'] = cnr_df
-
-        else:
-            pass
-
-        # if not os.path.isfile(p.sample_env[sample]['RATIO_PLOT']):
-        #     cnr_df = pd.read_csv(p.sample_env[sample]['RATIO_FILE'], sep ="\t")
-        #     palette_dict = defaultdict(dict)
-
-        #     color_list =["#4f6b76", "#b2bbc0"] 
-        #     unique_chromosomes = cnr_df['chromosome'].unique().tolist()
-        #     idx = 0
-        #     for chr in unique_chromosomes:
-        #         if idx==2:
-        #             idx = 0
-        #         palette_dict[chr] = color_list[idx]
-        #         idx+=1
-        #     x_list = []
-        #     chromosomes = cnr_df['chromosome'].tolist()
-        #     i = 0
-        #     xtick_list = [] 
-        #     for chr in chromosomes:
-        #         if not chr in x_list:
-        #             x_list.append(chr)
-        #             xtick_list.append(i)
-        #         else:
-        #             x_list.append("")
-        #         i+=1
-
-        #     sns.set(rc={"figure.dpi":300, 'savefig.dpi':300})
-        #     sns.set_theme()
-        #     sns.set_style('ticks')
-        #     fig, axes = plt.subplots(figsize=(20,7))
-        #     fig.suptitle(sample, fontsize=20)
-        #     sample_ratio = sample + "_ratio"
-
-        #     ratio_plot = sns.scatterplot(data=cnr_df, x=cnr_df.index, 
-        #         y=cnr_df[sample_ratio], size=0.015, hue=cnr_df.chromosome, 
-        #         palette=palette_dict, alpha=0.4, edgecolor="none")
-            
-        #     # Setting y limits 
-        #     ratio_plot.set(ylim=(0,3))
-        #     ratio_plot.set_xticks(xtick_list)
-        #     ratio_plot.set_xticklabels(unique_chromosomes, rotation=30, size=15)
-        #     ratio_plot.set_yticks(ratio_plot.get_yticks())
-        #     ratio_plot.set_yticklabels(ratio_plot.get_yticks(), size=15)
-        #     ratio_plot.get_legend().remove()
-        #     ratio_plot.set_xlabel("", fontsize=20)
-        #     ratio_plot.set_ylabel("Ratio", fontsize=20)
-
-        #     # Adding vertical lines to separate chromosomes 
-        #     for xc in xtick_list:
-        #         ratio_plot.axvline(x=xc, color="black")
-
-        #     # Saving as png  
-        #     ratio_plot.figure.savefig(p.sample_env[sample]['RATIO_PLOT'])
 
 
 def do_ratio_same(row, median_sample, sample):
@@ -443,51 +466,55 @@ def do_ratio_ref (row, baseline, sample):
     return ratio
 
 def plot_normalization(df, sample, output_dir):
-    '''Plotting coverage normalization 
+    '''Plotting coverage normalization
     '''
     msg = " INFO: Plotting normalized coverage for sample " + sample
     print(msg)
     p.logging.info(msg)
 
-    out_png = output_dir + "/" + sample + ".png"
+    out_png = output_dir + "/" + sample + ".normalization.png"
 
     if not os.path.isfile(out_png):
         sns.set(font_scale=2)
         fig, axes = plt.subplots(2, 2, figsize=(25,22))
         fig.suptitle('GC-content & Mappability correction', fontsize=50)
-        axes[0, 0] = sns.boxplot(ax=axes[0, 0], x="gc_integer", y="coverage", data=df, showfliers=False, palette="Blues")
+        axes[0, 0] = sns.boxplot(ax=axes[0, 0], x="gc_integer", y="coverage",
+            data=df, showfliers=False, palette="Blues")
         axes[0, 0].set_title("Raw coverage vs GC", fontsize=30)
         axes[0, 0].set_xticklabels(axes[0, 0].get_xticklabels(), rotation=30)
         axes[0, 0].set(xlabel='%GC')
         axes[0, 0].set(ylabel='Coverage')
         axes[0, 0].xaxis.set_major_locator(ticker.MultipleLocator(base=5))
 
-        axes[0, 1] = sns.boxplot(ax=axes[0, 1], x="gc_integer", y="normalized_gc", data=df, showfliers=False, palette="Blues")
+        axes[0, 1] = sns.boxplot(ax=axes[0, 1], x="gc_integer", y="normalized_gc",
+            data=df, showfliers=False, palette="Blues")
         axes[0, 1].set_title("GC-content corrected coverage", fontsize=30)
         axes[0, 1].set_xticklabels(axes[0, 1].get_xticklabels(), rotation=30)
         axes[0, 1].set(xlabel='%GC')
         axes[0, 1].set(ylabel='Coverage')
         axes[0, 1].xaxis.set_major_locator(ticker.MultipleLocator(base=5))
 
-        axes[1, 0] = sns.boxplot(ax=axes[1, 0],x="map_integer", y="coverage", data=df, showfliers=False, palette="Blues")
+        axes[1, 0] = sns.boxplot(ax=axes[1, 0],x="map_integer", y="coverage",
+            data=df, showfliers=False, palette="Blues")
         axes[1, 0].set_title("Raw coverage vs mappability", fontsize=30)
         axes[1, 0].set_xticklabels(axes[1, 0].get_xticklabels(), rotation=30)
         axes[1, 0].set(xlabel='%Mappability')
         axes[1, 0].set(ylabel='Coverage')
-        axes[1, 0].set(xlim=(0,100)) 
+        axes[1, 0].set(xlim=(0,100))
         axes[1, 0].xaxis.set_major_locator(ticker.MultipleLocator(base=10))
 
-        axes[1, 1] = sns.boxplot(ax=axes[1, 1],x="map_integer", y="normalized_map", data=df, showfliers=False, palette="Blues")
+        axes[1, 1] = sns.boxplot(ax=axes[1, 1],x="map_integer", y="normalized_map",
+            data=df, showfliers=False, palette="Blues")
         axes[1, 1].set_title("GC-Mappability corrected coverage", fontsize=30)
         axes[1, 1].set_xticklabels(axes[1, 1].get_xticklabels(), rotation=30)
         axes[1, 1].set(xlabel='%Mappability')
         axes[1, 1].set(ylabel='Coverage')
-        axes[1, 1].set(xlim=(0,100)) 
+        axes[1, 1].set(xlim=(0,100))
         axes[1, 1].xaxis.set_major_locator(ticker.MultipleLocator(base=10))
 
         fig.savefig(out_png)
     return out_png
- 
+
 def create_bins(bin_size):
     '''Create a BED file with genomewide bins
     '''
@@ -501,19 +528,19 @@ def create_bins(bin_size):
     print(msg)
     p.logging.info(msg)
     p.logging.info(bashCommand)
-    
+
     p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = p1.stdout.decode('UTF-8')
     error  = p1.stderr.decode('UTF-8')
     if not error:
       msg = " INFO: Bin regions successfully created"
       print(msg)
-      logging.info(msg)        
+      logging.info(msg)
     else:
       msg = " ERROR: Could not create bin regions"
       print (msg)
       logging.error(error)
-      logging.error(msg)        
+      logging.error(msg)
 
 def annotate_mappability(input_bed):
 
@@ -540,14 +567,14 @@ def annotate_mappability(input_bed):
         coordinate = tmp[4]+"\t"+tmp[5]+"\t"+tmp[6]
         if not coordinate in map_dict:
             map_dict[coordinate] = marginal
-        else: 
+        else:
             map_dict[coordinate]+= marginal
 
     return map_dict
 
 def annotate_gc(input_bed):
     '''Add gc content, return a dict with gc content
-    '''    
+    '''
 
     gc_input_bed = input_bed.replace(".bed", ".gc.bed")
 
@@ -558,7 +585,7 @@ def annotate_gc(input_bed):
     print(msg)
     p.logging.info(msg)
     p.logging.info(bashCommand)
-    
+
     gc_dict = defaultdict(dict)
     if not os.path.isfile(gc_input_bed):
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -580,7 +607,7 @@ def annotate_gc(input_bed):
     return gc_dict
 
 def extract_coverage(gc_dict, map_dict):
-    '''Coverage extraction with megadepth 
+    '''Coverage extraction with megadepth
     '''
 
     for sample in p.sample_env:
@@ -606,19 +633,20 @@ def extract_coverage(gc_dict, map_dict):
         p.sample_env[sample]['RAW_COVERAGE'])
 
         p.logging.info(bashCommand)
-        
+
         p.sample_env[sample]['COV_METRICS'] =  p.sample_env[sample]['COV_FOLDER'] + "/" + \
-            sample + ".cov.metrics.txt"  
+            sample + ".cov.metrics.txt"
 
         if not os.path.isfile(p.sample_env[sample]['RAW_COVERAGE']):
-            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
             output = p1.stdout.decode('UTF-8')
             error  = p1.stderr.decode('UTF-8')
             total_reads = ""
             if not error:
                 msg = " INFO: Coverage extraction was successful"
                 print(msg)
-                logging.info(msg)        
+                logging.info(msg)
             else:
                 if re.search("error", error):
                     msg = " ERROR: Could not extract coverage"
@@ -649,7 +677,7 @@ def extract_coverage(gc_dict, map_dict):
         with open (p.sample_env[sample]['RAW_COVERAGE']) as f:
             for line in f:
                 if line.startswith("Chromosome"):
-                    continue              
+                    continue
                 bin_n+=1
                 line = line.rstrip("\n")
                 tmp  = line.split("\t")
@@ -678,14 +706,14 @@ def normalize(df, sample, median_cov, fields):
     print(msg)
     logging.info(msg)
 
-    df['cov_bylib'] = (df['coverage']/median_cov)*100
-    cov_target = 'cov_bylib'
-      
+    df['normalized_library'] = (df['coverage']/median_cov)*100
+    cov_target = 'normalized_library'
+
     for field in fields:
 
         field_int = field + "_integer"
 
-        # Get integer field (gc or map) value 
+        # Get integer field (gc or map) value
         df[field_int] = df[field].apply(int)
 
         median_field_cov = "median_" + field + "_cov"
@@ -694,7 +722,7 @@ def normalize(df, sample, median_cov, fields):
         df[median_field_cov]  = df.groupby(field_int)[cov_target].transform("median")
         median_cov = df[(df['Chromosome'] != "chrX") & (df['Chromosome'] != "chrY")][cov_target].median()
 
-        # Apply rolling median 
+        # Apply rolling median
         normalized_field = "normalized_" + field
         df[normalized_field]  = (df[cov_target]*median_cov)/df[median_field_cov]
         cov_target = normalized_field
@@ -732,7 +760,8 @@ def segment_coverage(n_segments, alpha):
         r.write(line + "\n")
         line = "segs2=segs$output"
         r.write(line + "\n")
-        line = "write.table(segs2[,2:6], file=\"{}\",row.names=F, col.names=F, quote=F, sep=\"\t\")".format(p.sample_env[sample]['SEGMENT_FILE'])
+        line = "write.table(segs2[,2:6], file=\"{}\",row.names=F, col.names=F, quote=F, sep=\"\t\")"\
+            .format(p.sample_env[sample]['SEGMENT_FILE'])
         r.write(line + "\n")
         r.close()
 
@@ -760,7 +789,6 @@ def segment_coverage(n_segments, alpha):
         os.remove(p.sample_env[sample]['SEGMENT_FILE'])
         os.rename(tmp_segment, p.sample_env[sample]['SEGMENT_FILE'])
 
-
 def mean_zscore():
     pass
 
@@ -774,13 +802,13 @@ def remove_bed_header(file, pattern):
             if line.startswith(pattern):
                 continue
             nh.write(line+"\n")
-    f.close()        
+    f.close()
     nh.close()
     return no_header_file
 
 def call_cnvs(del_threshold, dup_threshold, z_score):
     '''Calling CNVs
-    ''' 
+    '''
     del_threshold = float(del_threshold)
     dup_threshold = float(dup_threshold)
 
@@ -830,10 +858,10 @@ def call_cnvs(del_threshold, dup_threshold, z_score):
             if not variant in calls_dict:
                 calls_dict[variant] = list()
             else:
-                calls_dict[variant].append(float(tmp[5])) 
+                calls_dict[variant].append(float(tmp[5]))
 
         o = open(p.sample_env[sample]['CALLS_FILE'], 'w')
-        o.write("Chromosome\tStart\tEnd\tRegions\tRatio\tCnvtype\tStd")
+        o.write("Chromosome\tStart\tEnd\tRegions\tRatio\tCnvtype\tStd\n")
 
         for variant in calls_dict:
             arr = np.array(calls_dict[variant])
@@ -845,7 +873,7 @@ def call_cnvs(del_threshold, dup_threshold, z_score):
         os.remove(ratio_no_header)
         os.remove(seg_no_header)
 
-        # seg_df = pd.read_csv(p.sample_env[sample]['SEGMENT_FILE'], 
+        # seg_df = pd.read_csv(p.sample_env[sample]['SEGMENT_FILE'],
         #     sep="\t", names=['chromosome', 'start', 'end', 'n_bins', 'ratio'] )
 
         # calls_df = seg_df.loc[ (seg_df['ratio'] <= del_threshold) | (seg_df['ratio'] >= dup_threshold)]
@@ -855,4 +883,3 @@ def call_cnvs(del_threshold, dup_threshold, z_score):
         #calls_df.sort_values(by=['chromosome'], inplace=True)
         #calls_df.reindex(index=order_by_index(calls_df.index, index_natsorted(calls_df.chromosome)))
         #calls_df.to_csv(p.sample_env[sample]['CALLS_FILE'], sep="\t", mode='w', index=None)
-

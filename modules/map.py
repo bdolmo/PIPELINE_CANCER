@@ -17,14 +17,18 @@ from modules import params as p
 from modules import trimming as t
 
 def do_all():
+    '''Main functon for map process
+    '''
 
-    if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
+    # Generate .list files for GATK stuff
+    if p.analysis_env['SEQ_APPLICATION'] == "targeted":
         do_generate_list_file()
 
     # Mapping phase
     map_fastq()
 
-    if p.analysis_env['SEQ_APPLICATION'] == "targeted": 
+    # Mapping for targeted sequencing
+    if p.analysis_env['SEQ_APPLICATION'] == "targeted":
 
         # Removing duplicates
         remove_duplicates()
@@ -37,14 +41,19 @@ def do_all():
 
         # Gather all metrics and create a summary qc
         create_summary_qc()
+    # TODO: Mapping for WGS
+
 
 def create_summary_qc():
+    '''Create a summary qc in TSV:
+        total_reads, mean coverage (20,30,100X), lost exons, %ROI, %PCRdups, etc
+    '''
 
     msg = " INFO: Creating summary QC"
     print (msg)
     logging.info(msg)
 
-    # Setting summary qc tsv 
+    # Setting summary qc tsv
     p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
         "/" + "summary_qc.tsv"
 
@@ -64,7 +73,7 @@ def create_summary_qc():
             info = []
             info.append("9999999")
             info.append(sample)
-            info.append("76")
+            info.append(p.sample_env[sample]['READ_LENGTH'])
             info.append(p.analysis_env['PANEL_NAME'])
             info.append(str(p.analysis_env['ROI_NUMBER']))
             if p.sample_env[sample]['TOTAL_READS'] != ".":
@@ -83,15 +92,18 @@ def create_summary_qc():
             info.append(str(p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE']))
             info.append(str(p.sample_env[sample]['MEAN_INSERT_SIZE']))
             info.append(str(p.sample_env[sample]['SD_INSERT_SIZE']))
-          
+
             tsv_writer.writerow(info)
 
 def extract_mapping_metrics():
+    '''Get alignment metrics from each bam:
+        total_reads, mean_coverage, %ROI, %PCRdups, etc
+    '''
 
     p.analysis_env['SUMMARY_QC'] = p.analysis_env['OUTPUT_DIR'] + \
         "/" + "summary_qc.tsv"
 
-    # If summary qc already exists 
+    # If summary qc already exists
     if os.path.isfile(p.analysis_env['SUMMARY_QC']):
         msg = " INFO: Skipping mapping metric extraction"
         print (msg)
@@ -100,19 +112,19 @@ def extract_mapping_metrics():
             for line in f:
                 line = line.rstrip('\n')
                 tmp = line.split('\t')
-                sample = tmp[1] 
+                sample = tmp[1]
                 if 'Lab ID' in line:
                     continue
                 else:
-                    p.sample_env[sample]['TOTAL_READS']   = tmp[5] 
-                    p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12] 
-                    p.sample_env[sample]['ROI_PERCENTAGE']= tmp[13] 
+                    p.sample_env[sample]['TOTAL_READS']   = tmp[5]
+                    p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12]
+                    p.sample_env[sample]['ROI_PERCENTAGE']= tmp[13]
                     p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14]
                     p.sample_env[sample]['ON_TARGET_READS']  = "."
                     p.sample_env[sample]['MEAN_INSERT_SIZE'] = tmp[15]
                     p.sample_env[sample]['SD_INSERT_SIZE']   = tmp[16]
         return
-        
+
     for sample in p.sample_env:
 
         p.sample_env[sample]['TOTAL_READS']       = "."
@@ -120,10 +132,14 @@ def extract_mapping_metrics():
         p.sample_env[sample]['ROI_PERCENTAGE']    = "."
         p.sample_env[sample]['MEAN_INSERT_SIZE']  = "."
         p.sample_env[sample]['SD_INSERT_SIZE']    = "."
-  
-        # Getting total number of reads
+
+        # Getting total number of reads (we could use pysam instead)
         bashCommand = ('{} view -c {}').format(p.system_env['SAMTOOLS'], \
         p.sample_env[sample]['READY_BAM'])
+        msg = " INFO: Getting total reads for sample " + sample
+        print (msg)
+        logging.info(bashCommand)
+
         msg = " INFO: Extracting mapping metrics for sample "+ sample
         print (msg)
         logging.info(bashCommand)
@@ -142,7 +158,7 @@ def extract_mapping_metrics():
         # Getting total number of on-target reads
         bashCommand = ('{} view -c {} -L {}').format(p.system_env['SAMTOOLS'], \
         p.sample_env[sample]['READY_BAM'], p.analysis_env['PANEL'])
-        msg = " INFO: Getting total number of reads for sample " + sample
+        msg = " INFO: Getting total on-target reads for sample " + sample
         logging.info(msg)
         logging.info(bashCommand)
         print (msg)
@@ -179,6 +195,7 @@ def extract_mapping_metrics():
 
         alignments = []
         i_sizes    = []
+        r_lengths  = []
         if not error:
             alignments = output.split('\n')
             for aln in alignments:
@@ -187,10 +204,14 @@ def extract_mapping_metrics():
                     continue
                 isize = abs(int(tmp[8]))
                 i_sizes.append(isize)
-            array = np.array(i_sizes)
-            mean_isize = stats.trim_mean(array, 0.1)
-            sd_isize   = stats.tstd(array)
+                r_lengths.append(len(tmp[9]))
+            isize_arr  = np.array(i_sizes)
+            mean_isize = stats.trim_mean(isize_arr, 0.25)
+            sd_isize   = stats.tstd(isize_arr)
+            rlength_arr = np.array(r_lengths)
+            mean_read_length = int(np.mean(rlength_arr))
             #print(mean_isize+ " "+ sd_isize)
+            p.sample_env[sample]['READ_LENGTH'] = str(mean_read_length)
             p.sample_env[sample]['MEAN_INSERT_SIZE'] = str(mean_isize)
             p.sample_env[sample]['SD_INSERT_SIZE']   = str(sd_isize)
         else:
@@ -213,12 +234,12 @@ def extract_mapping_metrics():
 #             os.mkdir(qc_path)
 
 #         p.sample_env[sample]['SUMMARY_QC'] = \
-#             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + "_summary_qc.csv"      
+#             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + "_summary_qc.csv"
 
 #         p.sample_env[sample]['HS_METRICS'] = \
-#             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".hs.metrics.txt"  
+#             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".hs.metrics.txt"
 
-#         p.sample_env[sample]['HS_METRICS_NAME'] = sample + ".hs.metrics.txt"  
+#         p.sample_env[sample]['HS_METRICS_NAME'] = sample + ".hs.metrics.txt"
 
 #         if not os.path.isfile(p.sample_env[sample]['SUMMARY_QC']):
 
@@ -237,7 +258,7 @@ def extract_mapping_metrics():
 #             process = subprocess.Popen(bashCommand,#.split(),
 #                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 #             output, error = process.communicate()
-            
+
 #             if not error.decode('UTF-8'):
 #                 msg = " INFO: HS metrics extraction ended OK"
 #                 logging.error(msg)
@@ -249,14 +270,14 @@ def extract_mapping_metrics():
 # Required Arguments:
 
 # --BAIT_INTERVALS,-BI <File>   An interval list file that contains the locations of the baits used.  This argument must
-#                               be specified at least once. Required. 
+#                               be specified at least once. Required.
 
-# --INPUT,-I <File>             An aligned SAM or BAM file.  Required. 
+# --INPUT,-I <File>             An aligned SAM or BAM file.  Required.
 
-# --OUTPUT,-O <File>            The output file to write the metrics to.  Required. 
+# --OUTPUT,-O <File>            The output file to write the metrics to.  Required.
 
 # --TARGET_INTERVALS,-TI <File> An interval list file that contains the locations of the targets.  This argument must be
-#                               specified at least once. Required. 
+#                               specified at least once. Required.
 
 def extract_coverage_metrics():
 
@@ -299,7 +320,7 @@ def extract_coverage_metrics():
             p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             output = p1.stdout.decode('UTF-8')
             error  = p1.stderr.decode('UTF-8')
-            
+
             if not error:
                 msg = " INFO: Coverage metrics extraction ended OK"
                 print (msg)
@@ -319,7 +340,7 @@ def extract_coverage_metrics():
         total_bases = 0
         total_rois  = 0
         header = []
-        with gzip.open(p.sample_env[sample]['COV_THRESHOLDS_FILE'],'rt') as fin:        
+        with gzip.open(p.sample_env[sample]['COV_THRESHOLDS_FILE'],'rt') as fin:
             for line in fin:
                 line = line.rstrip('\n')
                 if line.startswith('#'):
@@ -349,7 +370,7 @@ def extract_coverage_metrics():
         if not 'CALL_RATE' in p.sample_env[sample]:
             p.sample_env[sample]['CALL_RATE'] = {}
         if not 'LOST_EXONS' in p.sample_env[sample]:
-            p.sample_env[sample]['LOST_EXONS'] = {}                 
+            p.sample_env[sample]['LOST_EXONS'] = {}
         for field in call_rate_dict:
             p.sample_env[sample]['CALL_RATE'][field] = round(100*(call_rate_dict[field]/total_bases),3)
 
@@ -360,7 +381,7 @@ def extract_coverage_metrics():
         # Now get the mean coverage
         p.sample_env[sample]['MOSDEPTH_SUMMARY'] =  \
             p.sample_env[sample]['QC_FOLDER'] + "/" + sample + ".mosdepth.summary.txt"
-        
+
         with open(p.sample_env[sample]['MOSDEPTH_SUMMARY']) as f:
             for line in f:
                 line = line.rstrip('\n')
@@ -419,7 +440,7 @@ def remove_duplicates():
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')
         error  = p1.stderr.decode('UTF-8')
-        
+
         #check if everything is ok
         if not error:
             if re.search(r'MarkDuplicates done.', output):
@@ -484,11 +505,11 @@ def do_generate_list_file():
                 print (msg)
                 logging.info(msg)
             else:
-                msg = " ERROR: Something went wrong with list file generation for " + p.analysis_env['PANEL_NAME'] 
+                msg = " ERROR: Something went wrong with list file generation for " + p.analysis_env['PANEL_NAME']
                 print (msg)
                 logging.error(msg)
         else:
-            msg = " ERROR: Something went wrong with list file generation for " + p.analysis_env['PANEL_NAME'] 
+            msg = " ERROR: Something went wrong with list file generation for " + p.analysis_env['PANEL_NAME']
             print (msg)
             logging.error(msg)
     else:
@@ -513,24 +534,24 @@ def map_fastq():
       p.sample_env[sample]['BAM_FOLDER'] + "/" + sample + ".bam"
     p.sample_env[sample]['RAW_BAM_NAME'] = sample + ".bam"
 
-    # READY_BAM will be overwritten after each post-processing step (e.g remove dups, etc) 
+    # READY_BAM will be overwritten after each post-processing step (e.g remove dups, etc)
     p.sample_env[sample]['READY_BAM'] = p.sample_env[sample]['RAW_BAM']
     p.sample_env[sample]['READY_BAM_NAME'] = sample + ".bam"
 
-    # Now map fastq files with bwa mem 
+    # Now map fastq files with bwa mem
     # Plus samtools sort and conversion (avoid threading in sam->bam if you have less than 16Gb of RAM)
-    bashCommand = ('{} mem {} -R \'@RG\\tID:{}\\tSM:{}\' -M -t {} {} {} | {} view -Shu - |' 
+    bashCommand = ('{} mem {} -R \'@RG\\tID:{}\\tSM:{}\' -M -t {} {} {} | {} view -Shu - |'
       '{} sort -T {} -o {}').format(
-      p.system_env['BWA'], 
+      p.system_env['BWA'],
       p.aux_env['GENOME_FASTA'],
       sample,
       sample,
-      p.analysis_env['THREADS'], 
-      p.sample_env[sample]['READY_FQ1'], 
+      p.analysis_env['THREADS'],
+      p.sample_env[sample]['READY_FQ1'],
       p.sample_env[sample]['READY_FQ2'],
-      p.system_env['SAMTOOLS'], 
-      p.system_env['SAMTOOLS'], 
-      'TMP',
+      p.system_env['SAMTOOLS'],
+      p.system_env['SAMTOOLS'],
+      sample,
       p.sample_env[sample]['RAW_BAM']
       )
 
@@ -540,7 +561,7 @@ def map_fastq():
       print (msg)
       p.logging.info(msg)
       p.logging.info(bashCommand)
-    
+
       p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       output = p1.stdout.decode('UTF-8')
       error  = p1.stderr.decode('UTF-8')
@@ -555,7 +576,7 @@ def index_bam(bam):
     bai = bam + ".bai"
     #generate index
     bashCommand = '{} index {}'.format(p.system_env['SAMTOOLS'], bam)
-    
+
     if not os.path.isfile(bai):
 
         msg = " INFO: Indexing bam " + bam

@@ -38,7 +38,7 @@ def do_annotation():
         # Cancer Genome Interpreter annotation
         do_cgi()
 
-        # Fusion annotation with chimerKB  
+        # Fusion annotation with chimerKB
         annotate_known_fusions()
 
         # Add flanking genes to SVs
@@ -46,13 +46,13 @@ def do_annotation():
 
         # CIViC annotation for CNAs
         annotate_cnas()
-        
-        # Merge snv and fusion vcf  
+
+        # Merge snv and fusion vcf
         merge_vcfs()
         # sys.exit()
 
 def annotate_cnas():
-  
+
   msg = " INFO: Annotating CNAs with CIViC"
   logging.info(msg)
   print(msg)
@@ -66,7 +66,7 @@ def annotate_cnas():
     else:
       do_ann = True
       break
-  
+
   if do_ann == False:
     msg = " INFO: Skipping gene annotation to CNAs"
     logging.info(msg)
@@ -113,11 +113,11 @@ def annotate_cnas():
       civic_fields.append("EV_DISEASE")
       civic_fields.append("EV_PMID")
       civic_fields.append("EV_CLINICAL_TRIALS")
-      
-      # Wrtiting CIViC header  
+
+      # Wrtiting CIViC header
       civic_info_header = "##INFO=<ID=CIVIC,Number=.,Type=String,Description=\"Civic evidence. Format: "\
         + '|'.join(civic_fields) + "\">"
-      genes_info_header = "##INFO=<ID=CNA_GENES,Number=1,Type=String,Description=\"Genes affected by a CNA\">" 
+      genes_info_header = "##INFO=<ID=CNA_GENES,Number=1,Type=String,Description=\"Genes affected by a CNA\">"
 
       seen = defaultdict(dict)
       o = open(p.sample_env[sample]['READY_CNA_VCF'], "w")
@@ -129,7 +129,7 @@ def annotate_cnas():
           else:
             seen[line]+=1
             if seen[line] > 1:
-              continue   
+              continue
           tmp = line.split("\t")
           if line.startswith("#"):
             if line.startswith("#CHROM"):
@@ -149,7 +149,7 @@ def annotate_cnas():
             info = tmp[7]
             format_tag = tmp[8]
             format = tmp[9]
-            gene = tmp[-1] 
+            gene = tmp[-1]
             vartype = "CNA"
             variant  = ""
             tmp_info = info.split(";")
@@ -160,7 +160,7 @@ def annotate_cnas():
             consequence = '.'
             civic_ev_list = civic.queryCivic(gene, variant, vartype, exon, consequence)
             civic_annotation = ','.join(civic_ev_list)
-            
+
             if civic_annotation == "":
               civic_annotation = "."
             tmp[7] = tmp[7] + ";CNA_GENES=" + gene + ";CIVIC="+civic_annotation
@@ -169,6 +169,7 @@ def annotate_cnas():
             line = '\t'.join(tmp)
             o.write(line+"\n")
       o.close()
+      
       if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
         msg = " ERROR: " + p.sample_env[sample]['READY_CNA_VCF'] + " was not created"
         print(msg)
@@ -179,7 +180,7 @@ def annotate_cnas():
     else:
         msg = " INFO: Skipping CNA gene annotation for sample " + sample
         print(msg)
-        logging.info(msg)     
+        logging.info(msg)
 
 
 def add_edge_genes():
@@ -207,7 +208,7 @@ def add_edge_genes():
 
     bashCommand = '{} pairtopair -a {} -b {} -type either | sort -V | uniq > {}' \
       .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['GENE_LIST'], intersect_file)
-      
+
     p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     output = p1.stdout.decode('UTF-8')
     error  = p1.stderr.decode('UTF-8')
@@ -237,7 +238,7 @@ def add_edge_genes():
         endA = tmp[2]
 
         chrB = tmp[3]
-        posB = tmp[4]      
+        posB = tmp[4]
         endB = tmp[5]
 
         chr = tmp[7]
@@ -254,7 +255,7 @@ def add_edge_genes():
           if posA >= pos and posA <= end:
             fusions_dict[coordinate]['LEFT_FLANK'].append(gene)
           if posB >= pos and posB <= end:
-            fusions_dict[coordinate]['RIGHT_FLANK'].append(gene)                     
+            fusions_dict[coordinate]['RIGHT_FLANK'].append(gene)
     f.close()
 
     fusion_fields = []
@@ -328,7 +329,7 @@ def filter_transcripts():
                     info = tmp[7]
                     format_tag = tmp[8]
                     format = tmp[9]
-   
+
                     info_list = info.split(';')
                     idx = 0
                     for item in info_list:
@@ -340,8 +341,8 @@ def filter_transcripts():
                                 gene = transcript_list[vep_dict['SYMBOL']]
                                 ensg_id = transcript_list[vep_dict['Gene']]
                                 enst_id = transcript_list[vep_dict['Feature']]
-                                
-                               # if not gene in p.roi_env: 
+
+                               # if not gene in p.roi_env:
                                 if gene in p.roi_env or ensg_id in p.roi_env:
                                     # Select the annotations from the desired transcript
                                     if enst_id in p.roi_env[gene] or enst_id in p.roi_env[ensg_id]:
@@ -373,7 +374,7 @@ def merge_vcfs():
 
         vcf1 = p.sample_env[sample]['READY_SV_VCF']
         vcf2 = p.sample_env[sample]['READY_SNV_VCF']
-        vcf3 = p.sample_env[sample]['READY_CNA_VCF']  
+        vcf3 = p.sample_env[sample]['READY_CNA_VCF']
         msg = " INFO: Merging " + sample + " vcfs"
         print(msg)
         logging.info(msg)
@@ -450,7 +451,7 @@ class Civic:
         if vartype == "SNV" or vartype == "MNV":
           candidate_var_list.append(variant[:-1])
           candidate_var_list.append(variant[1:])
-          candidate_var_list.append(variant[1:-1])    
+          candidate_var_list.append(variant[1:-1])
           candidate_var_list.append(variant[:-1]+"X")
 
     tmp_var = variant.split("_")
@@ -459,20 +460,20 @@ class Civic:
       candidate_var_list.append(v)
       v = variant.replace("del", "")
       candidate_var_list.append(v)
-      if len(tmp_var) > 1:          
+      if len(tmp_var) > 1:
         candidate_var_list.append(tmp_var[0]+"DEL")
       v = "EXON " + str(exon) + " MUTATION"
-      candidate_var_list.append(v)        
+      candidate_var_list.append(v)
     if vartype == 'INSERTION':
       v ="EXON " + str(exon) + " INSERTION"
       candidate_var_list.append(v)
       if len(tmp_var) > 1:
-        v = tmp_var[0]+"INS"    
+        v = tmp_var[0]+"INS"
         candidate_var_list.append(v)
-        v = variant.replace("ins", "")  
+        v = variant.replace("ins", "")
         candidate_var_list.append(v)
-        v = variant.replace("dup", "")  
-        candidate_var_list.append(v)  
+        v = variant.replace("dup", "")
+        candidate_var_list.append(v)
       v = "EXON " + str(exon) + " MUTATION"
       candidate_var_list.append(v)
 
@@ -535,7 +536,7 @@ class Civic:
     '''load civic data in memory
     '''
     URL = "https://civicdb.org/api/variants?count=3000"
-    r = requests.get(url = URL) 
+    r = requests.get(url = URL)
 
     if not r.ok:
       r.raise_for_status()
@@ -549,7 +550,7 @@ class Civic:
       self.variants_dict[gene_name][variant_name] = variant['id']
 
     URL = "https://civicdb.org/api/evidence_items?count=7626"
-    r = requests.get(url = URL) 
+    r = requests.get(url = URL)
     if not r.ok:
       r.raise_for_status()
       sys.exit()
@@ -573,7 +574,7 @@ class Civic:
         drugs_list.append(drug['name'])
       drug_set = set(drugs_list)
       drugs_list = list(drug_set)
-      self.evidence_dict[variant_id][ev_id]['drugs']  = '&'.join(drugs_list) 
+      self.evidence_dict[variant_id][ev_id]['drugs']  = '&'.join(drugs_list)
       self.evidence_dict[variant_id][ev_id]['disease'] = evidence['disease']['name'].replace(" ", "_")
       self.evidence_dict[variant_id][ev_id]['pmid'] = evidence['source']['citation_id']
       clintrials_list = []
@@ -593,7 +594,7 @@ def do_civic():
         if os.path.isfile(p.sample_env[sample]['CIVIC_VCF']):
             p.sample_env[sample]['READY_SNV_VCF'] = p.sample_env[sample]['CIVIC_VCF']
             p.sample_env[sample]['READY_SNV_JSON'] = p.sample_env[sample]['CIVIC_VCF'].replace(".vcf", ".json")
-            p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CIVIC_VCF_NAME']  
+            p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CIVIC_VCF_NAME']
             proceed = False
         else:
           proceed = True
@@ -692,7 +693,7 @@ def do_civic():
                                 hgvs_p = transcript_list[vep_dict['HGVSp']]
                                 exon = re.search("\d+", transcript_list[vep_dict['EXON']])
                                 if not exon:
-                                  exon = re.search("\d+", transcript_list[vep_dict['INTRON']])                                
+                                  exon = re.search("\d+", transcript_list[vep_dict['INTRON']])
                                 if exon is not None:
                                   exon = exon.group(0)
                                 else:
@@ -745,8 +746,8 @@ def do_civic():
         o.close()
         p.sample_env[sample]['READY_SNV_VCF'] = p.sample_env[sample]['CIVIC_VCF']
         p.sample_env[sample]['READY_SNV_JSON'] = p.sample_env[sample]['CIVIC_VCF'].replace(".vcf", ".json")
-        p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CIVIC_VCF_NAME']     
-        
+        p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CIVIC_VCF_NAME']
+
         # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['READY_SNV_VCF'])
 
@@ -763,7 +764,7 @@ def do_vep():
       "fathmm"  : "FATHMM_score,FATHMM_pred",
       "revel"   : "REVEL_score",
       "mutpred" : "MutPred_score",
-    } 
+    }
 
     for sample in p.sample_env:
 
@@ -783,15 +784,15 @@ def do_vep():
         phylop_ann    = ''
         phastcons_ann = ''
 
-        # Missense predictors from dbNSFP 
+        # Missense predictors from dbNSFP
         if p.analysis_env['MISSENSE_PREDICTORS']:
           missense_list = p.analysis_env['MISSENSE_PREDICTORS'].split(',')
-          tmp = [] 
+          tmp = []
           for predictor in missense_list:
             tmp.append(dbnsfp_dict[predictor])
           dbnsfp_ann = " --plugin dbNSFP,/anndir/dbNSFP/" + \
             p.aux_env['DBNSFP_FILENAME'] + "," + ','.join(tmp)
-        # Setting splicing predictors 
+        # Setting splicing predictors
         if p.analysis_env['SPLICING_PREDICTORS']:
           splicing_list = p.analysis_env['SPLICING_PREDICTORS'].split(',')
           for predictor in splicing_list:
@@ -803,7 +804,7 @@ def do_vep():
               spliceai_ann = " --plugin SpliceAI,snv=/anndir/spliceAI/" + \
                 p.aux_env['SPLICEAI_SNV_FILENAME'] + ",indel=/anndir/spliceAI/" + \
                 p.aux_env['SPLICEAI_INDEL_FILENAME']
-        # Setting genomewide predictors 
+        # Setting genomewide predictors
         if p.analysis_env['GENOMEWIDE_PREDICTORS']:
           pass
         if p.analysis_env['GNOMAD'] == True:
@@ -812,7 +813,7 @@ def do_vep():
         if p.analysis_env['1KG'] == True:
           thousand_fields = "AC,AN,AF,AFR_AF,AMR_AF,EUR_AF,SAS_AF,EAS_AF,OTH_AS"
           thousand_ann = ' --custom /anndir/1000Genomes/' + p.aux_env['1KG_FILENAME'] + ",1KG,vcf,exact,0" + thousand_fields
-          
+
         # Setting conservation scores
         if p.analysis_env['CONSERVATION_SCORES']:
           cons_list = p.analysis_env['CONSERVATION_SCORES'].split(',')
@@ -865,7 +866,7 @@ def do_vep():
 
         p.sample_env[sample]['READY_SNV_VCF'] = p.sample_env[sample]['VEP_VCF']
         p.sample_env[sample]['READY_SNV_JSON'] = p.sample_env[sample]['VEP_VCF'].replace(".vcf", ".json")
-        p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['VEP_VCF_NAME']     
+        p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['VEP_VCF_NAME']
 
         # Create JSON file
         u.convert_vcf_2_json(p.sample_env[sample]['READY_SNV_VCF'])
@@ -1043,7 +1044,7 @@ def do_cgi():
                     line = '\t'.join(tmp)
                     o.write(line+"\n")
         f.close()
-        o.close()  
+        o.close()
         p.sample_env[sample]['READY_SNV_VCF'] = p.sample_env[sample]['CGI_VCF']
         p.sample_env[sample]['READY_SNV_JSON'] = p.sample_env[sample]['CIVIC_VCF'].replace(".vcf", ".json")
         p.sample_env[sample]['READY_SNV_VCF_NAME'] = p.sample_env[sample]['CGI_VCF_NAME']
@@ -1058,7 +1059,7 @@ def annotate_known_fusions():
         fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
         intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
         fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".fusions.vcf")
-        
+
         if os.path.isfile(fusions_vcf):
           msg = " INFO: Skipping fusion annotation for sample "+ sample
           print(msg)
@@ -1071,7 +1072,7 @@ def annotate_known_fusions():
 
         bashCommand = ('{} pairtopair -a {} -b {} | sort -V | uniq > {}')\
         .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['CHIMERKB_BED'], intersect_file)
-            
+
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')
         error  = p1.stderr.decode('UTF-8')
@@ -1080,7 +1081,7 @@ def annotate_known_fusions():
             print(msg)
             logging.info(msg)
         else:
-            msg = " ERROR: Something went wrong with Fusion annotation for sample " + sample 
+            msg = " ERROR: Something went wrong with Fusion annotation for sample " + sample
             print(msg)
             logging.error(msg)
 
@@ -1091,7 +1092,7 @@ def annotate_known_fusions():
                 tmp = line.split("\t")
                 info = tmp[13]
                 tmp_info = info.split(";")
-                
+
                 coordinate = tmp[0]+"\t"+tmp[1]
                 fusion_pair = "."
                 disease     = "."
