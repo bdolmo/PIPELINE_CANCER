@@ -26,7 +26,7 @@ from sqlalchemy import Table, Column, Float, Integer, String, MetaData, ForeignK
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-# global app 
+# global app
 #global db
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = ""
@@ -34,7 +34,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 def init():
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + p.analysis_env['DB_DIR'] + "/NGS.db" 
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + p.analysis_env['DB_DIR'] + "/NGS.db"
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config.update(dict(
         SECRET_KEY="powerful secretkey",
@@ -64,7 +64,7 @@ class SampleVariants(db.Model):
     sample_id = db.Column(db.Integer)
     var_id = db.Column(db.Integer)
     ann_id = db.Column(db.Integer)
-    lab_confirmation = db.Column(db.String(20))    
+    lab_confirmation = db.Column(db.String(20))
     confirmation_technique = db.Column(db.String(20))
     classification = db.Column(db.String(20))
     ann_key = db.Column(db.String(200))
@@ -104,7 +104,7 @@ class SampleTable(db.Model):
     bam = db.Column(db.String(80))
     merged_vcf = db.Column(db.String(80))
     report_pdf = db.Column(db.String(120))
-    report_db= db.Column(db.String(120)) 
+    report_db= db.Column(db.String(120))
     sample_db_dir= db.Column(db.String(120))
     cnv_json   = db.Column(db.String(100000))
 
@@ -140,6 +140,9 @@ class TherapeuticTable(db.Model):
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
     classification = db.Column(db.String(120))
+    db_detected_number = db.Column(db.Integer())
+    db_sample_count    = db.Column(db.Integer())
+    db_detected_freq = db.Column(db.Float())
 
     def __repr__(self):
         return '<TherapeuticVariants %r>' % self.gene
@@ -173,6 +176,9 @@ class OtherVariantsTable(db.Model):
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
     classification = db.Column(db.String(120))
+    db_detected_number = db.Column(db.Integer())
+    db_sample_count    = db.Column(db.Integer())
+    db_detected_freq = db.Column(db.Float())
 
 class RareVariantsTable(db.Model):
     __tablename__ = 'RARE_VARIANTS'
@@ -203,6 +209,9 @@ class RareVariantsTable(db.Model):
     validated_assessor = db.Column(db.String(120))
     validated_bioinfo = db.Column(db.String(120))
     classification = db.Column(db.String(120))
+    db_detected_number = db.Column(db.Integer())
+    db_sample_count    = db.Column(db.Integer())
+    db_detected_freq = db.Column(db.Float())
 
 class BiomarkerTable(db.Model):
     __tablename__ = 'BIOMARKER_METRICS'
@@ -212,7 +221,7 @@ class BiomarkerTable(db.Model):
     ext1_id = db.Column(db.String(80))
     ext2_id = db.Column(db.String(80))
     run_id  = db.Column(db.String(80))
-    gene = db.Column(db.String(80))
+    gene    = db.Column(db.String(80))
     variant = db.Column(db.String(80))
     exon = db.Column(db.String(80))
     chr = db.Column(db.String(80))
@@ -238,7 +247,7 @@ class SummaryQcTable(db.Model):
         return '<SummaryQc %r>' % self.user_id
 
 class Petition(db.Model):
-    __tablename__ = 'PETITIONS' 
+    __tablename__ = 'PETITIONS'
     Id             = db.Column(db.Integer(), primary_key=True, autoincrement=True)
     Petition_id    = db.Column(db.String(20))
     #User_id        = db.Column(db.String(20))
@@ -252,7 +261,7 @@ class Petition(db.Model):
     Medical_doctor = db.Column(db.String(50))
     Billing_unit   = db.Column(db.String(50))
 
-    def __init__(self, Petition_id,  Date, AP_code, HC_code, Tumour_pct, Volume, Conc_nanodrop, 
+    def __init__(self, Petition_id,  Date, AP_code, HC_code, Tumour_pct, Volume, Conc_nanodrop,
         Ratio_nanodrop, Medical_doctor, Billing_unit):
         self.Petition_id = Petition_id
         #self.User_id  = User_id
@@ -265,7 +274,7 @@ class Petition(db.Model):
         self.Ratio_nanodrop = Ratio_nanodrop
         self.Medical_doctor = Medical_doctor
         self.Billing_unit = Billing_unit
-        
+
 class Biomarker(db.Model):
   __tablename__ = 'BIOMARKERS'
   id = db.Column(Integer, primary_key=True)
@@ -323,7 +332,7 @@ class Disclaimer(db.Model):
   legal_provisions = db.Column(String(3000))
   language = db.Column(String(3000))
 
-  def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation, 
+  def __init__(self, id, panel, genes, methodology, analysis, lab_confirmation,
     technical_limitations, legal_provisions, language):
       self.id  = id
       self.panel     = panel
@@ -347,9 +356,8 @@ class Cna(db.Model):
   panel_version = db.Column(String(50))
   dump_therapeutic = db.Column(String(50))
   min_cn = db.Column(String(50))
-  def __init__(self, id, chromosome, start, end, gene, genome_version, 
+  def __init__(self, chromosome, start, end, gene, genome_version,
     panel_name, panel_version, dump_therapeutic, min_cn):
-      self.id  = id
       self.chromosome= chromosome
       self.start     = start
       self.end       = end
@@ -360,6 +368,82 @@ class Cna(db.Model):
       self.dump_therapeutic = dump_therapeutic
       self.min_cn = min_cn
 
+class AllCnas(db.Model):
+  __tablename__ = 'ALL_CNAS'
+  id = db.Column(db.Integer, primary_key=True)
+  user_id    = db.Column(db.String(100))
+  lab_id     = db.Column(db.String(100))
+  ext1_id    = db.Column(db.String(100))
+  ext2_id    = db.Column(db.String(100))
+  run_id     = db.Column(db.String(100))
+  chromosome = db.Column(db.String(100))
+  start      = db.Column(db.String(100))
+  end        = db.Column(db.String(100))
+  genes      = db.Column(db.String(100))
+  svtype     = db.Column(db.String(100))
+  ratio      = db.Column(db.String(100))
+  qual       = db.Column(db.String(100))
+  cn         = db.Column(db.String(100))
+  def __init__(self, user_id, lab_id, ext1_id, ext2_id, run_id,
+    chromosome, start, end, genes, svtype, ratio, qual, cn):
+      self.user_id   = user_id
+      self.lab_id    = lab_id
+      self.ext1_id   = ext1_id
+      self.ext2_id   = ext2_id
+      self.run_id    = run_id
+      self.chromosome= chromosome
+      self.start     = start
+      self.end       = end
+      self.genes     = genes
+      self.svtype    = svtype
+      self.ratio     = ratio
+      self.qual      = qual
+      self.cn        = cn
+
+class AllFusions(db.Model):
+  __tablename__ = 'ALL_FUSIONS'
+  id         = db.Column(db.Integer, primary_key=True)
+  user_id    = db.Column(db.String(100))
+  lab_id     = db.Column(db.String(100))
+  ext1_id    = db.Column(db.String(100))
+  ext2_id    = db.Column(db.String(100))
+  run_id     = db.Column(db.String(100))
+  chromosome = db.Column(db.String(100))
+  start      = db.Column(db.String(100))
+  end        = db.Column(db.String(100))
+  qual       = db.Column(db.String(100))
+  svtype     = db.Column(db.String(100))
+  read_pairs = db.Column(db.String(100))
+  split_reads= db.Column(db.String(100))
+  vaf        = db.Column(db.String(100))
+  depth      = db.Column(db.String(100))
+  fusion_partners= db.Column(db.String(100))
+  fusion_source  = db.Column(db.String(100))
+  fusion_diseases= db.Column(db.String(100))
+  flanking_genes = db.Column(db.String(100))
+
+  def __init__(self, user_id, lab_id, ext1_id, ext2_id, run_id,
+    chromosome, start, end, qual, svtype, read_pairs, split_reads, vaf, depth,
+    fusion_partners, fusion_source, fusion_diseases, flanking_genes):
+      self.user_id    = user_id
+      self.lab_id     = lab_id
+      self.ext1_id    = ext1_id
+      self.ext2_id    = ext2_id
+      self.run_id     = run_id
+      self.chromosome = chromosome
+      self.start      = start
+      self.end        = end
+      self.qual       = qual
+      self.svtype     = svtype
+      self.read_pairs = read_pairs
+      self.split_reads= split_reads
+      self.vaf        = vaf
+      self.depth      = depth
+      self.fusion_partners  = fusion_partners
+      self.fusion_source    = fusion_source
+      self.fusion_diseases  = fusion_diseases
+      self.flanking_genes   = flanking_genes
+
 def update_sample_db():
 
     for sample in p.sample_env:
@@ -369,30 +453,39 @@ def update_sample_db():
         if not result:
             ext1_id = '.'
             petition_id = '.'
-            if p.lab_data[sample]['AP_CODE']:
+            if 'AP_CODE' in p.lab_data[sample]:
                 ext1_id = p.lab_data[sample]['AP_CODE']
                 if "PETITION_ID" in p.sample_data[ext1_id]:
                     petition_id = p.sample_data[ext1_id]['PETITION_ID']
-                   
+
             ext2_id = '.'
-            if p.lab_data[sample]['HC_CODE']:
+            if 'HC_CODE' in p.lab_data[sample]:
                 ext2_id = p.lab_data[sample]['HC_CODE']
+
+            extraction_date = '.'
+            if 'PETITION_DATE' in p.lab_data[sample]:
+                extraction_date =  p.lab_data[sample]['PETITION_DATE']
+
+            purity = '.'
+            if 'PURITY' in p.lab_data[sample]:
+                purity = p.lab_data[sample]['PURITY']
 
             cnv_dict = defaultdict(dict)
             with open(p.sample_env[sample]['CNV_JSON']) as jf:
                 cnv_dict = json.load(jf)
             cnv_json_str = json.dumps(cnv_dict)
-            Sample = SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
-                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.', 
+
+            Sample = SampleTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
+                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, sex='.',
                 diagnosis='.', physician_name='.', medical_center='.', medical_address='.', sample_type='.',
-                extraction_date=p.lab_data[sample]['PETITION_DATE'], analysis_date=p.analysis_env['ANALYSIS_DATE'], 
-                tumour_purity=p.lab_data[sample]['PURITY'], panel=p.analysis_env['PANEL_NAME'], 
+                extraction_date=extraction_date, analysis_date=p.analysis_env['ANALYSIS_DATE'],
+                tumour_purity=purity, panel=p.analysis_env['PANEL_NAME'],
                 panel_version=p.analysis_env['PANEL_VERSION'], subpanel="ALL", roi_bed=p.analysis_env['PANEL_NAME'],
-                software="varMut", software_version="0.9.0", bam=p.sample_env[sample]['READY_BAM'], 
-                cnv_json=cnv_json_str, merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'], 
+                software=".", software_version=".", bam=p.sample_env[sample]['READY_BAM'],
+                cnv_json=cnv_json_str, merged_vcf=p.sample_env[sample]['READY_MERGED_VCF'],
                 report_pdf=p.sample_env[sample]['REPORT_PDF'], report_db=p.sample_env[sample]['REPORT_DB'],
                 sample_db_dir=p.sample_env[sample]['REPORT_FOLDER']  )
-            
+
             db.session.add(Sample)
             db.session.commit()
 
@@ -416,47 +509,49 @@ def update_summary_db():
         summary_dict['PCT_PCR_DUPLICATES'] = p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE']
         summary_dict['MEAN_INSERT_SIZE']   = p.sample_env[sample]['MEAN_INSERT_SIZE']
         summary_dict['SD_INSERT_SIZE']     = p.sample_env[sample]['SD_INSERT_SIZE']
-      
+
         for field in p.sample_env[sample]['CALL_RATE']:
 
-            # Setting call rate values 
-            summary_dict['CALL_RATE'][field] =  p.sample_env[sample]['CALL_RATE'][field] 
+            # Setting call rate values
+            summary_dict['CALL_RATE'][field] =  p.sample_env[sample]['CALL_RATE'][field]
 
-            # Setting lost exon values 
+            # Setting lost exon values
             if field in p.sample_env[sample]['LOST_EXONS']:
-                summary_dict['LOST_EXONS'][field] =  p.sample_env[sample]['LOST_EXONS'][field]
+                summary_dict['LOST_EXONS'][field] = p.sample_env[sample]['LOST_EXONS'][field]
             else:
-                summary_dict['LOST_EXONS'][field] =  '.'
+                summary_dict['LOST_EXONS'][field] = '.'
 
-        # External ID 1 (e.g AP code) 
+        # External ID 1 (e.g AP code)
         ext1_id = '.'
         petition_id = '.'
-        if p.lab_data[sample]['AP_CODE']:
+        if 'AP_CODE' in p.lab_data[sample]:
             ext1_id = p.lab_data[sample]['AP_CODE']
             if "PETITION_ID" in p.sample_data[ext1_id]:
                 petition_id = p.sample_data[ext1_id]['PETITION_ID']
 
-        # External ID 2 (e.g HC code) 
+        # External ID 2 (e.g HC code)
         ext2_id = '.'
-        if p.lab_data[sample]['HC_CODE']:
+        if 'HC_CODE' in p.lab_data[sample]:
             ext2_id = p.lab_data[sample]['HC_CODE']
 
-        # saving summary dict to string 
+        # saving summary dict to string
         summary_json_str = json.dumps(summary_dict)
 
         # Fastp JSON to string
         fastp_dict = defaultdict(dict)
         with open(p.sample_env[sample]['FASTP_JSON']) as jf:
             fastp_dict = json.load(jf)
-        fastp_json_str = json.dumps(fastp_dict)        
+        fastp_json_str = json.dumps(fastp_dict)
 
         result = SummaryQcTable.query.filter_by(user_id=p.analysis_env['USER_ID'])\
             .filter_by(lab_id=sample).filter_by(run_id=p.analysis_env['OUTPUT_NAME']).first()
 
         if not result:
-            Summary = SummaryQcTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id, 
-                ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id, 
-                summary_json=summary_json_str, fastp_json=fastp_json_str )
+            Summary = SummaryQcTable(user_id=p.analysis_env['USER_ID'],
+                lab_id=sample, ext1_id=ext1_id, ext2_id=ext2_id,
+                run_id=p.analysis_env['OUTPUT_NAME'],
+                petition_id=petition_id,summary_json=summary_json_str,
+                fastp_json=fastp_json_str )
             db.session.add(Summary)
             db.session.commit()
 
@@ -466,6 +561,7 @@ def load_petitions():
     return all_petitions
 
 def load_cna(pname):
+
     pname = pname.replace(".bed", "")
     pname = pname.replace(".v1", "")
     cna_env = defaultdict(dict)
@@ -487,6 +583,7 @@ def load_panel_biomarkers(pname):
 
     pname = pname.replace(".bed", "")
     pname = pname.replace(".v1", "")
+
     biomarkers_env = defaultdict(dict)
     biomarkers_info = Biomarker.query.filter_by(panel=pname).all()
     if biomarkers_info:
@@ -500,6 +597,7 @@ def load_panel_biomarkers(pname):
     return biomarkers_env
 
 def load_panel_disclaimers(pname, lang):
+
     pname= pname.replace(".bed", "")
     pname= pname.replace(".v1", "")
 

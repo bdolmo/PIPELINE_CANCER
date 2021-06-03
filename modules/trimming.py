@@ -30,7 +30,7 @@ def trim_fastqs():
     else :
       fq2 = fq
       fq1 = fq2.replace("R2", "R1")
-      
+
     fq_tmp = os.path.basename(fq1).split("_")
     sample_name  = fq_tmp[0]
 
@@ -49,7 +49,7 @@ def trim_fastqs():
       msg = " ERROR: Fastq pairs " +  fq1 + " " + fq2 + " are invalid"
       logging.error(msg)
       sys.exit()
-  
+
     fq_tmp = os.path.basename(fq1).split("_")
     sample_name  = fq_tmp[0]
 
@@ -77,26 +77,26 @@ def trim_fastqs():
     trimmed_fq1 = os.path.basename(fq1).replace(".fastq.gz", ".trimmed.fastq.gz")
     trimmed_fq2 = os.path.basename(fq2).replace(".fastq.gz", ".trimmed.fastq.gz")
 
-    # Setting fastq names in the global dictionaries 
+    # Setting fastq names in the global dictionaries
     p.sample_env[sample_name]['READY_FQ1'] = \
       p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + trimmed_fq1
     p.sample_env[sample_name]['READY_FQ2'] = \
       p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + trimmed_fq2
 
-    # Setting fastq names in the global dictionaries 
+    # Setting fastq names in the global dictionaries
     p.sample_env[sample_name]['FASTP_JSON'] = \
-      p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + "fastp.json"   
+      p.sample_env[sample_name]['FASTQ_FOLDER'] + "/" + "fastp.json"
 
     # Now trimming with fastp
     bashCommand = ('{} -i  {} -I {} -o {} -O {} -w {} -j {}') \
-      .format(p.system_env['FASTP'], fq1, fq2, p.sample_env[sample_name]['READY_FQ1'], 
-      p.sample_env[sample_name]['READY_FQ2'], p.analysis_env['THREADS'], 
+      .format(p.system_env['FASTP'], fq1, fq2, p.sample_env[sample_name]['READY_FQ1'],
+      p.sample_env[sample_name]['READY_FQ2'], p.analysis_env['THREADS'],
       p.sample_env[sample_name]['FASTP_JSON'] )
 
     if not os.path.isfile(p.sample_env[sample_name]['READY_FQ1']) \
       and not os.path.isfile(p.sample_env[sample_name]['READY_FQ2']):
 
-      msg = " INFO: Trimming sample " +  sample_name 
+      msg = " INFO: Trimming sample " +  sample_name
       print(msg)
       p.logging.info(msg)
       p.logging.info(bashCommand)
@@ -113,12 +113,12 @@ def trim_fastqs():
         else:
           msg = " INFO: FASTQ Trimming ended successfully for sample " + sample_name
           p.logging.info(msg)
-          print(msg)          
+          print(msg)
       else:
         msg = " INFO: FASTQ Trimming ended successfully for sample " + sample_name
         p.logging.info(msg)
         print(msg)
     else:
-      msg = " INFO: Skipping trimming of sample " +  sample_name 
+      msg = " INFO: Skipping trimming of sample " +  sample_name
       print(msg)
       p.logging.info(msg)

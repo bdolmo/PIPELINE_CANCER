@@ -173,6 +173,8 @@ def parse_arguments():
     parser_all.add_argument('--conservation', dest='conservation',
         default='phastcons,phylop,gerp', type=str,
         help="Choose missense in-silico predictors")
+    parser_all.add_argument("--plot_cnv", default=True,
+        help="Plot CNV calls", dest='plot_cnv')
 
     # Map command
     parser_map = subparsers.add_parser('map', parents=[parent_parser],
@@ -229,6 +231,8 @@ def parse_arguments():
         help="Sample data docx", dest='sample_data')
     parser_call.add_argument("--lab_data", type=str,
         help="Lab data xlsx", dest='lab_data')
+    parser_call.add_argument("--plot_cnv", default=True,
+        help="Plot CNV calls", dest='plot_cnv')
 
     # Annotation command
     parser_annotate = subparsers.add_parser('annotate', parents=[parent_parser],

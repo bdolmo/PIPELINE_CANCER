@@ -63,15 +63,24 @@ def create_summary_qc():
         logging.info(msg)
         return
 
-    header = ['Ext ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X',
+
+    header = ['Ext1 ID','Ext2 ID','Lab ID','Read L','Panel','N Ex','Total Reads','20X','30X',
     '100X','20X','30X','100X','Mean_cov','%ROI','%Rmdup','Mean_Isize', 'SD_Isize']
 
     with open(p.analysis_env['SUMMARY_QC'], 'wt') as out_file:
         tsv_writer = csv.writer(out_file, delimiter='\t')
         tsv_writer.writerow(header)
         for sample in p.sample_env:
+            ext1_id = '.'
+            if 'AP_CODE' in p.lab_data[sample]:
+                ext1_id = p.lab_data[sample]['AP_CODE']
+            ext2_id = '.'
+            if 'HC_CODE' in p.lab_data[sample]:
+                ext2_id = p.lab_data[sample]['HC_CODE']
+
             info = []
-            info.append("9999999")
+            info.append(ext1_id)
+            info.append(ext2_id)
             info.append(sample)
             info.append(p.sample_env[sample]['READ_LENGTH'])
             info.append(p.analysis_env['PANEL_NAME'])
@@ -112,17 +121,17 @@ def extract_mapping_metrics():
             for line in f:
                 line = line.rstrip('\n')
                 tmp = line.split('\t')
-                sample = tmp[1]
+                sample = tmp[2]
                 if 'Lab ID' in line:
                     continue
                 else:
-                    p.sample_env[sample]['TOTAL_READS']   = tmp[5]
-                    p.sample_env[sample]['MEAN_COVERAGE'] = tmp[12]
-                    p.sample_env[sample]['ROI_PERCENTAGE']= tmp[13]
-                    p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[14]
+                    p.sample_env[sample]['TOTAL_READS']   = tmp[6]
+                    p.sample_env[sample]['MEAN_COVERAGE'] = tmp[13]
+                    p.sample_env[sample]['ROI_PERCENTAGE']= tmp[14]
+                    p.sample_env[sample]['PCR_DUPLICATES_PERCENTAGE'] = tmp[15]
                     p.sample_env[sample]['ON_TARGET_READS']  = "."
-                    p.sample_env[sample]['MEAN_INSERT_SIZE'] = tmp[15]
-                    p.sample_env[sample]['SD_INSERT_SIZE']   = tmp[16]
+                    p.sample_env[sample]['MEAN_INSERT_SIZE'] = tmp[16]
+                    p.sample_env[sample]['SD_INSERT_SIZE']   = tmp[17]
         return
 
     for sample in p.sample_env:
@@ -207,11 +216,11 @@ def extract_mapping_metrics():
                 r_lengths.append(len(tmp[9]))
             isize_arr  = np.array(i_sizes)
             mean_isize = stats.trim_mean(isize_arr, 0.25)
-            sd_isize   = stats.tstd(isize_arr)
+            sd_isize   = stats.tstd(isize_arr, (2,1000))
             rlength_arr = np.array(r_lengths)
             mean_read_length = int(np.mean(rlength_arr))
             #print(mean_isize+ " "+ sd_isize)
-            p.sample_env[sample]['READ_LENGTH'] = str(mean_read_length)
+            p.sample_env[sample]['READ_LENGTH']      = str(mean_read_length)
             p.sample_env[sample]['MEAN_INSERT_SIZE'] = str(mean_isize)
             p.sample_env[sample]['SD_INSERT_SIZE']   = str(sd_isize)
         else:

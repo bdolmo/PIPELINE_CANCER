@@ -1,0 +1,139 @@
+version: 1
+
+resources:
+  # Variant Effect predictor
+  VEP:
+    resource_name: VEP
+    input:
+      key: VEP_FOLDER_INPUT
+      file: input
+    output:
+      key: VEP_FOLDER_OUTPUT
+      file: output
+    # Plugins: Plugins
+    # hg19: homo_sapiens/101_GRCh37
+    # hg38: ""
+    # sars_cov_2: sars_cov_2
+
+  # Population freq. resources
+  # 1000Genomes vcf
+  1000Genomes:
+    version: 20130502
+    resource_name: 1000Genomes
+    hg19:
+      items:
+        -1:
+          key: 1KG_FILE
+          file: ALL.wgs.phase3_shapeit2_mvncall_integrated_v5b.20130502.sites.vcf.gz
+    hg38: ""
+
+  # GnomAD vcf
+  gnomAD:
+    version: 2.1.1
+    resource_name: gnomAD
+    hg19:
+      items:
+        -1:
+          key: GNOMAD_FILE
+          file: gnomad.genomes.r2.1.1.sites.only_af.vcf.gz
+        -2:
+          key: GNOMAD_ONLY_AF_FILE
+          file: somatic-b37_af-only-gnomad.raw.sites.chr.vcf.gz
+    hg38: ""
+
+  # In-silico missense predictors
+  dbNSFP:
+    version: 4.1
+    resource_name: dbNSFP
+    hg19:
+      items:
+        -1:
+          key: DBNSFP_FILE
+          file: dbNSFP4.1a_grch37.gz
+    hg38: ""
+
+  # In-silico splicing predictors
+  # dbscSNV:
+  #   hg19: dbscSNV1.1_GRCh37.txt.gz
+  #   hg38: ""
+  spliceAI:
+    version:
+    resource_name: spliceAI
+    hg19:
+      items:
+        -1:
+          key : SPLICEAI_INDEL_FILE
+          file: spliceai_scores.raw.snv.hg19.vcf.gz
+        -2:
+          key: SPLICEAI_SNV_FILE
+          file: spliceai_scores.raw.indel.hg19.vcf.gz
+
+  # MaxEntScan scripts and models
+  MaxEntScan:
+    version:
+    resource_name: MAXENT
+    hg19:
+      items:
+        -1:
+          key: MAXENT_FOLDER
+          file: None
+
+  # Cancer specific
+  # Cancer Genome Interpreter
+  CGI:
+    version: 1
+    resource_name: CGI
+    hg19:
+      items:
+        -1:
+          key: CGI_BIOMARKERS_FILE
+          file: cgi_biomarkers_latest/cgi_biomarkers_per_variant.tsv
+    hg38: ""
+
+  # Database for fusions
+  chimerKB:
+    version: 4
+    resource_name: chimerKB
+    hg19:
+      items:
+        -1:
+          key: CHIMERKB_FILE
+          file: chimerKB_hg19_fusions.bed
+    hg38: ""
+
+  # Bad qual regions to be removed. Custom made
+  Blacklist:
+    version:
+    resource_name: Blacklist
+    hg19:
+      items:
+        -1:
+          key: EXCLUDE_REGIONS_FILE
+          file: exclude.regions.hg19.bed
+        -2:
+          key: EXCLUDE_SV_FILE
+          file: blacklistedSV.hg19.bed
+
+  # Conservation scores
+  Conservation:
+    version:
+    resource_name: Conservation
+    hg19:
+      items:
+        -1:
+          key: PHASTCONS_FILE
+          file: hg19.100way.phastCons.bw
+        -2:
+          key: PHYLOP_FILE
+          file: hg19.100way.phyloP100way.bw
+
+  # Mappability scores
+  Mappability:
+    version:
+    resource_name: Mappability
+    hg19:
+      items:
+        -1:
+          key: MAPPABILITY_FILE
+          file: wgEncodeCrgMapabilityAlign100mer.chr.bedgraph.gz
+    hg38: ""

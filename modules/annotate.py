@@ -12,7 +12,6 @@ from pathlib import Path
 from scipy import stats
 import numpy as np
 import subprocess
-from civicpy import civic, exports
 import requests
 import pprint
 import json
@@ -169,7 +168,7 @@ def annotate_cnas():
             line = '\t'.join(tmp)
             o.write(line+"\n")
       o.close()
-      
+
       if not os.path.isfile(p.sample_env[sample]['READY_CNA_VCF']):
         msg = " ERROR: " + p.sample_env[sample]['READY_CNA_VCF'] + " was not created"
         print(msg)
@@ -184,6 +183,9 @@ def annotate_cnas():
 
 
 def add_edge_genes():
+  '''
+    Add flanking genes to SV breakpoints
+  '''
 
   msg = " INFO: Adding flanking genes to SVs"
   logging.info(msg)
@@ -233,10 +235,12 @@ def add_edge_genes():
           fusions_dict[coordinate]['LEFT_FLANK'] = []
           fusions_dict[coordinate]['RIGHT_FLANK'] = []
 
+        # Segment A
         chrA = tmp[0]
         posA = tmp[1]
         endA = tmp[2]
 
+        # Segment B
         chrB = tmp[3]
         posB = tmp[4]
         endB = tmp[5]
@@ -244,7 +248,7 @@ def add_edge_genes():
         chr = tmp[7]
         pos = tmp[8]
         end = tmp[9]
-        gene = tmp[10]
+        gene =tmp[10]
         if chr == chrA and chr != chrB:
           if posA >= pos and endA <= end:
             fusions_dict[coordinate]['LEFT_FLANK'].append(gene)
@@ -297,17 +301,15 @@ def filter_transcripts():
 
     for sample in p.sample_env:
 
-        p.sample_env[sample]['TMP_SNV_VCF'] = p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".tmp.vcf")
-        o = open(p.sample_env[sample]['TMP_SNV_VCF'], 'w')
-
-        print (p.sample_env[sample]['TMP_SNV_VCF'])
+        p.sample_env[sample]['TMP_SNV_VCF'] = \
+            p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".tmp.vcf")
 
         vep_dict = defaultdict(dict)
         vep_list = []
 
         civic_dict = defaultdict(dict)
         civic_list = []
-
+        o = open(p.sample_env[sample]['TMP_SNV_VCF'], 'w')
         with open (p.sample_env[sample]['READY_SNV_VCF']) as f:
             for line in f:
                 line = line.rstrip("\n")
@@ -396,12 +398,14 @@ def merge_vcfs():
             u.index_vcf(vcf3)
         else:
             vcf3 = vcf3 + ".gz"
-        bashCommand = ('{} merge {} {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'], vcf1, vcf2, vcf3, merged_vcf)
+        bashCommand = ('{} merge {} {} {} --force-samples > {}').format(p.system_env['BCFTOOLS'],
+            vcf1, vcf2, vcf3, merged_vcf)
 
         if not os.path.isfile(merged_vcf):
             msg = " INFO: " + bashCommand
             logging.info(msg)
-            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
             output = p1.stdout.decode('UTF-8')
             error  = p1.stderr.decode('UTF-8')
             if not error:
@@ -409,7 +413,7 @@ def merge_vcfs():
             else:
                 if re.search("Failed", error):
                   print(error)
-                  msg = " ERROR: Could not merge " + vcf1 + " and" + vcf2 + " and" + vcf3
+                  msg = " ERROR: Could not merge " + vcf1 + "," + vcf2 + "," + vcf3
                   print(msg)
                   logging.error(msg)
                   sys.exit()
@@ -567,7 +571,7 @@ class Civic:
       ev_id = evidence['name']
       self.evidence_dict[variant_id][ev_id]['ev_id'] = evidence['name']
       self.evidence_dict[variant_id][ev_id]['evidence_direction'] = evidence['evidence_direction']
-      self.evidence_dict[variant_id][ev_id]['evidence_level'] = evidence['evidence_level']
+      self.evidence_dict[variant_id][ev_id]['evidence_level']     = evidence['evidence_level']
       self.evidence_dict[variant_id][ev_id]['clinical_significance'] = evidence['clinical_significance']
       drugs_list = []
       for drug in evidence['drugs']:
@@ -575,8 +579,17 @@ class Civic:
       drug_set = set(drugs_list)
       drugs_list = list(drug_set)
       self.evidence_dict[variant_id][ev_id]['drugs']  = '&'.join(drugs_list)
-      self.evidence_dict[variant_id][ev_id]['disease'] = evidence['disease']['name'].replace(" ", "_")
-      self.evidence_dict[variant_id][ev_id]['pmid'] = evidence['source']['citation_id']
+
+      if evidence['disease']:
+          if evidence['disease']['name'] is not None:
+              self.evidence_dict[variant_id][ev_id]['disease'] = evidence['disease']['name'].replace(" ", "_")
+          else:
+              self.evidence_dict[variant_id][ev_id]['disease'] = "."
+
+      if evidence['source']['citation_id'] is not None:
+          self.evidence_dict[variant_id][ev_id]['pmid'] = evidence['source']['citation_id']
+      else:
+          self.evidence_dict[variant_id][ev_id]['pmid'] = "."
       clintrials_list = []
       for trial in evidence['source']['clinical_trials']:
         clintrials_list.append(trial['nct_id'])
@@ -756,24 +769,56 @@ def do_vep():
     VEP annotation of vcf files
     '''
 
+    # Defining default field naming conventions
+    # Here, we map input predictor parameters with its associated dbSNFP tag
     dbnsfp_dict = {
-      "sift" : "SIFT_score,SIFT_pred",
-      "polyphen2" : "Polyphen2_HDIV_score,Polyphen2_HDIV_pred",
+      "sift"            : "SIFT_score,SIFT_pred",
+      "polyphen2"       : "Polyphen2_HDIV_score,Polyphen2_HDIV_pred",
       "mutationtaster2" : "MutationTaster_score,MutationTaster_pred",
-      "provean" : "PROVEAN_score,PROVEAN_pred",
-      "fathmm"  : "FATHMM_score,FATHMM_pred",
-      "revel"   : "REVEL_score",
-      "mutpred" : "MutPred_score",
+      "provean"         : "PROVEAN_score,PROVEAN_pred",
+      "fathmm"          : "FATHMM_score,FATHMM_pred",
+      "revel"           : "REVEL_score",
+      "mutpred"         : "MutPred_score",
     }
+
+    # Defining gnomAD fields to be used
+    gnomad_list = [
+        "AC",
+        "AN",
+        "AF",
+        "rf_tp_probability",
+        "AC_afr",
+        "AN_afr",
+        "AF_afr",
+        "AC_eas",
+        "AF_eas",
+        "AC_nfe",
+        "AN_nfe",
+        "AF_nfe",
+        "AC_fin",
+        "AN_fin",
+        "AF_fin",
+        "AC_asj",
+        "AN_asj",
+        "AF_asj",
+        "AC_oth",
+        "AN_oth",
+        "AF_oth",
+        "popmax",
+        "AC_popmax",
+        "AN_popmax",
+        "AF_popmax"
+    ]
 
     for sample in p.sample_env:
 
+        # Adding a new suffix for VEP annotated VCF
         p.sample_env[sample]['VEP_VCF'] = \
             p.sample_env[sample]['READY_SNV_VCF'].replace(".vcf", ".vep.vcf")
-
         p.sample_env[sample]['VEP_VCF_NAME'] = \
             os.path.basename(p.sample_env[sample]['READY_SNV_VCF_NAME']).replace(".vcf", ".vep.vcf")
 
+        # Custom databases (either in BED or VCF) to be added to VEP
         dbnsfp_ann    = ''
         gnomad_ann    = ''
         thousand_ann  = ''
@@ -786,69 +831,112 @@ def do_vep():
 
         # Missense predictors from dbNSFP
         if p.analysis_env['MISSENSE_PREDICTORS']:
+
+          p.aux_env['DBNSFP_FILENAME'] = os.path.basename(p.aux_env['DBNSFP_FILE'])
           missense_list = p.analysis_env['MISSENSE_PREDICTORS'].split(',')
-          tmp = []
+          tmp_list = []
           for predictor in missense_list:
-            tmp.append(dbnsfp_dict[predictor])
-          dbnsfp_ann = " --plugin dbNSFP,/anndir/dbNSFP/" + \
-            p.aux_env['DBNSFP_FILENAME'] + "," + ','.join(tmp)
+            tmp_list.append(dbnsfp_dict[predictor])
+
+          dbnsfp_genomedir = "dbNSFP" + "/" + p.analysis_env['GENOME_VERSION']
+
+          dbnsfp_ann = " --plugin dbNSFP,/anndir/" + dbnsfp_genomedir + "/" + \
+            p.aux_env['DBNSFP_FILENAME'] + "," + ','.join(tmp_list)
+
         # Setting splicing predictors
         if p.analysis_env['SPLICING_PREDICTORS']:
+
           splicing_list = p.analysis_env['SPLICING_PREDICTORS'].split(',')
+
           for predictor in splicing_list:
+
             #  Including MaxEntScan
             if predictor == "maxentscan":
               maxent_ann = " --plugin MaxEntScan,/anndir/MaxEntScan"
+
             #  Including SpliceAI for SNV and Indels
             if predictor == "spliceai":
-              spliceai_ann = " --plugin SpliceAI,snv=/anndir/spliceAI/" + \
-                p.aux_env['SPLICEAI_SNV_FILENAME'] + ",indel=/anndir/spliceAI/" + \
+                p.aux_env['SPLICEAI_SNV_FILENAME']   = \
+                    os.path.basename(p.aux_env['SPLICEAI_SNV_FILE'])
+                p.aux_env['SPLICEAI_INDEL_FILENAME'] = \
+                    os.path.basename(p.aux_env['SPLICEAI_INDEL_FILE'])
+
+                spliceai_genomedir = "spliceAI" + "/" + p.analysis_env['GENOME_VERSION']
+
+                spliceai_ann = " --plugin SpliceAI,snv=/anndir/" + spliceai_genomedir + "/" + \
+                p.aux_env['SPLICEAI_SNV_FILENAME'] + ",indel=/anndir/" + spliceai_genomedir + "/" + \
                 p.aux_env['SPLICEAI_INDEL_FILENAME']
+
         # Setting genomewide predictors
         if p.analysis_env['GENOMEWIDE_PREDICTORS']:
+          # TODO
           pass
+
+        # Setting GnomAD
         if p.analysis_env['GNOMAD'] == True:
-          gnomad_fields = "AC,AN,AF,rf_tp_probability,AC_afr,AN_afr,AF_afr,AC_eas,AF_eas,AC_nfe,AN_nfe,AF_nfe,AC_fin,AN_fin,AF_fin,AC_asj,AN_asj,AF_asj,AC_oth,AN_oth,AF_oth,popmax,AC_popmax,AN_popmax,AF_popmax"
-          gnomad_ann = ' --custom /anndir/gnomAD/' + p.aux_env['GNOMAD_FILENAME'] + ",GNOMAD,vcf,exact,0" + gnomad_fields
+
+          # GnomAD filename
+          p.aux_env['GNOMAD_FILENAME'] = os.path.basename(p.aux_env['GNOMAD_FILE'])
+
+          gnomad_fields = "," + ",".join(gnomad_list)
+          gnomad_genomedir = "gnomAD/" + "/" + p.analysis_env['GENOME_VERSION']
+          gnomad_ann = ' --custom /anndir/' + gnomad_genomedir + "/" \
+            + p.aux_env['GNOMAD_FILENAME'] + ",GNOMAD,vcf,exact,0" + gnomad_fields
+
+        # Setting 1000Genomes
         if p.analysis_env['1KG'] == True:
+
+          # 1kg filename
+          p.aux_env['1KG_FILENAME'] = os.path.basename(p.aux_env['1KG_FILE'])
+
           thousand_fields = "AC,AN,AF,AFR_AF,AMR_AF,EUR_AF,SAS_AF,EAS_AF,OTH_AS"
-          thousand_ann = ' --custom /anndir/1000Genomes/' + p.aux_env['1KG_FILENAME'] + ",1KG,vcf,exact,0" + thousand_fields
+          thousand_genomedir = "1000Genomes/" + "/" + p.analysis_env['GENOME_VERSION']
+          thousand_ann = ' --custom /anndir/' + thousand_genomedir + "/" + p.aux_env['1KG_FILENAME'] \
+            + ",1KG,vcf,exact,0" + thousand_fields
 
         # Setting conservation scores
         if p.analysis_env['CONSERVATION_SCORES']:
+          conservation_genomedir = "Conservation/" + "/" + p.analysis_env['GENOME_VERSION']
           cons_list = p.analysis_env['CONSERVATION_SCORES'].split(',')
-          for conservation in cons_list:
-            if conservation == 'phastcons':
-              phastcons_ann = ' --custom /anndir/Conservation/' + p.aux_env['PHASTCONS_FILENAME'] + ",Phastcons" + ',bigwig,overlap'
-            if conservation == 'phylop':
-              phylop_ann = ' --custom /anndir/Conservation/' + p.aux_env['PHYLOP_FILENAME'] + ",PhyloP" + ',bigwig,overlap'
+          for score in cons_list:
+            if score == 'phastcons':
+              p.aux_env['PHASTCONS_FILENAME'] = os.path.basename(p.aux_env['PHASTCONS_FILE'])
+              phastcons_ann = ' --custom /anndir/' + conservation_genomedir + "/" \
+                + p.aux_env['PHASTCONS_FILENAME'] + ",Phastcons" + ',bigwig,overlap'
+            if score == 'phylop':
+              p.aux_env['PHYLOP_FILENAME']    = os.path.basename(p.aux_env['PHYLOP_FILE'])
+              phylop_ann = ' --custom /anndir/' + conservation_genomedir + "/" \
+                + p.aux_env['PHYLOP_FILENAME'] + ",PhyloP" + ',bigwig,overlap'
 
        # --plugin Conservation,/path/to/bigwigfile.bw
        # --plugin SpliceAI,snv=/path/to/spliceai_scores.raw.snv.hg38.vcf.gz,indel=/path/to/spliceai_scores.raw.indel.hg38.vcf.gz
        # --plugin MaxEntScan,/path/to/maxentscan/fordownload,SWA,NCSS
         vep_output_vcf = p.aux_env['VEP_FOLDER_OUTPUT'] + "/" + p.sample_env[sample]['VEP_VCF_NAME']
-        dbnsfp_fields = ',Ensembl_transcriptid,gnomAD_genomes_POPMAX_AC,gnomAD_genomes_POPMAX_AN,gnomAD_genomes_flag,gnomAD_genomes_POPMAX_AF,GERP++_RS,phyloP100way_vertebrate'
+
         bashCommand = ('{} run -t -i -v {}:/genomedir/ -v {}:/anndir/ -v {}:/opt/vep/.vep {}'
         ' perl vep --cache --offline --dir_cache /opt/vep/.vep/ --dir_plugins /opt/vep/.vep/Plugins/'
         ' --input_file /opt/vep/.vep/input/{} --output_file /opt/vep/.vep/output/{} '
         ' --af_1kg --af_gnomad --cache_version 101  --canonical '
-        ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype --ccds --sift b --polyphen b --symbol --force_overwrite --fork {}'
+        ' --format vcf --vcf --hgvs --hgvsg --max_af --pubmed --gene_phenotype '
+        ' --ccds --sift b --polyphen b --symbol --force_overwrite --fork {} '
         ' {} {} {} {} {} {} {} --fasta /genomedir/{} '
         .format(p.system_env['DOCKER'], p.aux_env['GENOME_FOLDER'], p.analysis_env['ANN_DIR'], p.aux_env['VEP_FOLDER'], p.docker_env['VEP'],\
         p.sample_env[sample]['READY_SNV_VCF_NAME'], p.sample_env[sample]['VEP_VCF_NAME'], p.analysis_env['THREADS'],\
         dbnsfp_ann, spliceai_ann, maxent_ann, phastcons_ann, phylop_ann, gnomad_ann, thousand_ann, p.aux_env['GENOME_NAME'] ))
-
+        print(bashCommand)
         if not os.path.isfile(p.sample_env[sample]['VEP_VCF']):
 
-            # First, copy vcf to vep input dir
-            shutil.copy2(p.sample_env[sample]['READY_SNV_VCF'], p.aux_env['VEP_FOLDER_INPUT']+"/"+p.sample_env[sample]['READY_SNV_VCF_NAME'])
+            # VEP requires a local copy within its working directory (input dir)
+            shutil.copy2(p.sample_env[sample]['READY_SNV_VCF'],
+                p.aux_env['VEP_FOLDER_INPUT']+ "/" + p.sample_env[sample]['READY_SNV_VCF_NAME'])
 
             msg = " INFO: Annotating sample " + sample + " with VEP"
             print (msg)
             logging.info(msg)
             logging.info(bashCommand)
 
-            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE)
             output = p1.stdout.decode('UTF-8')
             error  = p1.stderr.decode('UTF-8')
             if not error:
@@ -877,10 +965,10 @@ def load_cgi_data():
   '''
   cgi_dict = defaultdict(dict)
 
-  with open (p.aux_env['CGI_BIOMARKERS'], 'r') as f:
+  with open (p.aux_env['CGI_BIOMARKERS_FILE'], 'r') as f:
     for line in f:
       line = line.rstrip("\n")
-      tmp = line.split("\t")
+      tmp  = line.split("\t")
       if line.startswith("Alteration"):
         continue
       else:
@@ -1059,7 +1147,9 @@ def annotate_known_fusions():
         fusions_bed = u.vcf_2_bed(p.sample_env[sample]['READY_SV_VCF'])
         intersect_file  = p.sample_env[sample]['VCF_FOLDER'] + "/" + "intersect.bed"
         fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".fusions.vcf")
-
+        fusions_json= fusions_vcf.replace(".vcf", ".json")
+        p.sample_env[sample]['READY_SV_JSON'] = fusions_json
+        
         if os.path.isfile(fusions_vcf):
           msg = " INFO: Skipping fusion annotation for sample "+ sample
           print(msg)
@@ -1071,7 +1161,7 @@ def annotate_known_fusions():
         o = open(fusions_vcf, 'w')
 
         bashCommand = ('{} pairtopair -a {} -b {} | sort -V | uniq > {}')\
-        .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['CHIMERKB_BED'], intersect_file)
+        .format(p.system_env['BEDTOOLS'], fusions_bed, p.aux_env['CHIMERKB_FILE'], intersect_file)
 
         p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output = p1.stdout.decode('UTF-8')

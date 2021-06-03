@@ -18,7 +18,6 @@ import subprocess
 from modules import params as p
 
 
-
 def get_input_files(input_dir, file_type):
   '''Get all files (fastq, bam, vcf) from an input directory
   '''
@@ -50,7 +49,6 @@ def get_bin_path(program):
   if not error:
     if output:
       path = output.rstrip('\n')
-      print(path)
       return path
     else:
       msg = " ERROR: Unable to find the PATH of " + program
@@ -64,7 +62,8 @@ def get_bin_path(program):
     sys.exit()
 
 def num_to_human(num):
-
+  '''Convert huge numbers to human readable
+  '''
   num = int(num)
   if num >= 1000000:
     num_human = round( (int(num)/1000000), 3)
@@ -88,7 +87,7 @@ def mean_depth_coordinate(bam, coordinate):
   p1 = subprocess.run(bashCommand, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
   output = p1.stdout.decode('UTF-8')
   error  = p1.stderr.decode('UTF-8')
-  mean_depth_list =[]  
+  mean_depth_list =[]
   if not error:
     if output:
       for depth in output.split('\n'):
@@ -237,7 +236,7 @@ def convert_vcf_2_json(vcf):
                 continue
             else:
                 tmp = line.split('\t')
-                ident_list = [] 
+                ident_list = []
                 chr = tmp[0]
                 ident_list.append(chr)
                 pos = tmp[1]
@@ -259,12 +258,12 @@ def convert_vcf_2_json(vcf):
                 format = tmp[9]
                 identifier = "\t".join(ident_list)
 
-                # Skipping repeated variants  
+                # Skipping repeated variants
                 if not identifier in seen:
                   seen[identifier] = 0
                 seen[identifier]+= 1
                 if seen[identifier] > 1:
-                  continue  
+                  continue
 
                 format2 = ""
                 format3 = ""
@@ -357,13 +356,13 @@ def convert_vcf_2_json(vcf):
                             n =n+1
                     else:
                         vcf_dict['variants'][var_name]['INFO'][tmp_item[0]] = tmp_item[1]
- 
+
                 if format2 != "":
                   tmp_format_tag = format_tag.split(':')
                   tmp_format = format2.split(':')
                 else:
                   tmp_format_tag = format_tag.split(':')
-                  tmp_format = format2.split(':')      
+                  tmp_format = format2.split(':')
                 if 'SVTYPE' in line:
                   if 'CNA_GENES' in line:
                     tmp_format_tag = format_tag.split(':')
@@ -462,7 +461,7 @@ def get_fastq_files():
     if 'Undetermined' in fastq:
       continue
     else:
-      filtered_list.append(fastq) 
+      filtered_list.append(fastq)
 
   return filtered_list
 
@@ -482,31 +481,31 @@ def check_docker_images(command, image):
         for line in output.split('\n'):
           c_lines += 1
         if c_lines !=3:
-          msg = " ERROR: docker image for " + image +  " was not found" 
+          msg = " ERROR: docker image for " + image +  " was not found"
           print (msg)
           p.logging.error(msg)
           sys.exit()
         else:
-          msg = " INFO: docker image for " + image +  " was found" 
+          msg = " INFO: docker image for " + image +  " was found"
           print (msg)
           p.logging.info(msg)
     else:
-        msg = " ERROR: docker image for " + image +  " was not found" 
+        msg = " ERROR: docker image for " + image +  " was not found"
         print (msg)
         p.logging.error(msg)
         sys.exit()
 
 def long_aminoacid_2_short(long_aa):
   d = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
-      'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 
-      'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 
+      'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N',
+      'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W',
       'Ala': 'A', 'Val':'V', 'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}
-  
+
   short_aa = d[long_aa]
   return short_aa
 
 global aa_dict
 aa_dict = {'Cys': 'C', 'Asp': 'D', 'Ser': 'S', 'Gln': 'Q', 'Lys': 'K',
-  'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N', 
-  'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W', 
+  'Ile': 'I', 'Pro': 'P', 'Thr': 'T', 'Phe': 'F', 'Asn': 'N',
+  'Gly': 'G', 'His': 'H', 'Leu': 'L', 'Arg': 'R', 'Trp': 'W',
   'Ala': 'A', 'Val':'V', 'Glu': 'E', 'Tyr': 'Y', 'Met': 'M'}

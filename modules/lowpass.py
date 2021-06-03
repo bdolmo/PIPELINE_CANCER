@@ -204,10 +204,10 @@ class CnvPlot:
             idx = 0
             for gene in genes_dict:
                 if len(genes_dict.keys()) < 50:
-                    cnv_plot.text(int((genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=15)
+                    cnv_plot.text((int(genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=15)
                     #genes.append(cnv_plot.text( (int(genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=15))
                 else:
-                    cnv_plot.text(int((genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=10)
+                    cnv_plot.text((int(genes_dict[gene]['START'])/1000000), 1, gene, rotation=45, size=10)
                 idx+=1
         # if len(genes_dict.keys()) < 50:
         #     adjust_text(genes)
@@ -222,7 +222,6 @@ class CnvPlot:
         os.remove(calls_with_segments)
         os.remove(segments_no_header)
         os.remove(tmp_call)
-
 
 
 #p.system_env['CLASSIFYCNV']
@@ -274,7 +273,8 @@ def do_lowpass():
                 line = line.rstrip("\n")
                 tmp = line.split("\t")
                 coordinate = tmp[0] + "\t" + tmp[1] + "\t" + tmp[2]
-                o.write(coordinate + "\t" + str(gc_dict[coordinate]) + "\t" + str(round(map_dict[coordinate], 2)) + "\n" )
+                o.write(coordinate + "\t" + str(gc_dict[coordinate]) + "\t" + \
+                    str(round(map_dict[coordinate], 2)) + "\n" )
         f.close()
         o.close()
         os.remove(p.analysis_env['LOWPASS_BINS'])
@@ -294,7 +294,8 @@ def do_lowpass():
     # Normalization
     for sample in p.sample_env:
         p.sample_env[sample]['NORMALIZED_COVERAGE'] = \
-            p.sample_env[sample]['COV_FOLDER'] + "/" + sample + ".normalized.coverage.bed"
+            p.sample_env[sample]['COV_FOLDER'] + "/" + sample + \
+                ".normalized.coverage.bed"
 
         # Load a dataframe of raw coverage data
         df = pd.read_csv(p.sample_env[sample]['RAW_COVERAGE'], sep="\t")
@@ -332,33 +333,33 @@ def do_lowpass():
 
     call_cnvs(0.6, 1.4, 3)
 
-    # Plotting
-    for sample in p.sample_env:
+    # Plotting CNVs
+    if p.analysis_env['PLOT_CNV'] == True:
+        for sample in p.sample_env:
 
-        # Instantiating a CnvPlot object
-        cnp = CnvPlot(
-            cnr_file=p.sample_env[sample]['RATIO_FILE'],
-            cns_file=p.sample_env[sample]['SEGMENT_FILE'],
-            calls= p.sample_env[sample]['CALLS_FILE'],
-            sample=sample,
-            output_dir=p.sample_env[sample]['COV_FOLDER']
-        )
+            # Instantiating a CnvPlot object
+            cnp = CnvPlot(
+                cnr_file=p.sample_env[sample]['RATIO_FILE'],
+                cns_file=p.sample_env[sample]['SEGMENT_FILE'],
+                calls= p.sample_env[sample]['CALLS_FILE'],
+                sample=sample,
+                output_dir=p.sample_env[sample]['COV_FOLDER']
+            )
 
-        # Plotting genomewide CNV profile
-        sample_plot = cnp.plot_genome(genomewide=True, by_chr=False)
+            # Plotting genomewide CNV profile
+            sample_plot = cnp.plot_genome(genomewide=True, by_chr=False)
 
-        # Now plotting isolated CNVs
-        with open (p.sample_env[sample]['CALLS_FILE']) as cf:
-            for line in cf:
-                line = line.rstrip('\n')
-                if line.startswith('Chromosome'):
-                    continue
-                tmp = line.split('\t')
-                chr  = tmp[0]
-                start= tmp[1]
-                end  = tmp[2]
-                cnv_plot = cnp.plot_cnv(chr=chr, start=start, end=end, add_genes=True, offset=500000)
-
+            # Now plotting isolated CNVs
+            with open (p.sample_env[sample]['CALLS_FILE']) as cf:
+                for line in cf:
+                    line = line.rstrip('\n')
+                    if line.startswith('Chromosome'):
+                        continue
+                    tmp = line.split('\t')
+                    chr  = tmp[0]
+                    start= tmp[1]
+                    end  = tmp[2]
+                    cnv_plot = cnp.plot_cnv(chr=chr, start=start, end=end, add_genes=True, offset=500000)
 
 def annotate_cnv():
     '''Annotate CNVs using ACMG classification

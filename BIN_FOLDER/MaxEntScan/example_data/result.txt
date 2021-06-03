@@ -1,0 +1,51 @@
+ FSPLICE 1.0. Prediction of potential splice sites in Homo_sapiens genomic DNA
+ Seq name: NM_000449 chr 1 - 148089557 148094091 4535 
+ Length of sequence: 4535 
+Direct  chain.
+ Acceptor(AG) sites. Treshold      4.175 (90%).
+       1 P:     187 W:  7.47 Seq: attctAGccctc
+       2 P:     296 W:  6.42 Seq: tcttcAGaggct
+       3 P:     495 W:  7.30 Seq: tccctAGcagtc
+       4 P:     498 W:  5.72 Seq: ctagcAGtcaga
+       5 P:     559 W: 14.18 Seq: cccacAGcaagg
+       6 P:     847 W:  6.42 Seq: atggtAGcctat
+       7 P:    1332 W:  9.70 Seq: acctcAGcaaga
+       8 P:    1383 W:  9.25 Seq: ccttcAGctccc
+       9 P:    1393 W:  5.38 Seq: ccctcAGgaccc
+      10 P:    1673 W:  9.95 Seq: tctgtAGctcag
+      11 P:    1721 W:  4.72 Seq: cctatAGgtgga
+      12 P:    1916 W:  6.72 Seq: tccctAGggact
+      13 P:    1984 W:  9.70 Seq: cactcAGgaagt
+      14 P:    2366 W: 12.18 Seq: ctcccAGgtaaa
+      15 P:    2467 W:  7.12 Seq: cctgtAGctgag
+      16 P:    2638 W:  7.42 Seq: acttcAGccaga
+      17 P:    2779 W:  6.42 Seq: gctacAGcagca
+      18 P:    2867 W:  6.42 Seq: gtctcAGcaacc
+      19 P:    2995 W:  5.03 Seq: ctaccAGtcagt
+      20 P:    3033 W:  5.85 Seq: tcctcAGtttcc
+      21 P:    3078 W:  9.68 Seq: tctgcAGaagag
+      22 P:    3342 W:  9.88 Seq: tttttAGcctcc
+      23 P:    3545 W:  8.12 Seq: cccccAGgcttt
+      24 P:    4435 W:  6.70 Seq: tcctaAGgaagt
+      25 P:    4458 W:  6.65 Seq: tgtacAGacagc
+      26 P:    4513 W:  5.65 Seq: ttttcAGcttga
+      27 P:    4533 W:  4.58 Seq: gctttAGtg---
+ Donor(GT) sites. Treshold      6.099 (90%).
+       1 P:      40 W:  8.20 Seq: aagtgGTgagaa
+       2 P:     150 W:  7.50 Seq: ccagtGTgagtt
+       3 P:     307 W:  7.64 Seq: ccgagGTaccat
+       4 P:     317 W:  9.32 Seq: atttcGTaagta
+       5 P:     594 W: 15.47 Seq: tcctgGTaagtg
+       6 P:     691 W:  9.60 Seq: gagagGTagggt
+       7 P:    1416 W: 13.38 Seq: aaaagGTaggtt
+       8 P:    1794 W:  7.36 Seq: tatcgGTgggtg
+       9 P:    2325 W: 10.44 Seq: agagtGTaagta
+      10 P:    2367 W: 13.10 Seq: cccagGTaaaag
+      11 P:    2438 W:  8.06 Seq: tctagGTatgat
+      12 P:    2841 W:  7.36 Seq: cgctgGTgtgtt
+      13 P:    3180 W: 14.07 Seq: cccagGTaagga
+      14 P:    3733 W: 10.16 Seq: gagagGTaggca
+      15 P:    3796 W:  8.62 Seq: tacctGTgagtg
+      16 P:    4177 W: 11.56 Seq: caaaaGTgagtg
+      17 P:    4237 W:  6.38 Seq: gagagGTagaca
+      18 P:    4341 W:  8.06 Seq: tacagGTctgtg
