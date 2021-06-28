@@ -33,7 +33,7 @@ def do_annotation():
 
         # CIViC annotation for SNV/Indels
         do_civic()
-
+        sys.exit()
         # Cancer Genome Interpreter annotation
         do_cgi()
 
@@ -712,6 +712,12 @@ def do_civic():
                                 else:
                                   exon= '.'
 
+                                intron = re.search("\d+", transcript_list[vep_dict['INTRON']])
+                                if intron is not None:
+                                  intron = intron.group(0)
+                                if not intron:
+                                    intron = '.'
+
                                 consequence = transcript_list[vep_dict['Consequence']]
                                 aminoacids = transcript_list[vep_dict['Amino_acids']]
                                 protein_position = transcript_list[vep_dict['Protein_position']]
@@ -735,6 +741,10 @@ def do_civic():
                                       variant = p_code
                                 else:
                                   if 'splice' in consequence:
+                                    # Ad-hoc solution for MET exon 14 skipping mutations
+                                    if gene == 'MET':
+                                        if intron == '13' or intron == '14':
+                                            exon = '14'
                                     variant = "SKIPPING MUTATION"
                                 if variant != '.':
 
@@ -1149,7 +1159,7 @@ def annotate_known_fusions():
         fusions_vcf = p.sample_env[sample]['READY_SV_VCF'].replace(".vcf", ".fusions.vcf")
         fusions_json= fusions_vcf.replace(".vcf", ".json")
         p.sample_env[sample]['READY_SV_JSON'] = fusions_json
-        
+
         if os.path.isfile(fusions_vcf):
           msg = " INFO: Skipping fusion annotation for sample "+ sample
           print(msg)

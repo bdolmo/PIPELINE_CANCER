@@ -29,6 +29,29 @@ from modules import params as p
 from modules import trimming as t
 from modules import sqlite as s
 
+mutect_filters =  {
+    'base_qual'        : 'active',
+    'clustered_events' : 'inactive',
+    'contamination'    : 'active',
+    'duplicate'        : 'active',
+    'fragment'         : 'inactive',
+    'germline'         : 'inactive',
+    'haplotype'        : 'inactive',
+    'low_allele_frac'  : 'inactive',
+    'map_qual'         : 'active',
+    'n_ratio'          : 'inactive',
+    'normal_artifact'  : 'active',
+    'numt_chimera'     : 'active',
+    'numt_novel'       : 'active',
+    'orientation'      : 'active',
+    'panel_of_normals' : 'active',
+    'position'         : 'active',
+    'slippage'         : 'inactive',
+    'strand_bias'      : 'inactive',
+    'strict_strand'    : 'inactive',
+    'weak_evidence'    : 'inactive'
+}
+
 def do_report():
     '''
       main report function
@@ -115,6 +138,7 @@ def update_cna_calls():
                 s.db.session.add(cna)
                 s.db.session.commit()
      f.close()
+     
 def update_fusion_calls():
   '''
     Record all Fusion calls from MANTA
@@ -138,7 +162,7 @@ def update_fusion_calls():
               filter     = fusions_dict['variants'][variant]['FILTER']
               svtype = "."
               if 'SVTYPE' in fusions_dict['variants'][variant]['INFO']:
-                  svtype     = fusions_dict['variants'][variant]['INFO']['SVTYPE']
+                  svtype = fusions_dict['variants'][variant]['INFO']['SVTYPE']
               partners   = fusions_dict['variants'][variant]['INFO']['FUSION']['PARTNERS']
               sources    = fusions_dict['variants'][variant]['INFO']['FUSION']['SOURCES']
               diseases   = fusions_dict['variants'][variant]['INFO']['FUSION']['DISEASES']
@@ -148,6 +172,7 @@ def update_fusion_calls():
               depth      = "."
               sr_depth   = 0
               sr_support = 0
+
               if 'PR' in fusions_dict['variants'][variant]:
                   pr_info    = fusions_dict['variants'][variant]['PR']
                   pr_list    = pr_info.split(",")
@@ -432,6 +457,7 @@ def create_somatic_report():
             hgvsg =  db.Column(db.String(120))
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
+            intron = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))
@@ -455,6 +481,7 @@ def create_somatic_report():
             hgvsg =  db.Column(db.String(120))
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
+            intron = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))
@@ -478,6 +505,7 @@ def create_somatic_report():
             hgvsg =  db.Column(db.String(120))
             hgvsc =  db.Column(db.String(120))
             exon  = db.Column(db.String(120))
+            intron = db.Column(db.String(120))
             variant_type = db.Column(db.String(120))
             consequence =  db.Column(db.String(120))
             depth = db.Column(db.String(120))
@@ -687,6 +715,7 @@ def create_somatic_report():
           pos     = var_dict['variants'][variant]['POS']
           ref     = var_dict['variants'][variant]['REF']
           alt     = var_dict['variants'][variant]['ALT']
+          filter  = var_dict['variants'][variant]['FILTER']
           p_code  = '.'
           g_code  = '.'
           c_code  = '.'
@@ -735,7 +764,7 @@ def create_somatic_report():
                 # VAF here will be filleds with CN (Copy Number) field
                 VAF = int(var_dict['variants'][variant]['CN'])
               else:
-                GT = var_dict['variants'][variant]['GT']
+                GT  = var_dict['variants'][variant]['GT']
                 VAF = int(GT[0])
 
               # Setting CNA type
@@ -843,27 +872,28 @@ def create_somatic_report():
 
                   if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                   else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                   db_detected_frequency = float(db_detected_number)/db_num_samples
 
                   therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id,
-                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence,
+                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, intron='.', variant_type=variant_type, consequence=consequence,
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                   clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str, validated_bioinfo="no",
                   validated_assessor="no", classification="Therapeutic",
                   db_detected_number=db_detected_number,db_sample_count=db_num_samples, db_detected_freq=db_detected_frequency)
-
 
                   s.db.session.add(therapeutic_db)
                   s.db.session.commit()
@@ -872,7 +902,7 @@ def create_somatic_report():
               if go_other == True:
                 classification = "Other clinical"
                 other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-                hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+                hgvsc=c_code, exon=exon, intron='.', variant_type=variant_type, consequence=consequence, depth=depth,
                 allele_frequency=str(VAF),max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                 clinical_trials=clintrials_str,tumor_type=diseases_str)
                 db.session.add(other_r)
@@ -884,21 +914,23 @@ def create_somatic_report():
                 if not result:
                   if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                   else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if  sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                   db_detected_frequency = float(db_detected_number)/db_num_samples
 
                   other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
-                  ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id,
+                  ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, intron='.', enst_id=enst_id,
                   hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence,
                   depth=depth, allele_frequency=str(VAF),read_support=".",max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                   clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no",
@@ -973,8 +1005,9 @@ def create_somatic_report():
 
                 classification = "Therapeutic"
                 therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id,hgvsp=p_code, hgvsg=g_code,
-                hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,read_support=read_support,
-                max_af=max_af, max_af_pop=max_af_pop, therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str)
+                hgvsc=c_code, exon=exon, intron='.', variant_type=variant_type, consequence='.', depth=depth, allele_frequency=VAF,
+                read_support=read_support,max_af=max_af, max_af_pop=max_af_pop, therapies=drugs_str, clinical_trials=clintrials_str,
+                tumor_type=diseases_str)
                 db.session.add(therapeutic_r)
                 db.session.commit()
 
@@ -988,22 +1021,24 @@ def create_somatic_report():
 
                   if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                   else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                   db_detected_frequency = float(db_detected_number)/db_num_samples
 
                   therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
                   ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id,
-                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.',
+                  hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, intron='.', variant_type=variant_type, consequence='.',
                   depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop,
                   therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
                   validated_bioinfo="no", validated_assessor="no", classification="Therapeutic", db_detected_number=db_detected_number,
@@ -1038,6 +1073,16 @@ def create_somatic_report():
               ad_list = AD.split(",")
               read_support = ad_list[1]
 
+            # Skipping variants with less than 5 min_read_support
+            if int(read_support) < 5:
+                continue
+
+            # Skipping variants with active filters
+            for m_filter in mutect_filters:
+                if m_filter in filter:
+                    if mutect_filters[m_filter] == 'active':
+                        continue
+
             # Ensembl IMPACT tag: LOW,MODERATE,HIGH
             impact = var_dict['variants'][variant]['INFO']['CSQ']['IMPACT']
 
@@ -1071,6 +1116,8 @@ def create_somatic_report():
               if len(tmp_c_code)> 1:
                 c_code = tmp_c_code[1]
             exon        = var_dict['variants'][variant]['INFO']['CSQ']['EXON']
+            intron      = var_dict['variants'][variant]['INFO']['CSQ']['INTRON']
+
             enst_id     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             isoform     = var_dict['variants'][variant]['INFO']['CSQ']['Feature']
             consequence = var_dict['variants'][variant]['INFO']['CSQ']['Consequence']
@@ -1236,7 +1283,7 @@ def create_somatic_report():
                 "\t" + g_code + "\n")
 
               therapeutic_r = TherapeuticVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,
               therapies=drugs_str,clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(therapeutic_r)
@@ -1250,23 +1297,24 @@ def create_somatic_report():
 
                 if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                 else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                 db_detected_frequency = float(db_detected_number)/db_num_samples
 
-
                 therapeutic_db = s.TherapeuticTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'], petition_id=petition_id,gene=gene, enst_id=enst_id,
-                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence='.',
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence='.',
                 depth=depth, allele_frequency=VAF, read_support=read_support, max_af=max_af, max_af_pop=max_af_pop,
                 therapies=drugs_str, clinical_trials=clintrials_str, tumor_type=diseases_str, var_json=var_json_str,
                 validated_bioinfo="no", validated_assessor="no", classification="Therapeutic", db_detected_number=db_detected_number,
@@ -1286,7 +1334,7 @@ def create_somatic_report():
                 "\t" + g_code + "\n")
 
               other_r = OtherClinicalVariants(gene=gene,  enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(other_r)
@@ -1299,22 +1347,24 @@ def create_somatic_report():
               if not result:
                 if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                 else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                 db_detected_frequency = float(db_detected_number)/db_num_samples
 
                 other_db = s.OtherVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id,
-                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence,
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence=consequence,
                 depth=depth, allele_frequency=str(VAF),read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                 clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no",
                 classification="Other", db_detected_number=db_detected_number,db_sample_count=db_num_samples,
@@ -1326,7 +1376,7 @@ def create_somatic_report():
             if go_rare == True:
 
               rare_v = RareVariants(gene=gene, enst_id=enst_id, hgvsp=p_code, hgvsg=g_code,
-              hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence, depth=depth,
+              hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence=consequence, depth=depth,
               allele_frequency=VAF,read_support=read_support,max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
               clinical_trials=clintrials_str,tumor_type=diseases_str)
               db.session.add(rare_v)
@@ -1339,22 +1389,24 @@ def create_somatic_report():
               if not result:
                 if not var:
                     count = 1
-                    new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
-                    var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
-                    isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
-                    s.db.session.add(new_variant)
-                    var_id = new_variant.id
+                    # new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
+                    # var_type=variant_type, genome_version=p.analysis_env['GENOME_VERSION'], gene=gene,
+                    # isoform=isoform, hgvsg=g_code, hgvsp=p_code, hgvsc=c_code, count=count)
+                    # s.db.session.add(new_variant)
+                    # var_id = new_variant.id
                 else:
-                    if not sample_found:
-                      var.count = var.count+1
-                      db_detected_number = var.count
+                    if sample_found:
+                    #if not sample_found:
+
+                      #var.count = var.count+1
+                      db_detected_number = var.count+1
                     var_id = var.id
                     s.db.session.commit()
                 db_detected_frequency = float(db_detected_number)/db_num_samples
 
                 rare_db = s.RareVariantsTable(user_id=p.analysis_env['USER_ID'], lab_id=sample, ext1_id=ext1_id,
                 ext2_id=ext2_id, run_id=p.analysis_env['OUTPUT_NAME'],petition_id=petition_id,gene=gene, enst_id=enst_id,
-                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, variant_type=variant_type, consequence=consequence,
+                hgvsp=p_code, hgvsg=g_code, hgvsc=c_code, exon=exon, intron=intron, variant_type=variant_type, consequence=consequence,
                 depth=depth, allele_frequency=str(VAF), read_support=read_support, max_af=max_af,max_af_pop=max_af_pop,therapies=drugs_str,
                 clinical_trials=clintrials_str,tumor_type=diseases_str, var_json=var_json_str,validated_bioinfo="no", validated_assessor="no",
                 classification="Rare", db_detected_number=db_detected_number,db_sample_count=db_num_samples, db_detected_freq=db_detected_frequency)
@@ -1364,8 +1416,8 @@ def create_somatic_report():
           var_id = ""
 
           # Checking that the variant has been detected previously
-          # var = s.Variants.query.filter_by(chromosome=chromosome).filter_by(pos=pos)\
-          #   .filter_by(ref=ref).filter_by(alt=alt).filter_by(var_type=variant_type).first()
+          var = s.Variants.query.filter_by(chromosome=chromosome).filter_by(pos=pos)\
+             .filter_by(ref=ref).filter_by(alt=alt).filter_by(var_type=variant_type).first()
           if not var:
             count = 1
             new_variant= s.Variants(chromosome=chromosome, pos=pos, ref=ref, alt=alt,
@@ -1374,9 +1426,11 @@ def create_somatic_report():
             s.db.session.add(new_variant)
             var_id = new_variant.id
           else:
-            if not sample_found:
+            if sample_found:
+            #if not sample_found:
+
               var.count = var.count+1
-            var_id = var.id
+              var_id = var.id
             s.db.session.commit()
 
           found_sample_var =  s.SampleVariants.query.filter_by(var_id=var_id).first()
